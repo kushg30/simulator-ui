@@ -49,16 +49,7 @@
 }
 
 
-* {
-  box-sizing: border-box;
-}
 
-body {
-  margin: 0;
-  font-family: Inter, Arial, sans-serif;
-  background: #f8f9fb;
-  color: #111827;
-}
 
 .top-left {
   justify-self: start;

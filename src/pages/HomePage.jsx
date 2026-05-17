@@ -278,7 +278,7 @@ export default function HomePage() {
                 </div>
                 <p>{sim.desc}</p>
                 {sim.active ? (
-                  <button className="btn-primary btn-sm" onClick={() => navigate("/teamjoin")}>
+                  <button className="btn-primary btn-sm" onClick={() => navigate("/context")}>
                     Enter Simulator →
                   </button>
                 ) : (
