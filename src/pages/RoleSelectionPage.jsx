@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import API_BASE from "../config";
 
 export default function RoleSelectionPage() {
 
@@ -19,7 +20,7 @@ export default function RoleSelectionPage() {
   // 🔁 Fetch roles
   const fetchRoles = async () => {
     const res = await fetch(
-      `http://localhost:8080/api/teams/${teamId}/roles`
+      `${API_BASE}/api/teams/${teamId}/roles`
     );
     const data = await res.json();
     setRoles(data);
@@ -38,7 +39,7 @@ export default function RoleSelectionPage() {
   if (roles[role]) return;
 
   await fetch(
-    `http://localhost:8080/api/teams/${teamId}/assign-role`,
+    `${API_BASE}/api/teams/${teamId}/assign-role`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },

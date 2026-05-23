@@ -1,6 +1,7 @@
 // src/simulation/ResultsDashboard.jsx
 import { useState, useEffect } from "react";
 import "../ResultsDashboard.css";
+import API_BASE from "../config";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -106,8 +107,8 @@ export default function ResultsDashboard({ runId, participantId, role, onContinu
       try {
         setLoading(true);
         const [indRes, teamRes] = await Promise.all([
-          fetch(`http://localhost:8080/api/runs/${runId}/participants/${participantId}/results`),
-          fetch(`http://localhost:8080/api/runs/${runId}/team-results`),
+          fetch(`${API_BASE}/api/runs/${runId}/participants/${participantId}/results`),
+          fetch(`${API_BASE}/api/runs/${runId}/team-results`),
         ]);
 
         if (!indRes.ok || !teamRes.ok) throw new Error("Failed to load results");

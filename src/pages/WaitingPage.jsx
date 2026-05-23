@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import API_BASE from "../config";
 
 export default function WaitingPage() {
   const [searchParams] = useSearchParams();
@@ -15,7 +16,7 @@ export default function WaitingPage() {
   const fetchParticipants = async () => {
     try {
       const res = await fetch(
-        `http://localhost:8080/api/teams/${teamId}/participants`
+        `${API_BASE}/api/teams/${teamId}/participants`
       );
 
       if (!res.ok) return;
@@ -31,7 +32,7 @@ export default function WaitingPage() {
   const fetchRun = async () => {
     try {
       const res = await fetch(
-        `http://localhost:8080/api/runs/team/${teamId}`
+        `${API_BASE}/api/runs/team/${teamId}`
       );
 
       if (!res.ok) return;
@@ -75,7 +76,7 @@ export default function WaitingPage() {
   const handleStart = async () => {
     try {
       const res = await fetch(
-        `http://localhost:8080/api/runs/start/${teamId}`,
+        `${API_BASE}/api/runs/start/${teamId}`,
         { method: "POST" }
       );
 

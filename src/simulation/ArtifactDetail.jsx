@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import API_BASE from "../config";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 function getInitials(name = "") {
@@ -600,9 +601,16 @@ export default function ArtifactDetail({ artifact, runId, participantId, refetch
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState(null);
 
+ useEffect(() => {
+    setError(null);
+    setLoading(false);
+  }, [artifact?.artifactId]);
+
   if (!artifact) {
     return <div className="viewer empty">Select an artifact to begin</div>;
   }
+
+
 
   let payload = {};
   try {
@@ -619,7 +627,7 @@ export default function ArtifactDetail({ artifact, runId, participantId, refetch
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch(`http://localhost:8080/api/runs/${runId}/decisions`, {
+      const res = await fetch(`${API_BASE}/api/runs/${runId}/decisions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ participantId, decisionId: artifact.decisionId, action }),

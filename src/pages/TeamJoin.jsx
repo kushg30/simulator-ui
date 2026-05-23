@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import API_BASE from "../config";
 
 export default function TeamJoinPage() {
   const [teamName, setTeamName] = useState("");
@@ -18,7 +19,7 @@ export default function TeamJoinPage() {
     try {
       setLoading(true);
 
-      const res = await fetch("http://localhost:8080/api/teams", {
+      const res = await fetch("${API_BASE}/api/teams", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -54,7 +55,7 @@ export default function TeamJoinPage() {
       setLoading(true);
 
       const res = await fetch(
-        `http://localhost:8080/api/teams/${joinTeamId}/join`,
+        `${API_BASE}/api/teams/${joinTeamId}/join`,
         {
           method: "POST",
           headers: {

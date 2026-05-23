@@ -4,6 +4,7 @@ import ArtifactDetail from "./ArtifactDetail";
 import ArtifactList from "./ArtifactList";
 import ScreenFlashOverlay from "./ScreenFlashOverlay";
 import "../simulator.css";
+import API_BASE from "../config";
 
 // ─────────────────────────────────────────────────────────────
 // Timer Hook
@@ -59,8 +60,8 @@ const TABS = [
 export default function SimulationPage() {
 
   const runId         = "b863544b-ff4f-47dd-a7aa-ce23657b098b";
-  const participantId = "09f7d1cf-fdca-404e-85bb-66d407342ca9";
-  const role          = "CFO";
+  const participantId = "33166e16-2bbc-41e4-8149-bb11bf8592e0";
+  const role          = "CEO";
 
   const { artifacts, loading, error, refetch } = useArtifacts(runId, participantId);
 
@@ -200,7 +201,7 @@ export default function SimulationPage() {
     try {
       setFlashLoading(true);
       const res = await fetch(
-        `http://localhost:8080/api/runs/${runId}/decisions`,
+        `${API_BASE}/api/runs/${runId}/decisions`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
