@@ -7,33 +7,33 @@ import "../simulator.css";
 import API_BASE from "../config";
 
 // ─────────────────────────────────────────────────────────────
-// Timer Hook
+// Timer
 // ─────────────────────────────────────────────────────────────
 function useSimulationTime(startedAt) {
   const [seconds, setSeconds] = useState(0);
   useEffect(() => {
     if (!startedAt) return;
     const update = () => {
-      const elapsed = Math.floor((Date.now() - new Date(startedAt).getTime()) / 1000);
+      const elapsed = Math.floor(
+        (Date.now() - new Date(startedAt).getTime()) / 1000
+      );
       setSeconds(elapsed);
     };
     update();
-    const interval = setInterval(update, 1000);
-    return () => clearInterval(interval);
+    const id = setInterval(update, 1000);
+    return () => clearInterval(id);
   }, [startedAt]);
   return seconds;
 }
 
-function formatTime(seconds) {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}:${s.toString().padStart(2, "0")}`;
+function formatTime(s) {
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 }
 
 // ─────────────────────────────────────────────────────────────
 // Constants
 // ─────────────────────────────────────────────────────────────
-const ARTIFACT_TYPE_LABELS = {
+const TYPE_LABELS = {
   INTERNAL_NOTE:   "Internal Note",
   MEMO:            "Memo",
   MESSAGE_TEXT:    "Message",
@@ -58,103 +58,87 @@ const TABS = [
 // Main Component
 // ─────────────────────────────────────────────────────────────
 export default function SimulationPage() {
-
   const runId         = "b863544b-ff4f-47dd-a7aa-ce23657b098b";
   const participantId = "33166e16-2bbc-41e4-8149-bb11bf8592e0";
   const role          = "CEO";
 
   const { artifacts, loading, error, refetch } = useArtifacts(runId, participantId);
 
-  const [activeTab,         setActiveTab]         = useState("inbox");
-  const [selectedArtifact,  setSelectedArtifact]  = useState(null);
-  const [artifactsState,    setArtifactsState]    = useState([]);
-  const [startTime,         setStartTime]         = useState(null);
-
-  // ── Screen flash state ───────────────────────────────────
+  const [activeTab,        setActiveTab]        = useState("inbox");
+  const [selectedArtifact, setSelectedArtifact] = useState(null);
+  const [artifactsState,   setArtifactsState]   = useState([]);
+  const [startTime,        setStartTime]        = useState(null);
   const [activeFlash,      setActiveFlash]      = useState(null);
   const [flashLoading,     setFlashLoading]     = useState(false);
-  const [dismissedFlashes, setDismissedFlashes] = useState(new Set());
+  const [dismissed,        setDismissed]        = useState(new Set());
 
-  // ── Timer ────────────────────────────────────────────────
   useEffect(() => {
-    if (!startTime && artifacts?.length > 0) {
+    if (startTime) return;
+    if (artifacts?.length > 0) {
       const earliest = [...artifacts].sort(
         (a, b) => new Date(a.openAt) - new Date(b.openAt)
       )[0];
       setStartTime(earliest.openAt);
-    } else if (!startTime) {
+    } else {
       setStartTime(new Date().toISOString());
     }
-  }, [artifacts]);
+  }, [artifacts]); // eslint-disable-line
 
   const simSeconds = useSimulationTime(startTime);
 
-  // ── Polling ──────────────────────────────────────────────
   useEffect(() => {
-    if (!runId || !participantId) return;
-    const interval = setInterval(() => {
+    const id = setInterval(() => {
       if (document.visibilityState === "visible") refetch();
     }, 3000);
-    return () => clearInterval(interval);
-  }, [runId, participantId, refetch]);
+    return () => clearInterval(id);
+  }, [refetch]);
 
-  // ── Sync artifact state ──────────────────────────────────
   useEffect(() => {
     if (!artifacts) return;
-    setArtifactsState((prev) =>
-      artifacts.map((a) => {
-        const existing = prev.find((p) => p.artifactId === a.artifactId);
+    setArtifactsState(prev =>
+      artifacts.map(a => {
+        const ex = prev.find(p => p.artifactId === a.artifactId);
         return {
           ...a,
-          status: a.actionState === "ACTED" ? "ACTED" : existing?.status || "UNREAD",
+          status: a.actionState === "ACTED" ? "ACTED" : ex?.status || "UNREAD",
         };
       })
     );
   }, [artifacts]);
 
-  // ── Keep selected updated ────────────────────────────────
   useEffect(() => {
     if (!selectedArtifact) return;
     const updated = artifactsState.find(
-      (a) => a.artifactId === selectedArtifact.artifactId
+      a => a.artifactId === selectedArtifact.artifactId
     );
     if (updated) setSelectedArtifact(updated);
-  }, [artifactsState]);
+  }, [artifactsState]); // eslint-disable-line
 
-  // ── Screen flash detection ───────────────────────────────
   useEffect(() => {
-    if (activeFlash) return; // already showing one
-
+    if (activeFlash) return;
     const flash = artifactsState.find(
-      (a) =>
+      a =>
         a.artifactType === "SCREEN_FLASH" &&
         (a.actionState === "OPEN" || a.actionState === "READ_ONLY") &&
-        !dismissedFlashes.has(a.artifactId)
+        !dismissed.has(a.artifactId)
     );
-
     if (flash) setActiveFlash(flash);
-  }, [artifactsState, activeFlash, dismissedFlashes]);
+  }, [artifactsState, activeFlash, dismissed]);
 
-  // ── Helpers ──────────────────────────────────────────────
-  const safeParse = (data) => {
-    try { return typeof data === "string" ? JSON.parse(data) : data; }
+  const safeParse = d => {
+    try { return typeof d === "string" ? JSON.parse(d) : d; }
     catch { return {}; }
   };
 
-  const getTab = (a) => {
-    const payload = safeParse(a.payload);
-    return payload?.tab || "inbox";
-  };
+  const getTab = a => safeParse(a.payload)?.tab || "inbox";
 
-  // SCREEN_FLASH never appears in the sidebar list
   const visibleArtifacts = artifactsState.filter(
-    (a) => getTab(a) === activeTab && a.artifactType !== "SCREEN_FLASH"
+    a => getTab(a) === activeTab && a.artifactType !== "SCREEN_FLASH"
   );
 
-  // ── Select handler ───────────────────────────────────────
-  const handleSelect = (artifact) => {
-    setArtifactsState((prev) =>
-      prev.map((a) =>
+  const handleSelect = artifact => {
+    setArtifactsState(prev =>
+      prev.map(a =>
         a.artifactId === artifact.artifactId
           ? { ...a, status: a.status === "UNREAD" ? "READ" : a.status }
           : a
@@ -167,27 +151,25 @@ export default function SimulationPage() {
   };
 
   const updateStatus = (id, status) => {
-    setArtifactsState((prev) =>
-      prev.map((a) => (a.artifactId === id ? { ...a, status } : a))
+    setArtifactsState(prev =>
+      prev.map(a => a.artifactId === id ? { ...a, status } : a)
     );
   };
 
-  // ── Auto-select ──────────────────────────────────────────
   useEffect(() => {
     if (visibleArtifacts.length > 0) {
-      const stillVisible = visibleArtifacts.some(
-        (a) => a.artifactId === selectedArtifact?.artifactId
+      const still = visibleArtifacts.some(
+        a => a.artifactId === selectedArtifact?.artifactId
       );
-      if (!stillVisible) setSelectedArtifact(visibleArtifacts[0]);
+      if (!still) setSelectedArtifact(visibleArtifacts[0]);
     } else {
       setSelectedArtifact(null);
     }
-  }, [activeTab, artifactsState]);
+  }, [activeTab, artifactsState]); // eslint-disable-line
 
-  // ── Tab counts (exclude SCREEN_FLASH) ───────────────────
   const tabCounts = TABS.reduce((acc, tab) => {
     acc[tab.id] = artifactsState.filter(
-      (a) =>
+      a =>
         getTab(a) === tab.id &&
         a.status === "UNREAD" &&
         a.artifactType !== "SCREEN_FLASH"
@@ -195,59 +177,50 @@ export default function SimulationPage() {
     return acc;
   }, {});
 
-  // ── Flash decision handler ───────────────────────────────
-  const handleFlashDecision = async (action) => {
-    if (!activeFlash || !activeFlash.decisionId) return;
+  const handleFlashDecision = async action => {
+    if (!activeFlash?.decisionId) return;
     try {
       setFlashLoading(true);
-      const res = await fetch(
-        `${API_BASE}/api/runs/${runId}/decisions`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            participantId,
-            decisionId: activeFlash.decisionId,
-            action,
-          }),
-        }
-      );
-      if (!res.ok) throw new Error("Decision failed");
+      const res = await fetch(`${API_BASE}/api/runs/${runId}/decisions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          participantId,
+          decisionId: activeFlash.decisionId,
+          action,
+        }),
+      });
+      if (!res.ok) throw new Error("failed");
       await refetch();
       updateStatus(activeFlash.artifactId, "ACTED");
-
-      // Brief delay so user sees ✓ confirmation before dismissing
       setTimeout(() => {
-        setDismissedFlashes((prev) => new Set([...prev, activeFlash.artifactId]));
+        setDismissed(prev => new Set([...prev, activeFlash.artifactId]));
         setActiveFlash(null);
       }, 1400);
-
-    } catch (err) {
-      console.error("Flash decision error:", err);
+    } catch (e) {
+      console.error(e);
     } finally {
       setFlashLoading(false);
     }
   };
 
-  // ── Flash dismiss (implicit / info-only) ─────────────────
   const handleFlashDismiss = () => {
     if (!activeFlash) return;
-    setDismissedFlashes((prev) => new Set([...prev, activeFlash.artifactId]));
+    setDismissed(prev => new Set([...prev, activeFlash.artifactId]));
     setActiveFlash(null);
   };
 
-  // ── Timer color ──────────────────────────────────────────
   const timerClass =
     simSeconds > 900 ? "critical" :
-    simSeconds > 600 ? "warn"     : "";
+    simSeconds > 600 ? "warn" : "";
 
-  // ── Guards ───────────────────────────────────────────────
   if (!runId || !participantId)
-    return <div className="sim-error">Invalid session. Please restart.</div>;
-  if (loading) return <div className="sim-loading">Loading session</div>;
-  if (error)   return <div className="sim-error">Error: {error}</div>;
+    return <div className="sim-error">Invalid session.</div>;
+  if (loading)
+    return <div className="sim-loading">Loading session</div>;
+  if (error)
+    return <div className="sim-error">Error: {error}</div>;
 
-  // ── Parse flash payload + options ────────────────────────
   const flashPayload = activeFlash ? safeParse(activeFlash.payload) : null;
   const flashOptions = activeFlash
     ? (typeof activeFlash.decisionOptions === "string"
@@ -255,11 +228,9 @@ export default function SimulationPage() {
         : activeFlash.decisionOptions)
     : null;
 
-  // ─────────────────────────────────────────────────────────
   return (
     <div className="round-screen">
 
-      {/* ── SCREEN FLASH OVERLAY ── */}
       {activeFlash && (
         <ScreenFlashOverlay
           artifact={activeFlash}
@@ -271,7 +242,6 @@ export default function SimulationPage() {
         />
       )}
 
-      {/* ── TOP BAR ── */}
       <div className="top-bar">
         <div className="top-left role-label">
           Role:&nbsp;<span className="role-value">{role}</span>
@@ -281,18 +251,16 @@ export default function SimulationPage() {
           <div className="phase-label">Interpretation Phase</div>
         </div>
         <div className="top-right time-block">
-          <div className="time-label">Round Time</div>
+          <span className="time-label">Round Time</span>
           <div className={`time-value ${timerClass}`}>
             {startTime ? formatTime(simSeconds) : "--:--"}
           </div>
         </div>
       </div>
 
-      {/* ── MAIN ── */}
       <div className="main">
-
         <div className="primary-nav">
-          {TABS.map((tab) => (
+          {TABS.map(tab => (
             <button
               key={tab.id}
               className={activeTab === tab.id ? "active" : ""}
@@ -318,7 +286,7 @@ export default function SimulationPage() {
               artifacts={visibleArtifacts}
               selectedId={selectedArtifact?.artifactId}
               onSelect={handleSelect}
-              typeLabels={ARTIFACT_TYPE_LABELS}
+              typeLabels={TYPE_LABELS}
             />
           )}
         </div>
@@ -326,14 +294,15 @@ export default function SimulationPage() {
         <div className="content-canvas">
           <div className="viewer">
             <ArtifactDetail
-              artifact={selectedArtifact ? { ...selectedArtifact, updateStatus } : null}
+              artifact={
+                selectedArtifact ? { ...selectedArtifact, updateStatus } : null
+              }
               runId={runId}
               participantId={participantId}
               refetch={refetch}
             />
           </div>
         </div>
-
       </div>
     </div>
   );
