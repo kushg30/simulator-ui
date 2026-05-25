@@ -18,7 +18,7 @@ function useNeuralCanvas() {
     const canvas = document.getElementById("neural-bg");
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
-    const N = 45, DIST = 130;
+    const N = 55, DIST = 150;
     let nodes = [], raf;
 
     function resize() {
@@ -53,7 +53,7 @@ function useNeuralCanvas() {
           const dy = nodes[i].y - nodes[j].y;
           const d  = Math.sqrt(dx * dx + dy * dy);
           if (d < DIST) {
-            const a   = (1 - d / DIST) * 0.2;
+            const a   = (1 - d / DIST) * 0.55;
             const maj = nodes[i].major || nodes[j].major;
             ctx.beginPath();
             ctx.moveTo(nodes[i].x, nodes[i].y);
@@ -61,7 +61,7 @@ function useNeuralCanvas() {
             ctx.strokeStyle = maj
               ? `rgba(201,168,76,${a})`
               : `rgba(59,130,246,${a})`;
-            ctx.lineWidth = maj ? 0.75 : 0.4;
+            ctx.lineWidth = maj ? 1.2 : 0.7;
             ctx.stroke();
           }
         }
@@ -72,17 +72,25 @@ function useNeuralCanvas() {
         const r  = n.r * pf;
         if (n.major) {
           ctx.beginPath();
-          ctx.arc(n.x, n.y, r * 4.5, 0, Math.PI * 2);
-          ctx.fillStyle = "rgba(201,168,76,0.05)";
+          ctx.arc(n.x, n.y, r * 6, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(201,168,76,0.12)";
+          ctx.fill();
+          ctx.beginPath();
+          ctx.arc(n.x, n.y, r * 2.5, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(201,168,76,0.25)";
           ctx.fill();
           ctx.beginPath();
           ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(201,168,76,${0.65 + Math.sin(n.pulse) * 0.2})`;
+          ctx.fillStyle = `rgba(201,168,76,${0.9 + Math.sin(n.pulse) * 0.1})`;
           ctx.fill();
         } else {
           ctx.beginPath();
+          ctx.arc(n.x, n.y, r * 2.5, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(59,130,246,0.1)";
+          ctx.fill();
+          ctx.beginPath();
           ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(59,130,246,${0.3 + Math.sin(n.pulse) * 0.1})`;
+          ctx.fillStyle = `rgba(59,130,246,${0.65 + Math.sin(n.pulse) * 0.15})`;
           ctx.fill();
         }
       }
