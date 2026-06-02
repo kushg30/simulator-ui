@@ -549,14 +549,14 @@ section {
 
 .simulator-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
+  grid-template-columns: repeat(2, minmax(420px, 1fr));
+  gap: 28px;
 }
 
 .sim-card {
   background: rgba(255,255,255,0.03);
   border: 1px solid rgba(255,255,255,0.07);
-  border-radius: 14px;
+  border-radius: 18px;
   padding: 26px 22px;
   display: flex;
   flex-direction: column;
@@ -573,11 +573,13 @@ section {
   border-color: #c9a84c;
 }
 .sim-card.disabled {
-  opacity: 0.5;
+  opacity: 1;
+  border-color: rgba(255,255,255,.08);
 }
 
 .sim-icon {
-  font-size: 28px;
+  font-size: 26px;
+  margin-bottom: 12px;
 }
 
 .sim-header {
@@ -588,18 +590,27 @@ section {
 }
 
 .sim-card h3 {
-  font-size: 16px;
-  font-weight: 600;
+   font-size: 20px;
+  line-height: 1.25;
   color: #f0ece4;
+  margin-bottom: 16px;
 }
 
 .sim-badge {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  padding: 3px 9px;
-  border-radius: 100px;
-  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+
+  width: fit-content;
+  max-width: fit-content;
+
+  padding: 6px 12px;
+  border-radius: 999px;
+
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+
+  margin-bottom: 18px;
 }
 
 .badge-live {
@@ -615,28 +626,13 @@ section {
 }
 
 .sim-card p {
-  font-size: 13px;
-  color: #6b7384;
-  line-height: 1.65;
-  flex: 1;
+  font-size: 15px;
+  line-height: 1.75;
+  color: #8b93a8;
+  flex-grow: 1;
+  margin-bottom: 20px;
 }
 
-/* ================= TESTIMONIAL ================= */
-.testimonial-section {
-  background: #0b0f1a;
-  padding: 80px 0;
-}
-
-.testimonial-card {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(201, 168, 76, 0.15);
-  border-radius: 18px;
-  padding: 52px;
-  max-width: 780px;
-  margin: 0 auto;
-  text-align: center;
-  position: relative;
-}
 
 .quote-mark {
   font-family: "Playfair Display", serif;
@@ -861,7 +857,7 @@ section {
 }
 
 /* ================= RESPONSIVE ================= */
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   .hero-inner,
   .about-inner,
   .faq-inner,
@@ -875,7 +871,7 @@ section {
   }
 
   .simulator-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
   }
 
   .steps-row {
@@ -922,4 +918,29 @@ section {
   .hero-left h1 {
     font-size: 32px;
   }
+}
+
+.sim-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255,255,255,.06);
+}
+
+.sim-tag {
+  padding: 6px 12px;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #d6d6d6;
+  background: rgba(255,255,255,0.03);
+}
+
+.sim-card .btn-primary {
+  width: fit-content;
+  margin-top: 20px;
+  align-self: flex-start;
 }
