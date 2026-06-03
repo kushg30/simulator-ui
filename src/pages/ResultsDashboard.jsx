@@ -578,7 +578,7 @@ export default function ResultsDashboard({ runId, participantId, role }) {
     return (
       <div className="dashboard-page">
         <div className="dashboard-topbar">
-          <div className="dashboard-logo"><span className="logo-biz">BIZ</span><span className="logo-sim">SIMULATE</span></div>
+          <div className="dashboard-logo"><span className="logo-biz">CASE</span><span className="logo-sim">RUN</span></div>
           <div className="dashboard-topbar-title">Round 1 Analytics Dashboard</div>
           <div className="dashboard-topbar-role">{role}</div>
         </div>
@@ -593,8 +593,8 @@ export default function ResultsDashboard({ runId, participantId, role }) {
       {/* Top bar */}
       <div className="dashboard-topbar">
         <div className="dashboard-logo">
-          <span className="logo-biz">BIZ</span>
-          <span className="logo-sim">SIMULATE</span>
+          <span className="logo-biz">CASE</span>
+          <span className="logo-sim">RUN</span>
         </div>
         <div className="dashboard-topbar-center">
           <div className="dashboard-topbar-title">Round 1 Analytics Dashboard</div>

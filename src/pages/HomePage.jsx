@@ -30,7 +30,6 @@ const simulators = [
     active: true,
     tags: [
       "Organizational Behavior",
-      "Ethics",
       "Corporate Governance",
       "Leadership"
     ]
@@ -181,7 +180,7 @@ export default function HomePage() {
               <div className="video-badge">Live Demo</div>
               <div className="video-container">
                 <iframe
-                  src="https://www.youtube.com/embed/yvmsUcHEuKM"
+                  src="https://www.youtube.com/embed/xt9s48_k0ak"
                   title="Simulation Demo"
                   frameBorder="0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -292,13 +291,12 @@ export default function HomePage() {
               </div>
 
               {sim.active && (
-                <button
-                  className="btn-primary btn-sm"
-                  onClick={() => navigate("/context")}
-                >
-                  Enter Simulator →
-                </button>
-              )}
+  <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginTop: "4px" }}>
+    <span style={{ fontSize: "13px", color: "#c9a84c" }}>⏱ 2 hours</span>
+    <span style={{ fontSize: "13px", color: "#c9a84c" }}>👥 6 players per team</span>
+    <span style={{ fontSize: "13px", color: "#c9a84c" }}>🔄 4 rounds</span>
+  </div>
+)}
               </div>
             ))}
           </div>

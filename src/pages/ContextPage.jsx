@@ -25,8 +25,8 @@ export default function ContextPage() {
 
       {/* ── Logo ── */}
       <div className="context-logo">
-        <span className="logo-biz">BIZ</span>
-        <span className="logo-sim">SIMULATE</span>
+        <span className="logo-biz">CASE</span>
+        <span className="logo-sim">RUN</span>
       </div>
 
       {/* ── Card ── */}
