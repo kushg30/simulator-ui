@@ -200,7 +200,7 @@ export default function HomePage() {
             <div className="section-eyebrow" style={{fontSize : '18px'}}>What caserun does</div>
             
             <p>
-              Crucible builds simulations that put students inside decisions that are still forming. 
+              CaseRun builds simulations that put students inside decisions that are still forming. 
               Each simulation places a team of students in different organizational roles, with different 
               information, different accountabilities, and different pressures. They must act – or choose 
               not to - as the situation evolves across multiple live rounds. 
@@ -311,7 +311,7 @@ export default function HomePage() {
             <div className="section-eyebrow">FAQ</div>
             <h2>Common Questions</h2>
             <p>Everything you need to know before bringing CaseRun to your institution.</p>
-            <a href="mailto:hello@caserun.com" className="btn-ghost btn-sm faq-contact">
+            <a href="mailto:hello@caserun.in" className="btn-ghost btn-sm faq-contact">
               Still have questions? Contact us →
             </a>
           </div>
@@ -363,7 +363,7 @@ export default function HomePage() {
             
             <div className="footer-col">
               <div className="footer-heading">Contact</div>
-              <a href="mailto:hello@caserun.com">hello@caserun.com</a>
+              <a href="mailto:hello@caserun.in">hello@caserun.in</a>
               <a href="#">Book a Demo</a>
             </div>
           </div>

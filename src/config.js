@@ -1,2 +1,2 @@
-const API_BASE = "https://simulator-backend-7xvh.onrender.com"
+const API_BASE = "http://localhost:8080"
 export default API_BASE;
