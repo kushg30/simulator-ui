@@ -132,9 +132,7 @@ export default function FacultyConsole() {
     );
   }
 
-  const selectedRow = selected
-    ? overview.find((r) => r.runId === selected.runId && r.roundNumber === selected.roundNumber)
-    : null;
+  const selectedRow = selected ? overview.find((r) => r.runId === selected.runId) : null;
   const simulationIds = [...new Set(overview.map((r) => r.simulationId))];
 
   return (
@@ -208,7 +206,7 @@ export default function FacultyConsole() {
                 <tr>
                   <th>Team</th>
                   <th>Simulation</th>
-                  <th>Round</th>
+                  <th>Progress</th>
                   <th>State</th>
                   <th>Paused</th>
                   <th>Controls</th>
@@ -216,38 +214,36 @@ export default function FacultyConsole() {
               </thead>
               <tbody>
                 {overview.map((r) => {
-                  const isSel = selected?.runId === r.runId && selected?.roundNumber === r.roundNumber;
+                  const isSel = selected?.runId === r.runId;
+                  const live = r.roundStatus === "ACTIVE" && !r.bypassed;
+                  const finished = r.roundsComplete >= r.totalRounds;
                   return (
-                    <tr key={`${r.runId}-${r.roundNumber}`} className={isSel ? "f-selected" : ""}>
+                    <tr key={r.runId} className={isSel ? "f-selected" : ""}>
                       <td>{r.teamName}</td>
                       <td className="f-note">{r.simulationName}</td>
-                      <td>{r.roundNumber}</td>
+                      <td>
+                        Round {r.roundNumber}
+                        <span className="f-note"> of {r.totalRounds}</span>
+                        <div className="f-note">{r.roundsComplete} complete</div>
+                      </td>
                       <td>
                         {r.bypassed ? (
                           <span className="f-pill bypass">Bypassed</span>
                         ) : r.paused ? (
                           <span className="f-pill paused">Paused</span>
-                        ) : r.roundStatus === "ACTIVE" ? (
+                        ) : live ? (
                           <span className="f-pill live">Live</span>
+                        ) : finished ? (
+                          <span className="f-pill done">Finished</span>
                         ) : (
-                          <span className="f-pill done">{r.roundStatus}</span>
+                          <span className="f-pill done">Between rounds</span>
                         )}
                       </td>
                       <td className="f-note">{r.pausedSecondsTotal}s</td>
                       <td>
                         <div className="f-row">
-                          {r.paused ? (
-                            <button
-                              onClick={() =>
-                                act(
-                                  () => api.resume(r.runId, r.roundNumber, note, actor),
-                                  `Resumed ${r.teamName}`
-                                )
-                              }
-                            >
-                              Resume
-                            </button>
-                          ) : (
+                          {/* Pause only means something while a round is actually running. */}
+                          {live && !r.paused && (
                             <button
                               className="f-warn"
                               onClick={() =>
@@ -258,6 +254,18 @@ export default function FacultyConsole() {
                               }
                             >
                               Pause
+                            </button>
+                          )}
+                          {r.paused && (
+                            <button
+                              onClick={() =>
+                                act(
+                                  () => api.resume(r.runId, r.roundNumber, note, actor),
+                                  `Resumed ${r.teamName}`
+                                )
+                              }
+                            >
+                              Resume
                             </button>
                           )}
                           <button className="f-ghost" onClick={() => selectRun(r)}>
