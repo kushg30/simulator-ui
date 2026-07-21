@@ -8,6 +8,13 @@ import TeamJoinPage from "./pages/TeamJoin";
 import WaitingPage from "./pages/WaitingPage";
 import ResultsDashboard from "./pages/ResultsDashboard";
 
+// Simulator 2 — Meridian Retail QBR
+import Sim2JoinPage from "./sim2/Sim2JoinPage";
+import Sim2RolePage from "./sim2/Sim2RolePage";
+import Sim2WaitingPage from "./sim2/Sim2WaitingPage";
+import Sim2RoundPage from "./sim2/Sim2RoundPage";
+import Sim2ResultsPage from "./sim2/Sim2ResultsPage";
+
 // ─────────────────────────────────────────────────────────────
 // Neural canvas — runs ONCE for the entire app lifetime.
 // Draws on #neural-bg which lives in public/index.html.
@@ -131,6 +138,14 @@ export default function App() {
           role="CFO"
         />
       } />
+
+      {/* ── Simulator 2 — Meridian Retail QBR ──────────────────────────
+          Fully separate route tree; Simulation 1's routes above are untouched. */}
+      <Route path="/sim2"                    element={<Sim2JoinPage />} />
+      <Route path="/sim2/roles"              element={<Sim2RolePage />} />
+      <Route path="/sim2/waiting"            element={<Sim2WaitingPage />} />
+      <Route path="/sim2/round/:roundNumber" element={<Sim2RoundPage />} />
+      <Route path="/sim2/results/:roundNumber" element={<Sim2ResultsPage />} />
     </Routes>
   );
 }
