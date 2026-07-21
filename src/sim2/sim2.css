@@ -228,3 +228,17 @@
   font-weight: 400;
   font-size: 0.85rem;
 }
+
+/* Facilitator pause state */
+.sim2 .s2-paused-tag {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--s2-warn);
+  margin-top: 4px;
+}
+
+.sim2 .s2-paused-banner {
+  border-color: var(--s2-warn);
+  background: #241d0d;
+}

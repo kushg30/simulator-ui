@@ -11,14 +11,32 @@ import {
 } from "./api";
 import "./sim2.css";
 
-function useCountdown(endsAt) {
-  const [now, setNow] = useState(() => Date.now());
+/**
+ * Countdown driven by the server.
+ *
+ * `remainingSeconds` is authoritative and arrives with every poll; we only tick locally between
+ * polls so the display is smooth. While the round is paused we stop ticking entirely, so the clock
+ * visibly freezes instead of counting down and snapping back on the next poll.
+ */
+function useServerCountdown(remainingSeconds, paused) {
+  const [tick, setTick] = useState(0);
+  const [base, setBase] = useState({ seconds: null, at: Date.now() });
+
   useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 1000);
+    if (remainingSeconds === null || remainingSeconds === undefined) return;
+    setBase({ seconds: remainingSeconds, at: Date.now() });
+  }, [remainingSeconds]);
+
+  useEffect(() => {
+    if (paused) return; // frozen: no local ticking while the facilitator holds the clock
+    const id = setInterval(() => setTick((t) => t + 1), 1000);
     return () => clearInterval(id);
-  }, []);
-  if (!endsAt) return null;
-  return Math.max(0, Math.floor((new Date(endsAt).getTime() - now) / 1000));
+  }, [paused]);
+
+  if (base.seconds === null) return null;
+  if (paused) return base.seconds;
+  const elapsed = Math.floor((Date.now() - base.at) / 1000);
+  return Math.max(0, base.seconds - elapsed);
 }
 
 function formatClock(totalSeconds) {
@@ -78,13 +96,15 @@ export default function Sim2RoundPage() {
       .catch(() => {});
   }, [runId, roundNumber]);
 
-  const remaining = useCountdown(roundState?.endsAt);
+  const isPaused = Boolean(roundState?.paused);
+  const remaining = useServerCountdown(roundState?.remainingSeconds, isPaused);
   const timerClass = useMemo(() => {
+    if (isPaused) return "warn";
     if (remaining === null) return "";
     if (remaining <= 60) return "critical";
     if (remaining <= 300) return "warn";
     return "";
-  }, [remaining]);
+  }, [remaining, isPaused]);
 
   async function chooseOption(artifact, optionId) {
     setError("");
@@ -139,8 +159,21 @@ export default function Sim2RoundPage() {
               You are the <strong>{ROLE_LABELS[role] || role}</strong>
             </p>
           </div>
-          <div className={`s2-timer ${timerClass}`}>{formatClock(remaining)}</div>
+          <div style={{ textAlign: "right" }}>
+            <div className={`s2-timer ${timerClass}`}>{formatClock(remaining)}</div>
+            {isPaused && <div className="s2-paused-tag">Paused by facilitator</div>}
+          </div>
         </div>
+
+        {isPaused && (
+          <div className="s2-card s2-paused-banner">
+            <strong>The facilitator has paused this round.</strong>
+            <p className="s2-sub" style={{ margin: "6px 0 0" }}>
+              Your clock is stopped and nothing new will arrive until the round resumes. Paused time
+              is not counted against you.
+            </p>
+          </div>
+        )}
 
         {artifacts.length === 0 && (
           <div className="s2-card">
