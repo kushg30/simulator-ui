@@ -15,6 +15,9 @@ import Sim2WaitingPage from "./sim2/Sim2WaitingPage";
 import Sim2RoundPage from "./sim2/Sim2RoundPage";
 import Sim2ResultsPage from "./sim2/Sim2ResultsPage";
 
+// Faculty console — platform-wide, controls every simulation
+import FacultyConsole from "./faculty/FacultyConsole";
+
 // ─────────────────────────────────────────────────────────────
 // Neural canvas — runs ONCE for the entire app lifetime.
 // Draws on #neural-bg which lives in public/index.html.
@@ -146,6 +149,9 @@ export default function App() {
       <Route path="/sim2/waiting"            element={<Sim2WaitingPage />} />
       <Route path="/sim2/round/:roundNumber" element={<Sim2RoundPage />} />
       <Route path="/sim2/results/:roundNumber" element={<Sim2ResultsPage />} />
+
+      {/* ── Faculty console — shared by every simulation ────────────── */}
+      <Route path="/faculty" element={<FacultyConsole />} />
     </Routes>
   );
 }
