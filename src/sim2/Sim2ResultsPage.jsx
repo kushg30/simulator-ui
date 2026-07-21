@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
-import { band, CONSTRUCT_LABELS, getResults } from "./api";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { band, CONSTRUCT_LABELS, getResults, startRound } from "./api";
 import "./sim2.css";
 
 /**
@@ -15,11 +15,32 @@ export default function Sim2ResultsPage() {
   const { roundNumber: roundParam } = useParams();
   const [params] = useSearchParams();
 
+  const navigate = useNavigate();
   const roundNumber = Number(roundParam || 1);
   const runId = params.get("runId");
+  const participantId = params.get("participantId");
+  const role = params.get("role");
+  const teamId = params.get("teamId");
+  const isLead = role === "TEAM_LEAD";
 
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
+  const [starting, setStarting] = useState(false);
+
+  async function beginNextRound() {
+    setStarting(true);
+    setError("");
+    try {
+      await startRound(runId, data.nextRound);
+      navigate(
+        `/sim2/round/${data.nextRound}?runId=${runId}&participantId=${participantId}` +
+          `&role=${role}&teamId=${teamId}`
+      );
+    } catch (e) {
+      setError(e.message);
+      setStarting(false);
+    }
+  }
 
   useEffect(() => {
     if (!runId) return;
@@ -96,6 +117,37 @@ export default function Sim2ResultsPage() {
             );
           })}
         </div>
+
+        {data && (
+          <div className="s2-card">
+            {data.nextRound ? (
+              <>
+                <h2>Round {data.nextRound} is next</h2>
+                {isLead ? (
+                  <>
+                    <p className="s2-sub">
+                      The clock starts as soon as you begin the round.
+                    </p>
+                    <button onClick={beginNextRound} disabled={starting}>
+                      {starting ? "Starting…" : `Start Round ${data.nextRound}`}
+                    </button>
+                  </>
+                ) : (
+                  <p className="s2-sub" style={{ margin: 0 }}>
+                    Waiting for your Team Lead to start Round {data.nextRound}.
+                  </p>
+                )}
+              </>
+            ) : (
+              <>
+                <h2>Engagement complete</h2>
+                <p className="s2-sub" style={{ margin: 0 }}>
+                  That was the final round. Your facilitator will take it from here.
+                </p>
+              </>
+            )}
+          </div>
+        )}
 
         {error && <p className="s2-error">{error}</p>}
       </div>
