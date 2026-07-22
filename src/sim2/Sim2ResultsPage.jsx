@@ -59,6 +59,8 @@ export default function Sim2ResultsPage() {
 
   const submission = data?.submission;
   const constructs = data?.constructs || [];
+  const finalReveal = data?.finalReveal || [];
+  const isComplete = data && !data.nextRound && finalReveal.length > 0;
 
   return (
     <div className="sim2">
@@ -92,22 +94,49 @@ export default function Sim2ResultsPage() {
           </div>
         )}
 
+        {isComplete && (
+          <div className="s2-card">
+            <h2>Final reveal — all six rounds</h2>
+            <p className="s2-sub">
+              Your five leadership constructs, scored 0–100 across the whole engagement.
+            </p>
+            {finalReveal.map((c) => {
+              const na = c.status !== "SCORED" || c.value === null;
+              return (
+                <div className="s2-construct" key={c.construct}>
+                  <span style={{ minWidth: 210 }}>
+                    {CONSTRUCT_LABELS[c.construct] || c.construct}
+                  </span>
+                  <div className="s2-bar">
+                    <span style={{ width: na ? 0 : `${c.value}%` }} />
+                  </div>
+                  <span className="s2-score" title={c.detail || ""}>
+                    {na ? <em className="s2-pending">n/a</em> : `${c.value} · ${band(c.value)}`}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
         <div className="s2-card">
-          <h2>Constructs</h2>
+          <h2>This round</h2>
           {constructs.map((c) => {
-            const pending = c.status === "NOT_YET_SCORED" || c.value === null;
+            const na = c.status !== "SCORED" || c.value === null;
+            const label =
+              c.status === "NOT_APPLICABLE" ? "Not applicable" : "Not yet scored";
             return (
               <div className="s2-construct" key={c.construct}>
                 <span style={{ minWidth: 190 }}>
                   {CONSTRUCT_LABELS[c.construct] || c.construct}
                 </span>
                 <div className="s2-bar">
-                  <span style={{ width: pending ? 0 : `${c.value}%` }} />
+                  <span style={{ width: na ? 0 : `${c.value}%` }} />
                 </div>
                 <span className="s2-score">
-                  {pending ? (
+                  {na ? (
                     <em className="s2-pending" title={c.detail || ""}>
-                      Not yet scored
+                      {label}
                     </em>
                   ) : (
                     `${c.value} · ${band(c.value)}`
