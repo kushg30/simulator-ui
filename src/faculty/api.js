@@ -1,5 +1,9 @@
 import API_BASE from "../config";
 
+// Meridian Retail QBR — the simulation the debrief and wiki default to when no
+// team is live yet (e.g. a facilitator editing the FAQ before class).
+export const MERIDIAN_SIMULATION_ID = "5116d200-0000-4000-a000-000000000002";
+
 // The facilitator token is kept in sessionStorage: it disappears when the tab
 // closes, so a shared classroom machine does not leave the controls unlocked.
 const TOKEN_KEY = "facultyToken";
@@ -83,6 +87,14 @@ export const overrideConstruct = (runId, construct, value, reason, actor) =>
   post(`/sim2/runs/${runId}/constructs/${construct}/override`, { value, reason, actor });
 export const revertConstruct = (runId, construct, actor) =>
   post(`/sim2/runs/${runId}/constructs/${construct}/revert`, { actor });
+
+// ── reference wiki / FAQ (spec 9F) ──────────────────────────────────────────
+export const getWiki = (simulationId) => call(`/sim2/simulations/${simulationId}/wiki`);
+export const addFaq = (simulationId, title, body) =>
+  post(`/sim2/simulations/${simulationId}/faq`, { title, body });
+export const editFaq = (entryId, title, body) =>
+  call(`/sim2/faq/${entryId}`, { method: "PUT", body: JSON.stringify({ title, body }) });
+export const deleteFaq = (entryId) => call(`/sim2/faq/${entryId}`, { method: "DELETE" });
 
 export const CONSTRUCT_LABELS = {
   DATA_TRUST_SCORE: "Data Trust",

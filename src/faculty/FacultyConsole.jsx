@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import * as api from "./api";
 import FacultyDebrief from "./FacultyDebrief";
+import FacultyWiki from "./FacultyWiki";
 import "./faculty.css";
 
 const ACTOR_KEY = "facultyActor";
@@ -136,6 +137,8 @@ export default function FacultyConsole() {
 
   const selectedRow = selected ? overview.find((r) => r.runId === selected.runId) : null;
   const simulationIds = [...new Set(overview.map((r) => r.simulationId))];
+  // The debrief/wiki need a simulation even before any team is live.
+  const focusSimId = simulationIds[0] || api.MERIDIAN_SIMULATION_ID;
 
   return (
     <div className="fac">
@@ -172,11 +175,23 @@ export default function FacultyConsole() {
           >
             Debrief &amp; leaderboard
           </button>
+          <button
+            className={tab === "wiki" ? "" : "f-ghost"}
+            onClick={() => setTab("wiki")}
+          >
+            Reference &amp; FAQ
+          </button>
         </div>
 
         {tab === "debrief" && (
           <div className="f-card">
-            <FacultyDebrief simulationId={simulationIds[0]} />
+            <FacultyDebrief simulationId={focusSimId} />
+          </div>
+        )}
+
+        {tab === "wiki" && (
+          <div className="f-card">
+            <FacultyWiki simulationId={focusSimId} />
           </div>
         )}
 

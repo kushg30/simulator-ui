@@ -9,6 +9,7 @@ import {
   ROLE_LABELS,
   submitRound,
 } from "./api";
+import Sim2Reference from "./Sim2Reference";
 import "./sim2.css";
 
 /**
@@ -159,9 +160,12 @@ export default function Sim2RoundPage() {
               You are the <strong>{ROLE_LABELS[role] || role}</strong>
             </p>
           </div>
-          <div style={{ textAlign: "right" }}>
-            <div className={`s2-timer ${timerClass}`}>{formatClock(remaining)}</div>
-            {isPaused && <div className="s2-paused-tag">Paused by facilitator</div>}
+          <div className="s2-row" style={{ gap: 16 }}>
+            <Sim2Reference runId={runId} round={roundNumber} />
+            <div style={{ textAlign: "right" }}>
+              <div className={`s2-timer ${timerClass}`}>{formatClock(remaining)}</div>
+              {isPaused && <div className="s2-paused-tag">Paused by facilitator</div>}
+            </div>
           </div>
         </div>
 

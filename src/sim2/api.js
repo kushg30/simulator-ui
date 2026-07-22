@@ -111,6 +111,10 @@ export function getResults(runId, roundNumber) {
   return fetch(`${API_BASE}/api/sim2/runs/${runId}/rounds/${roundNumber}/results`).then(toJson);
 }
 
+export function getWiki(runId, round) {
+  return fetch(`${API_BASE}/api/sim2/runs/${runId}/wiki?round=${round}`).then(toJson);
+}
+
 // ── display helpers ─────────────────────────────────────────────────────────
 
 export const ROLE_LABELS = {
