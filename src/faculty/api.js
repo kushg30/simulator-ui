@@ -79,6 +79,10 @@ export const inject = (runId, round, payload) =>
 
 // ── debrief (spec section 8) ────────────────────────────────────────────────
 export const getDebrief = (simulationId) => call(`/sim2/simulations/${simulationId}/debrief`);
+export const overrideConstruct = (runId, construct, value, reason, actor) =>
+  post(`/sim2/runs/${runId}/constructs/${construct}/override`, { value, reason, actor });
+export const revertConstruct = (runId, construct, actor) =>
+  post(`/sim2/runs/${runId}/constructs/${construct}/revert`, { actor });
 
 export const CONSTRUCT_LABELS = {
   DATA_TRUST_SCORE: "Data Trust",

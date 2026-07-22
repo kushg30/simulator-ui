@@ -1,14 +1,29 @@
 import { useCallback, useEffect, useState } from "react";
-import { CONSTRUCT_LABELS, CONSTRUCT_ORDER, getDebrief } from "./api";
+import {
+  CONSTRUCT_LABELS,
+  CONSTRUCT_ORDER,
+  getDebrief,
+  overrideConstruct,
+  revertConstruct,
+} from "./api";
 
 /**
- * Facilitator debrief (spec section 8): the cross-team leaderboard plus the two highlights the
- * spec asks for — where each team's Data Trust first dropped, and any High-confidence-but-wrong
- * rounds. Rendered inside the faculty console, so it inherits the token gate.
+ * Facilitator debrief (spec section 8): the cross-team leaderboard, the two highlights the spec
+ * asks for, and the ability to override a finalised construct after reviewing a team's work.
+ * Rendered inside the faculty console, so it inherits the token gate.
  */
 export default function FacultyDebrief({ simulationId }) {
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
+  const [msg, setMsg] = useState("");
+
+  // inline override editor state
+  const [editTeam, setEditTeam] = useState(null); // {runId, teamName}
+  const [editConstruct, setEditConstruct] = useState(CONSTRUCT_ORDER[0]);
+  const [editValue, setEditValue] = useState("");
+  const [editReason, setEditReason] = useState("");
+
+  const actor = localStorage.getItem("facultyActor") || "facilitator";
 
   const refresh = useCallback(() => {
     if (!simulationId) return;
@@ -35,14 +50,48 @@ export default function FacultyDebrief({ simulationId }) {
   const bandLabel = { high: "High", med: "Med", low: "Low", na: "—" };
   const when = (ts) => {
     if (!ts) return "—";
-    const d = new Date(ts);
-    return d.toLocaleString([], {
+    return new Date(ts).toLocaleString([], {
       month: "short",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
     });
   };
+
+  function openEditor(team, construct, currentValue) {
+    setEditTeam(team);
+    setEditConstruct(construct);
+    setEditValue(currentValue == null ? "" : String(currentValue));
+    setEditReason("");
+    setMsg("");
+  }
+
+  async function saveOverride() {
+    try {
+      await overrideConstruct(
+        editTeam.runId,
+        editConstruct,
+        Number(editValue),
+        editReason,
+        actor
+      );
+      setMsg(`Set ${CONSTRUCT_LABELS[editConstruct]} for ${editTeam.teamName} to ${editValue}`);
+      setEditTeam(null);
+      refresh();
+    } catch (e) {
+      setMsg(e.message);
+    }
+  }
+
+  async function revert(team, construct) {
+    try {
+      await revertConstruct(team.runId, construct, actor);
+      setMsg(`Reverted ${CONSTRUCT_LABELS[construct]} for ${team.teamName} to the auto score`);
+      refresh();
+    } catch (e) {
+      setMsg(e.message);
+    }
+  }
 
   return (
     <div>
@@ -51,10 +100,10 @@ export default function FacultyDebrief({ simulationId }) {
           {data.simulationName || "Debrief"} · {teams.length} team
           {teams.length === 1 ? "" : "s"} finished
         </h2>
-        <span className="f-note">most recent first</span>
+        <span className="f-note">most recent first · click a score to adjust</span>
       </div>
 
-      {/* ── leaderboard: teams × constructs ─────────────────────────── */}
+      {/* ── leaderboard: teams × constructs (cells are clickable to override) ── */}
       <div style={{ overflowX: "auto", marginTop: 12 }}>
         <table>
           <thead>
@@ -70,6 +119,7 @@ export default function FacultyDebrief({ simulationId }) {
           <tbody>
             {teams.map((t) => {
               const hcw = t.highConfidenceWrongRounds || [];
+              const overrides = t.overrides || {};
               return (
                 <tr key={t.runId}>
                   <td>
@@ -80,14 +130,31 @@ export default function FacultyDebrief({ simulationId }) {
                   {CONSTRUCT_ORDER.map((c) => {
                     const v = t.scores?.[c];
                     const b = bandOf(v);
+                    const overridden = Boolean(overrides[c]);
                     return (
                       <td key={c}>
-                        {v == null ? (
-                          <span className="f-note">—</span>
-                        ) : (
+                        <button
+                          className="f-cell-btn"
+                          title={
+                            overridden
+                              ? `Overridden by ${overrides[c]} — click to change`
+                              : "Click to override"
+                          }
+                          onClick={() => openEditor({ runId: t.runId, teamName: t.teamName }, c, v)}
+                        >
                           <span className={`f-band f-band-${b}`}>
-                            {v} · {bandLabel[b]}
+                            {v == null ? "—" : `${v} · ${bandLabel[b]}`}
                           </span>
+                          {overridden && <span className="f-edited"> ✎</span>}
+                        </button>
+                        {overridden && (
+                          <button
+                            className="f-mini"
+                            title="Revert to auto score"
+                            onClick={() => revert(t, c)}
+                          >
+                            revert
+                          </button>
                         )}
                       </td>
                     );
@@ -99,10 +166,7 @@ export default function FacultyDebrief({ simulationId }) {
                       </span>
                     )}
                     {t.dataTrustFirstDropRound && (
-                      <span
-                        className="f-flag"
-                        title={`Data Trust ${t.dataTrustPattern}`}
-                      >
+                      <span className="f-flag" title={`Data Trust ${t.dataTrustPattern}`}>
                         Trust↓ R{t.dataTrustFirstDropRound}
                       </span>
                     )}
@@ -116,6 +180,56 @@ export default function FacultyDebrief({ simulationId }) {
           </tbody>
         </table>
       </div>
+
+      {/* ── inline override editor ──────────────────────────────────── */}
+      {editTeam && (
+        <div className="f-card" style={{ marginTop: 14 }}>
+          <div className="f-spread">
+            <h2 style={{ margin: 0 }}>
+              Adjust {editTeam.teamName} — {CONSTRUCT_LABELS[editConstruct]}
+            </h2>
+            <button className="f-ghost" onClick={() => setEditTeam(null)}>
+              Cancel
+            </button>
+          </div>
+          <p className="f-note" style={{ marginTop: 6 }}>
+            Data Trust and Insight Communication are derived from recorded choices, not from reading
+            the workbook. Adjust here if the submission tells a different story. The change is logged
+            and can be reverted.
+          </p>
+          <div className="f-row" style={{ alignItems: "flex-end" }}>
+            <div style={{ width: 120 }}>
+              <label htmlFor="ov-value">New score (0–100)</label>
+              <input
+                id="ov-value"
+                type="number"
+                min="0"
+                max="100"
+                value={editValue}
+                onChange={(e) => setEditValue(e.target.value)}
+              />
+            </div>
+            <div style={{ flex: 1, minWidth: 220 }}>
+              <label htmlFor="ov-reason">Reason (logged)</label>
+              <input
+                id="ov-reason"
+                type="text"
+                value={editReason}
+                placeholder="e.g. workbook shows clean reconciliation despite the delete"
+                onChange={(e) => setEditReason(e.target.value)}
+              />
+            </div>
+            <button
+              onClick={saveOverride}
+              disabled={editValue === "" || Number(editValue) < 0 || Number(editValue) > 100}
+            >
+              Save override
+            </button>
+          </div>
+        </div>
+      )}
+
+      {msg && <p className="f-ok">{msg}</p>}
 
       {/* ── per-team narrative ──────────────────────────────────────── */}
       <h2 style={{ marginTop: 22 }}>What to raise in the debrief</h2>

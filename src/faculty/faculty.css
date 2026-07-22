@@ -133,3 +133,16 @@
   white-space: nowrap;
 }
 .fac .f-flag-bad { color: var(--f-bad); border-color: #4a1512; background: #200c0b; }
+
+/* Debrief override cells */
+.fac .f-cell-btn {
+  background: transparent; border: 0; padding: 2px 4px; cursor: pointer;
+  font: inherit; border-radius: 4px;
+}
+.fac .f-cell-btn:hover { background: #101826; }
+.fac .f-edited { color: var(--f-accent); font-size: 0.8rem; }
+.fac .f-mini {
+  background: transparent; border: 0; color: var(--f-muted);
+  font-size: 0.68rem; text-decoration: underline; cursor: pointer; padding: 0 4px;
+}
+.fac .f-mini:hover { color: var(--f-text); }
