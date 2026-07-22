@@ -207,7 +207,11 @@ export default function Sim2RoundPage() {
               {a.actionState === "OPEN" && optionList.length > 0 && (
                 <div className="s2-row" style={{ marginTop: 16 }}>
                   {optionList.map((opt) => (
-                    <button key={opt.id} onClick={() => chooseOption(a, opt.id)}>
+                    <button
+                      key={opt.id}
+                      onClick={() => chooseOption(a, opt.id)}
+                      disabled={isPaused}
+                    >
                       {opt.label}
                     </button>
                   ))}
@@ -262,8 +266,8 @@ export default function Sim2RoundPage() {
               />
 
               <div className="s2-row" style={{ marginTop: 16 }}>
-                <button type="submit" disabled={submitting || !typedAnswer.trim()}>
-                  {submitting ? "Submitting…" : "Submit round"}
+                <button type="submit" disabled={submitting || isPaused || !typedAnswer.trim()}>
+                  {isPaused ? "Paused" : submitting ? "Submitting…" : "Submit round"}
                 </button>
               </div>
             </form>

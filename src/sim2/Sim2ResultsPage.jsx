@@ -81,9 +81,15 @@ export default function Sim2ResultsPage() {
             </div>
             <div className="s2-construct">
               <span>Outcome</span>
-              <span className={submission.isCorrect ? "s2-ok" : "s2-error"}>
-                {submission.isCorrect ? "Correct" : "Incorrect"}
-              </span>
+              {submission.isCorrect === null || submission.isCorrect === undefined ? (
+                <span className="s2-sub" style={{ margin: 0 }}>
+                  Submitted — reflection, not graded
+                </span>
+              ) : (
+                <span className={submission.isCorrect ? "s2-ok" : "s2-error"}>
+                  {submission.isCorrect ? "Correct" : "Incorrect"}
+                </span>
+              )}
             </div>
             {submission.originalFilename && (
               <div className="s2-construct">
