@@ -76,3 +76,21 @@ export const bypassRound = (runId, round, note, actor) =>
 export const getCatalogue = (simulationId) => call(`/simulations/${simulationId}/catalogue`);
 export const inject = (runId, round, payload) =>
   post(`/runs/${runId}/rounds/${round}/inject`, payload);
+
+// ── debrief (spec section 8) ────────────────────────────────────────────────
+export const getDebrief = (simulationId) => call(`/sim2/simulations/${simulationId}/debrief`);
+
+export const CONSTRUCT_LABELS = {
+  DATA_TRUST_SCORE: "Data Trust",
+  ANALYTICAL_RIGOR: "Analytical Rigor",
+  INSIGHT_COMMUNICATION: "Insight Comm.",
+  JUDGMENT_CALIBRATION: "Judgment Calib.",
+  TURNAROUND_DISCIPLINE: "Turnaround",
+};
+export const CONSTRUCT_ORDER = [
+  "DATA_TRUST_SCORE",
+  "ANALYTICAL_RIGOR",
+  "INSIGHT_COMMUNICATION",
+  "JUDGMENT_CALIBRATION",
+  "TURNAROUND_DISCIPLINE",
+];

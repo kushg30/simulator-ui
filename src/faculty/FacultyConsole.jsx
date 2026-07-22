@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import * as api from "./api";
+import FacultyDebrief from "./FacultyDebrief";
 import "./faculty.css";
 
 const ACTOR_KEY = "facultyActor";
@@ -25,6 +26,7 @@ export default function FacultyConsole() {
   const [error, setError] = useState("");
   const [okMsg, setOkMsg] = useState("");
   const [note, setNote] = useState("");
+  const [tab, setTab] = useState("live"); // "live" | "debrief"
 
   // delay/bypass form
   const [targetArtifact, setTargetArtifact] = useState("");
@@ -156,6 +158,30 @@ export default function FacultyConsole() {
           </button>
         </div>
 
+        {/* ── tab switcher ─────────────────────────────────────────────── */}
+        <div className="f-row" style={{ margin: "4px 0 16px" }}>
+          <button
+            className={tab === "live" ? "" : "f-ghost"}
+            onClick={() => setTab("live")}
+          >
+            Live controls
+          </button>
+          <button
+            className={tab === "debrief" ? "" : "f-ghost"}
+            onClick={() => setTab("debrief")}
+          >
+            Debrief &amp; leaderboard
+          </button>
+        </div>
+
+        {tab === "debrief" && (
+          <div className="f-card">
+            <FacultyDebrief simulationId={simulationIds[0]} />
+          </div>
+        )}
+
+        {tab === "live" && (
+        <>
         {/* ── whole-class controls ─────────────────────────────────────── */}
         <div className="f-card">
           <h2>Whole class</h2>
@@ -492,6 +518,8 @@ export default function FacultyConsole() {
             ))}
           </div>
         </div>
+        </>
+        )}
       </div>
     </div>
   );

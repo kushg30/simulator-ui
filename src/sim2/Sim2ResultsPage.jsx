@@ -60,6 +60,8 @@ export default function Sim2ResultsPage() {
   const submission = data?.submission;
   const constructs = data?.constructs || [];
   const finalReveal = data?.finalReveal || [];
+  const standing = data?.cohortStanding || [];
+  const standingByConstruct = Object.fromEntries(standing.map((s) => [s.construct, s]));
   const isComplete = data && !data.nextRound && finalReveal.length > 0;
 
   return (
@@ -108,6 +110,7 @@ export default function Sim2ResultsPage() {
             </p>
             {finalReveal.map((c) => {
               const na = c.status !== "SCORED" || c.value === null;
+              const rank = standingByConstruct[c.construct];
               return (
                 <div className="s2-construct" key={c.construct}>
                   <span style={{ minWidth: 210 }}>
@@ -117,11 +120,27 @@ export default function Sim2ResultsPage() {
                     <span style={{ width: na ? 0 : `${c.value}%` }} />
                   </div>
                   <span className="s2-score" title={c.detail || ""}>
-                    {na ? <em className="s2-pending">n/a</em> : `${c.value} · ${band(c.value)}`}
+                    {na ? (
+                      <em className="s2-pending">n/a</em>
+                    ) : (
+                      <>
+                        {c.value} · {band(c.value)}
+                        {rank && rank.outOf > 1 && (
+                          <div className="s2-pending" style={{ fontStyle: "normal" }}>
+                            rank {rank.rank} of {rank.outOf}
+                          </div>
+                        )}
+                      </>
+                    )}
                   </span>
                 </div>
               );
             })}
+            {standing.length > 0 && standing[0].outOf <= 1 && (
+              <p className="s2-sub" style={{ marginTop: 10 }}>
+                Cohort ranking appears once another team has finished.
+              </p>
+            )}
           </div>
         )}
 
