@@ -1,0 +1,148 @@
+/* Faculty console — platform-wide, used for every simulation.
+   Scoped under .fac so it cannot affect either simulation's own styles. */
+
+.fac {
+  --f-bg: #0b0e14;
+  --f-panel: #141922;
+  --f-border: #253044;
+  --f-text: #e6edf3;
+  --f-muted: #8b98a9;
+  --f-accent: #3b82f6;
+  --f-good: #2ea043;
+  --f-warn: #d29922;
+  --f-bad: #da3633;
+
+  min-height: 100vh;
+  padding: 28px 22px;
+  color: var(--f-text);
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.fac .f-shell { max-width: 1180px; margin: 0 auto; }
+
+.fac h1 { font-size: 1.5rem; margin: 0 0 4px; }
+.fac .f-sub { color: var(--f-muted); font-size: 0.88rem; margin: 0 0 22px; }
+
+.fac .f-card {
+  background: var(--f-panel);
+  border: 1px solid var(--f-border);
+  border-radius: 10px;
+  padding: 18px;
+  margin-bottom: 14px;
+}
+
+.fac h2 { font-size: 1rem; margin: 0 0 12px; }
+
+.fac label {
+  display: block;
+  font-size: 0.74rem;
+  color: var(--f-muted);
+  margin: 10px 0 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.fac input, .fac select, .fac textarea {
+  width: 100%;
+  box-sizing: border-box;
+  background: #080b11;
+  border: 1px solid var(--f-border);
+  border-radius: 6px;
+  color: var(--f-text);
+  padding: 9px 11px;
+  font-size: 0.9rem;
+  font-family: inherit;
+}
+
+.fac textarea { min-height: 76px; resize: vertical; }
+
+.fac button {
+  background: var(--f-accent);
+  color: #fff;
+  border: 0;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+.fac button:disabled { background: #2b3240; color: var(--f-muted); cursor: not-allowed; }
+.fac button.f-ghost { background: transparent; border: 1px solid var(--f-border); color: var(--f-text); }
+.fac button.f-warn  { background: var(--f-warn); color: #1a1200; }
+.fac button.f-danger{ background: var(--f-bad); }
+
+.fac .f-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.fac .f-spread { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+
+.fac table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+.fac th {
+  text-align: left;
+  color: var(--f-muted);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--f-border);
+}
+.fac td { padding: 10px; border-bottom: 1px solid var(--f-border); vertical-align: middle; }
+.fac tr:last-child td { border-bottom: 0; }
+.fac tr.f-selected td { background: #101826; }
+
+.fac .f-pill {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  border: 1px solid var(--f-border);
+}
+.fac .f-pill.live    { color: var(--f-good); border-color: #14532d; background: #0d2417; }
+.fac .f-pill.paused  { color: var(--f-warn); border-color: #4a3a10; background: #241d0d; }
+.fac .f-pill.bypass  { color: var(--f-muted); }
+.fac .f-pill.done    { color: var(--f-muted); }
+
+.fac .f-error { color: var(--f-bad); font-size: 0.85rem; margin-top: 10px; }
+.fac .f-ok    { color: var(--f-good); font-size: 0.85rem; margin-top: 10px; }
+.fac .f-note  { color: var(--f-muted); font-size: 0.8rem; line-height: 1.5; }
+
+.fac .f-log { font-size: 0.82rem; max-height: 260px; overflow-y: auto; }
+.fac .f-log div { padding: 7px 0; border-bottom: 1px solid var(--f-border); }
+.fac .f-log time { color: var(--f-muted); margin-right: 10px; font-variant-numeric: tabular-nums; }
+
+.fac .f-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 860px) { .fac .f-grid2 { grid-template-columns: 1fr; } }
+
+.fac .f-gate { max-width: 420px; margin: 12vh auto 0; }
+
+/* Debrief bands & flags */
+.fac .f-band { font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+.fac .f-band-high { color: var(--f-good); }
+.fac .f-band-med  { color: var(--f-warn); }
+.fac .f-band-low  { color: var(--f-bad); }
+.fac .f-band-na   { color: var(--f-muted); }
+
+.fac .f-flag {
+  display: inline-block;
+  font-size: 0.72rem;
+  padding: 2px 7px;
+  margin: 2px 4px 2px 0;
+  border-radius: 999px;
+  border: 1px solid var(--f-border);
+  color: var(--f-warn);
+  white-space: nowrap;
+}
+.fac .f-flag-bad { color: var(--f-bad); border-color: #4a1512; background: #200c0b; }
+
+/* Debrief override cells */
+.fac .f-cell-btn {
+  background: transparent; border: 0; padding: 2px 4px; cursor: pointer;
+  font: inherit; border-radius: 4px;
+}
+.fac .f-cell-btn:hover { background: #101826; }
+.fac .f-edited { color: var(--f-accent); font-size: 0.8rem; }
+.fac .f-mini {
+  background: transparent; border: 0; color: var(--f-muted);
+  font-size: 0.68rem; text-decoration: underline; cursor: pointer; padding: 0 4px;
+}
+.fac .f-mini:hover { color: var(--f-text); }
