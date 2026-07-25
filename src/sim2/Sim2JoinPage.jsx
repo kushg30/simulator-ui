@@ -24,7 +24,7 @@ export default function Sim2JoinPage() {
     try {
       const res = await createTeam(teamName.trim(), name.trim());
       navigate(
-        `/sim2/waiting?teamId=${res.teamId}&participantId=${res.participantId}&role=${res.role}`
+        `/sim2/context?teamId=${res.teamId}&participantId=${res.participantId}&role=${res.role}`
       );
     } catch (err) {
       setError(err.message);
