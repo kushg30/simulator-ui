@@ -10,6 +10,7 @@ import ResultsDashboard from "./pages/ResultsDashboard";
 
 // Simulator 2 — Meridian Retail QBR
 import Sim2JoinPage from "./sim2/Sim2JoinPage";
+import Sim2ContextPage from "./sim2/Sim2ContextPage";
 import Sim2RolePage from "./sim2/Sim2RolePage";
 import Sim2WaitingPage from "./sim2/Sim2WaitingPage";
 import Sim2RoundPage from "./sim2/Sim2RoundPage";
@@ -146,6 +147,7 @@ export default function App() {
           Fully separate route tree; Simulation 1's routes above are untouched. */}
       <Route path="/sim2"                    element={<Sim2JoinPage />} />
       <Route path="/sim2/roles"              element={<Sim2RolePage />} />
+      <Route path="/sim2/context"            element={<Sim2ContextPage />} />
       <Route path="/sim2/waiting"            element={<Sim2WaitingPage />} />
       <Route path="/sim2/round/:roundNumber" element={<Sim2RoundPage />} />
       <Route path="/sim2/results/:roundNumber" element={<Sim2ResultsPage />} />

@@ -104,7 +104,17 @@ export default function Sim2WaitingPage() {
         <h1>Waiting room</h1>
         <p className="s2-sub">
           You are the <strong>{ROLE_LABELS[role] || role}</strong>. Team ID:{" "}
-          <code>{teamId}</code>
+          <code>{teamId}</code>{" "}
+          <button
+            className="s2-linkish"
+            onClick={() =>
+              navigate(
+                `/sim2/context?teamId=${teamId}&participantId=${participantId}&role=${role}`
+              )
+            }
+          >
+            review briefing
+          </button>
         </p>
 
         <div className="s2-card">

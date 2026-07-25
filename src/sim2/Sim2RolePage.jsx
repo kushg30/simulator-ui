@@ -41,7 +41,7 @@ export default function Sim2RolePage() {
     try {
       await assignRole(teamId, participantId, roleCode);
       navigate(
-        `/sim2/waiting?teamId=${teamId}&participantId=${participantId}&role=${roleCode}`
+        `/sim2/context?teamId=${teamId}&participantId=${participantId}&role=${roleCode}`
       );
     } catch (e) {
       setError(e.message);
