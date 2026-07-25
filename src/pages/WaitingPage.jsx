@@ -43,7 +43,7 @@ export default function WaitingPage() {
             const runId = data.runId || data.run_id;
             console.log("RUN DETECTED:", runId); 
             navigate(
-                `/simulation?runId=${runId}&participantId=${participantId}&role=${role}`
+                `/simulator?runId=${runId}&participantId=${participantId}&role=${role}`
             );
         }
     } catch (err) {

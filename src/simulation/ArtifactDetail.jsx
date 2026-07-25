@@ -15,13 +15,15 @@ function avatarColor(name = "") {
 
 // ─── Document Header Strip ───────────────────────────────────────────────────
 function DocHeaderStrip({ type, actionState }) {
+  // The backend reports an expired window as "LOCKED"; treat it the same as EXPIRED.
+  const expired = actionState === "EXPIRED" || actionState === "LOCKED";
   const statusLabel =
-    actionState === "ACTED"   ? "Acted"   :
-    actionState === "EXPIRED" ? "Expired" : "Open";
+    actionState === "ACTED" ? "Acted"   :
+    expired                 ? "Expired" : "Open";
 
   const statusClass =
-    actionState === "ACTED"   ? "acted"   :
-    actionState === "EXPIRED" ? "expired" : "open";
+    actionState === "ACTED" ? "acted"   :
+    expired                 ? "expired" : "open";
 
   return (
     <div className="doc-header-strip">
@@ -54,7 +56,7 @@ function DecisionStrip({ artifact, options, onDecide, loading, error, className 
     );
   }
 
-  if (artifact.actionState === "EXPIRED") {
+  if (artifact.actionState === "EXPIRED" || artifact.actionState === "LOCKED") {
     return <div className="decision-confirmation expired">Decision window closed</div>;
   }
 
