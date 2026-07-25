@@ -19,7 +19,7 @@ export default function TeamJoinPage() {
     try {
       setLoading(true);
 
-      const res = await fetch("${API_BASE}/api/teams", {
+      const res = await fetch(`${API_BASE}/api/teams`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

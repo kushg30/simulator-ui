@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useArtifacts } from "./useartifacts";
 import ArtifactDetail from "./ArtifactDetail";
 import ArtifactList from "./ArtifactList";
@@ -58,9 +59,12 @@ const TABS = [
 // Main Component
 // ─────────────────────────────────────────────────────────────
 export default function SimulationPage() {
-  const runId         = "b863544b-ff4f-47dd-a7aa-ce23657b098b";
-  const participantId = "33166e16-2bbc-41e4-8149-bb11bf8592e0";
-  const role          = "CEO";
+  // Read the live session from the URL instead of hardcoded ids, so each
+  // participant fetches their own artifacts for the real run.
+  const [params] = useSearchParams();
+  const runId         = params.get("runId");
+  const participantId = params.get("participantId");
+  const role          = params.get("role");
 
   const { artifacts, loading, error, refetch } = useArtifacts(runId, participantId);
 
@@ -227,6 +231,15 @@ export default function SimulationPage() {
         ? JSON.parse(activeFlash.decisionOptions)
         : activeFlash.decisionOptions)
     : null;
+
+  // Opened directly without a live session — send the user back to the start.
+  if (!runId || !participantId) {
+    return (
+      <div className="round-screen" style={{ padding: 24 }}>
+        No active session. Please start from the team join page.
+      </div>
+    );
+  }
 
   return (
     <div className="round-screen">
