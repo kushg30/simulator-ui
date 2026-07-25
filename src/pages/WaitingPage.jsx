@@ -91,6 +91,36 @@ export default function WaitingPage() {
     }
   };
 
+  // TESTING ONLY — remove before real use. Fills the unclaimed roles with bots so
+  // one person can start a run without five other browsers.
+  const [botsBusy, setBotsBusy] = useState(false);
+  const fillWithBots = async () => {
+    setBotsBusy(true);
+    try {
+      const rolesRes = await fetch(`${API_BASE}/api/teams/${teamId}/roles`);
+      const roles = await rolesRes.json(); // { ROLE_CODE: occupantId | null }
+      for (const [roleCode, occupant] of Object.entries(roles)) {
+        if (occupant) continue; // already taken
+        const joinRes = await fetch(`${API_BASE}/api/teams/${teamId}/join`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ participantName: `bot-${roleCode}` }),
+        });
+        const joined = await joinRes.json();
+        await fetch(`${API_BASE}/api/teams/${teamId}/assign-role`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ participantId: joined.participantId, role: roleCode }),
+        });
+      }
+      await fetchParticipants();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setBotsBusy(false);
+    }
+  };
+
   return (
     <div
       style={{
@@ -163,6 +193,37 @@ export default function WaitingPage() {
           </p>
         )}
       </div>
+
+      {/* TESTING ONLY — delete before real use. */}
+      {!allAssigned && (
+        <div
+          style={{
+            marginTop: "20px",
+            padding: "14px",
+            border: "1px dashed #bbb",
+            borderRadius: "8px",
+            textAlign: "center"
+          }}
+        >
+          <p style={{ fontSize: "12px", color: "#666", margin: "0 0 10px" }}>
+            Testing shortcut — fill the empty roles with bots so you can start solo.
+          </p>
+          <button
+            onClick={fillWithBots}
+            disabled={botsBusy}
+            style={{
+              padding: "8px 16px",
+              background: "#fff",
+              color: "#333",
+              border: "1px solid #999",
+              borderRadius: "6px",
+              cursor: botsBusy ? "not-allowed" : "pointer"
+            }}
+          >
+            {botsBusy ? "Adding bots…" : "Fill remaining roles with bots"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
