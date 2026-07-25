@@ -135,13 +135,7 @@ export default function App() {
       <Route path="/waiting"        element={<WaitingPage />} />
       <Route path="/"               element={<HomePage />} />
       <Route path="/simulator"      element={<SimulationPage />} />
-      <Route path="/results" element={
-        <ResultsDashboard
-          runId="b863544b-ff4f-47dd-a7aa-ce23657b098b"
-          participantId="09f7d1cf-fdca-404e-85bb-66d407342ca9"
-          role="CFO"
-        />
-      } />
+      <Route path="/results" element={<ResultsDashboard />} />
 
       {/* ── Simulator 2 — Meridian Retail QBR ──────────────────────────
           Fully separate route tree; Simulation 1's routes above are untouched. */}
