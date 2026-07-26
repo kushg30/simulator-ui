@@ -105,14 +105,14 @@ export default function ContextPage() {
         <div className="context-footer">
           <div className="context-footer-note">
             <span className="footer-dot" />
-            You are participating as <strong>CFO</strong> — your private role brief
-            will appear once you enter the simulation.
+            Next, create or join your team. Your private role brief appears once
+            you enter the simulation.
           </div>
           <button
             className="btn-enter"
-            onClick={() => navigate("/simulator")}
+            onClick={() => navigate("/teamjoin")}
           >
-            Enter Simulation
+            Continue — create or join a team
             <span className="btn-arrow">→</span>
           </button>
         </div>

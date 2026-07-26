@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { useArtifacts } from "./useartifacts";
+import { useArtifacts, parseServerTime } from "./useartifacts";
 import ArtifactDetail from "./ArtifactDetail";
 import ArtifactList from "./ArtifactList";
 import ScreenFlashOverlay from "./ScreenFlashOverlay";
@@ -16,7 +16,7 @@ function useSimulationTime(startedAt) {
     if (!startedAt) return;
     const update = () => {
       const elapsed = Math.floor(
-        (Date.now() - new Date(startedAt).getTime()) / 1000
+        (Date.now() - parseServerTime(startedAt)) / 1000
       );
       setSeconds(elapsed);
     };
