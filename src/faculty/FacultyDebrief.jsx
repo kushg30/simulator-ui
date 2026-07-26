@@ -181,6 +181,63 @@ export default function FacultyDebrief({ simulationId }) {
         </table>
       </div>
 
+      {/* ── per-round answers grid ──────────────────────────────────── */}
+      <h2 style={{ marginTop: 22 }}>Answers by round</h2>
+      <p className="f-note" style={{ marginBottom: 8 }}>
+        Correct / incorrect per round. Round 6 is a free-text reflection, so it is not graded.
+      </p>
+      <div style={{ overflowX: "auto" }}>
+        <table>
+          <thead>
+            <tr>
+              <th>Team</th>
+              {[1, 2, 3, 4, 5, 6].map((n) => (
+                <th key={n}>R{n}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {teams.map((t) => {
+              const byRound = {};
+              (t.submissions || []).forEach((s) => {
+                byRound[s.roundNumber] = s;
+              });
+              return (
+                <tr key={t.runId}>
+                  <td>{t.teamName}</td>
+                  {[1, 2, 3, 4, 5, 6].map((n) => {
+                    const s = byRound[n];
+                    let mark = "·";
+                    let cls = "na";
+                    let title = "not submitted";
+                    if (s) {
+                      if (s.correct === true) {
+                        mark = "✓";
+                        cls = "ok";
+                        title = `correct · ${s.confidence}`;
+                      } else if (s.correct === false) {
+                        mark = "✗";
+                        cls = "bad";
+                        title = `incorrect · ${s.confidence}`;
+                      } else {
+                        mark = "—";
+                        cls = "na";
+                        title = "free text (not graded)";
+                      }
+                    }
+                    return (
+                      <td key={n} className={`f-ans f-ans-${cls}`} title={title}>
+                        {mark}
+                      </td>
+                    );
+                  })}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
       {/* ── inline override editor ──────────────────────────────────── */}
       {editTeam && (
         <div className="f-card" style={{ marginTop: 14 }}>

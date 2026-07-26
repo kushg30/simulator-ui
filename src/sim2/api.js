@@ -111,6 +111,12 @@ export function getResults(runId, roundNumber) {
   return fetch(`${API_BASE}/api/sim2/runs/${runId}/rounds/${roundNumber}/results`).then(toJson);
 }
 
+// Fire-and-forget wake-up so the free-tier backend (and Neon) are warm by the
+// time the user submits the join form — hides the cold-start delay.
+export function warmup() {
+  fetch(`${API_BASE}/api/teams/00000000-0000-0000-0000-000000000000/roles`).catch(() => {});
+}
+
 export function getWiki(runId, round) {
   return fetch(`${API_BASE}/api/sim2/runs/${runId}/wiki?round=${round}`).then(toJson);
 }
@@ -124,6 +130,22 @@ export const ROLE_LABELS = {
   REPORTING_DASHBOARD_ANALYST: "Reporting & Dashboard Analyst",
   PEOPLE_ANALYTICS_ASSOCIATE: "People Analytics Associate",
   AUTOMATION_BI_ASSOCIATE: "Automation & BI Associate",
+};
+
+// Role-specific private prompts, shown after role confirmation (spec section 3).
+export const ROLE_PROMPTS = {
+  TEAM_LEAD:
+    "Your manager won't check your formulas. A wrong number today follows you into next quarter's review.",
+  DATA_QUALITY_ANALYST:
+    "Nobody checks your formulas today. Everybody eventually notices a wrong output.",
+  CATEGORY_REGIONAL_ANALYST:
+    "Two conflicting numbers can both look authoritative. Only one of you has to decide which.",
+  REPORTING_DASHBOARD_ANALYST:
+    "A clean-looking dashboard photographs better than a correct one, and the Board is in the room for four minutes.",
+  PEOPLE_ANALYTICS_ASSOCIATE:
+    "A relationship that looks connected in the model isn't the same as one that's correctly joined.",
+  AUTOMATION_BI_ASSOCIATE:
+    "A macro that works today and breaks next month is worse than no macro at all.",
 };
 
 export const CONSTRUCT_LABELS = {

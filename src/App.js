@@ -139,7 +139,8 @@ export default function App() {
 
       {/* ── Simulator 2 — Meridian Retail QBR ──────────────────────────
           Fully separate route tree; Simulation 1's routes above are untouched. */}
-      <Route path="/sim2"                    element={<Sim2JoinPage />} />
+      <Route path="/sim2"                    element={<Sim2ContextPage />} />
+      <Route path="/sim2/join"               element={<Sim2JoinPage />} />
       <Route path="/sim2/roles"              element={<Sim2RolePage />} />
       <Route path="/sim2/context"            element={<Sim2ContextPage />} />
       <Route path="/sim2/waiting"            element={<Sim2WaitingPage />} />

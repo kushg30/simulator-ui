@@ -40,8 +40,9 @@ export default function Sim2RolePage() {
     setError("");
     try {
       await assignRole(teamId, participantId, roleCode);
+      // Brief already read on the landing page; go straight to the team room.
       navigate(
-        `/sim2/context?teamId=${teamId}&participantId=${participantId}&role=${roleCode}`
+        `/sim2/waiting?teamId=${teamId}&participantId=${participantId}&role=${roleCode}`
       );
     } catch (e) {
       setError(e.message);

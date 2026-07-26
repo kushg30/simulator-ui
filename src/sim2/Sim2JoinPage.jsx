@@ -1,6 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createTeam, joinTeam } from "./api";
+import {
+  createTeam,
+  getParticipants,
+  getRoundState,
+  getRun,
+  joinTeam,
+  ROLE_LABELS,
+} from "./api";
 import "./sim2.css";
 
 /**
@@ -23,8 +30,9 @@ export default function Sim2JoinPage() {
     setError("");
     try {
       const res = await createTeam(teamName.trim(), name.trim());
+      // Brief already read on the landing page; go straight to the team room.
       navigate(
-        `/sim2/context?teamId=${res.teamId}&participantId=${res.participantId}&role=${res.role}`
+        `/sim2/waiting?teamId=${res.teamId}&participantId=${res.participantId}&role=${res.role}`
       );
     } catch (err) {
       setError(err.message);
@@ -45,6 +53,57 @@ export default function Sim2JoinPage() {
     } finally {
       setBusy(false);
     }
+  }
+
+  // ── rejoin an existing session (e.g. after a facilitator paused overnight) ──
+  const [rejoinId, setRejoinId] = useState("");
+  const [members, setMembers] = useState(null); // participant list, or null
+  const [rejoinState, setRejoinState] = useState({ runId: null, states: [] });
+
+  async function findSession(e) {
+    e.preventDefault();
+    setBusy(true);
+    setError("");
+    setMembers(null);
+    try {
+      const list = await getParticipants(rejoinId.trim());
+      let runId = null;
+      let states = [];
+      try {
+        const run = await getRun(rejoinId.trim());
+        runId = run && (run.runId || run.run_id);
+        if (runId) states = await getRoundState(runId);
+      } catch {
+        // no run yet — the team is still in the lobby
+      }
+      setRejoinState({ runId, states });
+      setMembers(list || []);
+      if (!list || list.length === 0) setError("No team found with that ID.");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function rejoinAs(p) {
+    const { runId, states } = rejoinState;
+    const base = `teamId=${rejoinId.trim()}&participantId=${p.participantId}&role=${p.role || ""}`;
+    if (!runId) {
+      navigate(`/sim2/waiting?${base}`); // still in the lobby
+      return;
+    }
+    const active = states.find((s) => s.status === "ACTIVE");
+    if (active) {
+      navigate(`/sim2/round/${active.roundNumber}?runId=${runId}&${base}`);
+      return;
+    }
+    const completed = states.filter((s) => s.status === "COMPLETE").map((s) => s.roundNumber);
+    if (completed.length > 0) {
+      navigate(`/sim2/results/${Math.max(...completed)}?runId=${runId}&${base}`);
+      return;
+    }
+    navigate(`/sim2/waiting?${base}`);
   }
 
   return (
@@ -106,6 +165,46 @@ export default function Sim2JoinPage() {
               </button>
             </div>
           </form>
+        </div>
+
+        <div className="s2-card">
+          <h2>Rejoin a session</h2>
+          <p className="s2-sub">
+            Coming back to a run that was already started or paused? Enter your Team ID to pick up
+            where you left off.
+          </p>
+          <form onSubmit={findSession}>
+            <label htmlFor="s2-rejoin-id">Team ID</label>
+            <input
+              id="s2-rejoin-id"
+              type="text"
+              value={rejoinId}
+              placeholder="Your team's ID"
+              onChange={(e) => setRejoinId(e.target.value)}
+            />
+            <div className="s2-row" style={{ marginTop: 14 }}>
+              <button type="submit" className="s2-secondary" disabled={busy || !rejoinId.trim()}>
+                Find my session
+              </button>
+            </div>
+          </form>
+
+          {members && members.length > 0 && (
+            <div style={{ marginTop: 14 }}>
+              <p className="s2-sub">Tap your name to rejoin:</p>
+              {members.map((p) => (
+                <div key={p.participantId} className="s2-construct">
+                  <span>
+                    {p.name}
+                    <span className="s2-sub"> · {ROLE_LABELS[p.role] || p.role || "no role yet"}</span>
+                  </span>
+                  <button className="s2-secondary" onClick={() => rejoinAs(p)}>
+                    Rejoin
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {error && <p className="s2-error">{error}</p>}

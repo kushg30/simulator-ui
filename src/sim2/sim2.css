@@ -244,10 +244,6 @@
 }
 
 /* Reference drawer (spec 9F) */
-.sim2 .s2-ref-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.55);
-  display: flex; justify-content: flex-end; z-index: 1000;
-}
 .sim2 .s2-ref-drawer {
   width: min(460px, 92vw); height: 100%; overflow-y: auto;
   background: var(--s2-panel); border-left: 1px solid var(--s2-border);
@@ -279,3 +275,9 @@
   background: transparent; border: 0; color: var(--s2-accent);
   cursor: pointer; font: inherit; text-decoration: underline; padding: 0 2px;
 }
+
+/* Reference drawer v2 */
+.sim2 .s2-ref-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;}
+.sim2 .s2-ref-drawer{position:fixed;top:0;right:0;z-index:1001;}
+.sim2 .s2-ref-entry-head{width:100%;display:flex;justify-content:space-between;align-items:center;background:transparent;border:0;color:var(--s2-text);cursor:pointer;font:inherit;font-weight:500;padding:0;text-align:left;}
+.sim2 .s2-ref-caret{color:var(--s2-muted);margin-left:12px;}

@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ROLE_LABELS } from "./api";
+import { ROLE_LABELS, ROLE_PROMPTS, warmup } from "./api";
 import "./sim2.css";
 
 // Content is taken verbatim from the Meridian Retail QBR script (the Prepare tab).
@@ -21,16 +21,6 @@ const ROLES = [
   ["AUTOMATION_BI_ASSOCIATE", "Rounds 5–6", "Power BI, VBA/Macros"],
 ];
 
-// Shown once, privately, after role confirmation and before Round 1.
-const ROLE_PROMPTS = {
-  TEAM_LEAD: "Your manager won't check your formulas. A wrong number today follows you into next quarter's review.",
-  DATA_QUALITY_ANALYST: "Nobody checks your formulas today. Everybody eventually notices a wrong output.",
-  CATEGORY_REGIONAL_ANALYST: "Two conflicting numbers can both look authoritative. Only one of you has to decide which.",
-  REPORTING_DASHBOARD_ANALYST: "A clean-looking dashboard photographs better than a correct one, and the Board is in the room for four minutes.",
-  PEOPLE_ANALYTICS_ASSOCIATE: "A relationship that looks connected in the model isn't the same as one that's correctly joined.",
-  AUTOMATION_BI_ASSOCIATE: "A macro that works today and breaks next month is worse than no macro at all.",
-};
-
 /**
  * Context / Prepare screen (spec section 1–3). Shown after a participant has a role and before the
  * waiting room: company brief, problem statement, the role structure, and the participant's own
@@ -44,24 +34,41 @@ export default function Sim2ContextPage() {
   const participantId = params.get("participantId");
   const role = params.get("role");
 
+  // Two modes: the welcome landing (no role yet, before joining) and a review of
+  // the brief from inside the team room (role known, private brief shown).
+  const hasRole = Boolean(role);
+
   const [tab, setTab] = useState("company");
 
-  function continueToWaiting() {
-    navigate(
-      `/sim2/waiting?teamId=${teamId}&participantId=${participantId}&role=${role}`
-    );
+  // Wake the backend while the brief is being read, so joining feels instant.
+  useEffect(() => {
+    warmup();
+  }, []);
+
+  function onContinue() {
+    if (hasRole) {
+      navigate(`/sim2/waiting?teamId=${teamId}&participantId=${participantId}&role=${role}`);
+    } else {
+      navigate("/sim2/join");
+    }
   }
 
   return (
     <div className="sim2">
       <div className="s2-shell">
-        <h1>Meridian Retail — Prepare</h1>
+        <h1>Meridian Retail — Quarterly Business Review</h1>
         <p className="s2-sub">
-          Read the brief, then continue to the team room. You are the{" "}
-          <strong>{ROLE_LABELS[role] || role}</strong>.
+          {hasRole ? (
+            <>
+              Read the brief, then continue to the team room. You are the{" "}
+              <strong>{ROLE_LABELS[role] || role}</strong>.
+            </>
+          ) : (
+            <>Read the brief, then continue to create or join a team.</>
+          )}
         </p>
 
-        {/* your private brief — highlighted */}
+        {/* your private brief — only once a role is confirmed */}
         {ROLE_PROMPTS[role] && (
           <div className="s2-card s2-private-brief">
             <div className="s2-ref-section">Your private brief</div>
@@ -118,7 +125,9 @@ export default function Sim2ContextPage() {
           )}
         </div>
 
-        <button onClick={continueToWaiting}>Continue to the team room</button>
+        <button onClick={onContinue}>
+          {hasRole ? "Continue to the team room" : "Continue — create or join a team"}
+        </button>
       </div>
     </div>
   );

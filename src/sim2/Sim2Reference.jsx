@@ -3,15 +3,17 @@ import { getWiki } from "./api";
 
 /**
  * Reference wiki (spec 9F) as a slide-in drawer on the round page. Always available, self-serve,
- * and reveals no answers — it exists so a student is not blocked by forgetting a function or a
- * detail already in the dataset, and so the facilitator is not pulled into low-value questions.
+ * and reveals no answers.
  *
- * FUNCTIONS are scoped to the current round; FACTS and FAQ are always shown.
+ * FUNCTIONS are scoped to the current round; FACTS and FAQ are always shown. The expanded entry is
+ * held in component state (not a native <details>), so the page's 3s poll re-render cannot collapse
+ * what the user is reading.
  */
 export default function Sim2Reference({ runId, round }) {
   const [open, setOpen] = useState(false);
   const [entries, setEntries] = useState([]);
   const [loaded, setLoaded] = useState(false);
+  const [expanded, setExpanded] = useState(null); // entryId currently open
 
   useEffect(() => {
     if (!open || loaded || !runId) return;
@@ -23,19 +25,11 @@ export default function Sim2Reference({ runId, round }) {
       .catch(() => setLoaded(true));
   }, [open, loaded, runId, round]);
 
-  const bySection = (s) => entries.filter((e) => e.section === s);
-  const SectionBlock = ({ title, items }) =>
-    items.length === 0 ? null : (
-      <div style={{ marginBottom: 18 }}>
-        <div className="s2-ref-section">{title}</div>
-        {items.map((e) => (
-          <details key={e.entryId} className="s2-ref-entry">
-            <summary>{e.title}</summary>
-            <div className="s2-ref-body">{e.body}</div>
-          </details>
-        ))}
-      </div>
-    );
+  const sections = [
+    ["FUNCTIONS", "Functions for this round"],
+    ["FACTS", "Company facts"],
+    ["FAQ", "FAQ"],
+  ];
 
   return (
     <>
@@ -44,8 +38,9 @@ export default function Sim2Reference({ runId, round }) {
       </button>
 
       {open && (
-        <div className="s2-ref-overlay" onClick={() => setOpen(false)}>
-          <aside className="s2-ref-drawer" onClick={(e) => e.stopPropagation()}>
+        <>
+          <div className="s2-ref-backdrop" onClick={() => setOpen(false)} />
+          <aside className="s2-ref-drawer">
             <div className="s2-row" style={{ justifyContent: "space-between" }}>
               <h2 style={{ margin: 0 }}>Reference</h2>
               <button className="s2-secondary" onClick={() => setOpen(false)}>
@@ -53,20 +48,41 @@ export default function Sim2Reference({ runId, round }) {
               </button>
             </div>
             <p className="s2-sub">
-              Functions for this round, company facts, and the faculty FAQ. Nothing here gives away
-              an answer.
+              Functions for this round, company facts, and the faculty FAQ. Nothing here gives away an
+              answer.
             </p>
+
             {!loaded ? (
               <p className="s2-sub">Loading…</p>
             ) : (
-              <>
-                <SectionBlock title="Functions for this round" items={bySection("FUNCTIONS")} />
-                <SectionBlock title="Company facts" items={bySection("FACTS")} />
-                <SectionBlock title="FAQ" items={bySection("FAQ")} />
-              </>
+              sections.map(([section, title]) => {
+                const items = entries.filter((e) => e.section === section);
+                if (items.length === 0) return null;
+                return (
+                  <div key={section} style={{ marginBottom: 18 }}>
+                    <div className="s2-ref-section">{title}</div>
+                    {items.map((e) => {
+                      const isOpen = expanded === e.entryId;
+                      return (
+                        <div key={e.entryId} className="s2-ref-entry">
+                          <button
+                            type="button"
+                            className="s2-ref-entry-head"
+                            onClick={() => setExpanded(isOpen ? null : e.entryId)}
+                          >
+                            <span>{e.title}</span>
+                            <span className="s2-ref-caret">{isOpen ? "–" : "+"}</span>
+                          </button>
+                          {isOpen && <div className="s2-ref-body">{e.body}</div>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })
             )}
           </aside>
-        </div>
+        </>
       )}
     </>
   );
