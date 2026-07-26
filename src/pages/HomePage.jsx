@@ -1,6 +1,22 @@
 import "./HomePage.css";
+import "./HomePolish.css";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
+
+const stats = [
+  { value: "15 min", label: "From link to live session" },
+  { value: "6", label: "Distinct roles per team" },
+  { value: "4", label: "Timed, compounding rounds" },
+  { value: "0", label: "Scores — judgment, not points" },
+];
+
+const designedFor = [
+  "MBA Programs",
+  "Executive Education",
+  "Leadership Labs",
+  "Case-Method Classrooms",
+  "Corporate L&D",
+];
 
 
 const steps = [
@@ -102,7 +118,15 @@ const faqs = [
 export default function HomePage() {
   const navigate = useNavigate();
   const [openFaq, setOpenFaq] = useState(null);
+  const [scrolled, setScrolled] = useState(false);
   const observerRef = useRef(null);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   useEffect(() => {
     observerRef.current = new IntersectionObserver(
@@ -127,7 +151,7 @@ export default function HomePage() {
     <div className="homepage">
 
       {/* NAVBAR */}
-      <nav className="navbar">
+      <nav className={`navbar ${scrolled ? "scrolled" : ""}`}>
         <div className="logo">
           <span className="logo-biz">CASE</span>
           <span className="logo-sim">RUN</span>
@@ -139,7 +163,12 @@ export default function HomePage() {
           <a href="#simulators">Simulations</a>
           <a href="#faq">FAQ</a>
         </div>
-        
+        <button
+          className="nav-cta"
+          onClick={() => document.getElementById("simulators").scrollIntoView({ behavior: "smooth" })}
+        >
+          Browse Simulations
+        </button>
       </nav>
 
       {/* HERO */}
@@ -173,6 +202,11 @@ export default function HomePage() {
               </button>
               <button className="btn-ghost btn-lg">Schedule Demo</button>
             </div>
+            <div className="hero-trust">
+              <span>No pre-reading required</span>
+              <span>Runs in any browser</span>
+              <span>Built for the case method</span>
+            </div>
           </div>
 
           <div className="hero-right reveal reveal-delay">
@@ -192,6 +226,30 @@ export default function HomePage() {
         </div>
       </section>
 
+
+      {/* STATS BAR */}
+      <section className="stats-bar">
+        <div className="container stats-inner">
+          {stats.map((s, i) => (
+            <div className="stat-item" key={i}>
+              <div className="stat-value">{s.value}</div>
+              <div className="stat-label">{s.label}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* DESIGNED FOR */}
+      <section className="partners">
+        <div className="container">
+          <div className="partners-label">Designed for</div>
+          <div className="partners-strip">
+            {designedFor.map((p, i) => (
+              <span className="partner-logo" key={i}>{p}</span>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* ABOUT */}
       <section id="about" className="about">
