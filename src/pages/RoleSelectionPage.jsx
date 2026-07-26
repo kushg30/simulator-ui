@@ -1,89 +1,95 @@
-import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState, useCallback } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import API_BASE from "../config";
+import "../sim2/sim2.css";
+
+const ROLE_LABELS = {
+  CEO: "CEO",
+  CFO: "CFO",
+  HEAD_OF_ENGINEERING: "Head of Engineering",
+  PRODUCT: "Head of Product",
+  OPERATIONS: "Head of Operations",
+  CHRO: "CHRO",
+};
 
 export default function RoleSelectionPage() {
-
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const teamId = searchParams.get("teamId");
   const participantId = searchParams.get("participantId");
 
   const [roles, setRoles] = useState({});
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
 
-  const ALL_ROLES = [
-    "CEO", "CFO", "HEAD_OF_ENGINEERING",
-    "PRODUCT", "OPERATIONS", "CHRO"
-  ];
-
-  // 🔁 Fetch roles
-  const fetchRoles = async () => {
-    const res = await fetch(
-      `${API_BASE}/api/teams/${teamId}/roles`
-    );
-    const data = await res.json();
-    setRoles(data);
-  };
-
-  // 🔁 Polling
-  useEffect(() => {
-    fetchRoles();
-
-    const interval = setInterval(fetchRoles, 2000);
-    return () => clearInterval(interval);
+  const fetchRoles = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/teams/${teamId}/roles`);
+      if (res.ok) setRoles(await res.json());
+    } catch (e) {
+      /* transient */
+    }
   }, [teamId]);
 
-  // 🔥 Assign role
+  useEffect(() => {
+    fetchRoles();
+    const interval = setInterval(fetchRoles, 2000);
+    return () => clearInterval(interval);
+  }, [fetchRoles]);
+
   const handleSelect = async (role) => {
-  if (roles[role]) return;
-
-  await fetch(
-    `${API_BASE}/api/teams/${teamId}/assign-role`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        participantId,
-        role
-      })
+    if (roles[role] || busy) return;
+    setBusy(true);
+    setError("");
+    try {
+      const res = await fetch(`${API_BASE}/api/teams/${teamId}/assign-role`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ participantId, role }),
+      });
+      if (!res.ok) throw new Error("That role was just taken — pick another.");
+      navigate(`/waiting?teamId=${teamId}&participantId=${participantId}&role=${role}`);
+    } catch (e) {
+      setError(e.message);
+      fetchRoles();
+    } finally {
+      setBusy(false);
     }
-  );
+  };
 
-  // 🔥 move forward after selecting role
-  navigate(
-    `/waiting?teamId=${teamId}&participantId=${participantId}&role=${role}`
-  );
-};
+  const roleCodes = Object.keys(roles).length
+    ? Object.keys(roles)
+    : ["CEO", "CFO", "HEAD_OF_ENGINEERING", "PRODUCT", "OPERATIONS", "CHRO"];
 
   return (
-    <div style={{ padding: "30px" }}>
-      <h2>Select Role</h2>
+    <div className="sim2">
+      <div className="s2-shell">
+        <h1>Choose your role</h1>
+        <p className="s2-sub">
+          Each role interprets the same information through different incentives. Taken roles are
+          locked.
+        </p>
 
-      {ALL_ROLES.map((role) => {
-        const takenBy = roles[role];
+        <div className="s2-card">
+          {roleCodes.map((role) => {
+            const taken = roles[role];
+            return (
+              <div key={role} className="s2-construct">
+                <span>{ROLE_LABELS[role] || role}</span>
+                {taken ? (
+                  <span className="s2-sub">Taken</span>
+                ) : (
+                  <button className="s2-secondary" disabled={busy} onClick={() => handleSelect(role)}>
+                    Select
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
 
-        return (
-          <div
-            key={role}
-            onClick={() => handleSelect(role)}
-            style={{
-              padding: "10px",
-              margin: "8px 0",
-              border: "1px solid #ccc",
-              background: takenBy ? "#eee" : "#fff",
-              cursor: takenBy ? "not-allowed" : "pointer"
-            }}
-          >
-            {role}
-            {takenBy && (
-              <span style={{ marginLeft: "10px", color: "red" }}>
-                (Taken)
-              </span>
-            )}
-          </div>
-        );
-      })}
+        {error && <p className="s2-error">{error}</p>}
+      </div>
     </div>
   );
 }

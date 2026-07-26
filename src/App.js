@@ -129,6 +129,7 @@ export default function App() {
 
   return (
     <Routes>
+      <Route path="/sim1"           element={<ContextPage />} />
       <Route path="/teamjoin"       element={<TeamJoinPage />} />
       <Route path="/context"        element={<ContextPage />} />
       <Route path="/role-selection" element={<RoleSelectionPage />} />

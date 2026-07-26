@@ -1,7 +1,22 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import API_BASE from "../config";
+import "../sim2/sim2.css";
 
+const ROLE_LABELS = {
+  CEO: "CEO",
+  CFO: "CFO",
+  HEAD_OF_ENGINEERING: "Head of Engineering",
+  PRODUCT: "Head of Product",
+  OPERATIONS: "Head of Operations",
+  CHRO: "CHRO",
+};
+
+/**
+ * Simulator 1 waiting room. Readiness is measured against the simulation's ROLE
+ * SEATS (all six must be occupied), not against "every person present has a
+ * role" — otherwise a lone CEO reads as a full team. Styled to match Sim 2.
+ */
 export default function WaitingPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -11,101 +26,93 @@ export default function WaitingPage() {
   const role = searchParams.get("role");
 
   const [participants, setParticipants] = useState([]);
+  const [roles, setRoles] = useState({}); // { ROLE_CODE: occupantId | null }
+  const [botsBusy, setBotsBusy] = useState(false);
+  const [starting, setStarting] = useState(false);
+  const [error, setError] = useState("");
 
-  // 🔁 Fetch participants
-  const fetchParticipants = async () => {
+  const fetchParticipants = useCallback(async () => {
     try {
-      const res = await fetch(
-        `${API_BASE}/api/teams/${teamId}/participants`
-      );
-
-      if (!res.ok) return;
-
-      const data = await res.json();
-      setParticipants(data);
-    } catch (err) {
-      console.error(err);
+      const res = await fetch(`${API_BASE}/api/teams/${teamId}/participants`);
+      if (res.ok) setParticipants(await res.json());
+    } catch (e) {
+      /* transient */
     }
-  };
+  }, [teamId]);
 
-  // 🔁 Fetch run
-  const fetchRun = async () => {
+  const fetchRoles = useCallback(async () => {
     try {
-      const res = await fetch(
-        `${API_BASE}/api/runs/team/${teamId}`
-      );
-
-      if (!res.ok) return;
-
-      const data = await res.json();
-
-      if (data && (data.runId || data.run_id)) {
-            const runId = data.runId || data.run_id;
-            console.log("RUN DETECTED:", runId); 
-            navigate(
-                `/simulator?runId=${runId}&participantId=${participantId}&role=${role}`
-            );
-        }
-    } catch (err) {
-      console.error(err);
+      const res = await fetch(`${API_BASE}/api/teams/${teamId}/roles`);
+      if (res.ok) setRoles(await res.json());
+    } catch (e) {
+      /* transient */
     }
-  };
+  }, [teamId]);
 
-  // 🔁 Polling
+  const fetchRun = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/runs/team/${teamId}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      const runId = data && (data.runId || data.run_id);
+      if (runId) {
+        navigate(`/simulator?runId=${runId}&participantId=${participantId}&role=${role}`);
+      }
+    } catch (e) {
+      /* transient */
+    }
+  }, [teamId, participantId, role, navigate]);
+
   useEffect(() => {
-    const poll = async () => {
-      await Promise.all([fetchParticipants(), fetchRun()]);
-    };
-
+    if (!teamId) return;
+    const poll = () => Promise.all([fetchParticipants(), fetchRoles(), fetchRun()]);
     poll();
+    const id = setInterval(poll, 2000);
+    return () => clearInterval(id);
+  }, [teamId, fetchParticipants, fetchRoles, fetchRun]);
 
-    const interval = setInterval(poll, 2000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // 🚫 Guard
   if (!teamId || !participantId) {
-    return <div style={{ padding: "20px" }}>Invalid session</div>;
+    return (
+      <div className="sim2">
+        <div className="s2-shell">
+          <p className="s2-error">Invalid session. Please start from the team join page.</p>
+        </div>
+      </div>
+    );
   }
 
-  // 🔥 Role completion check
-  const allAssigned =
-    participants.length > 0 &&
-    participants.every((p) => p.role !== null);
+  const roleCodes = Object.keys(roles);
+  const filledSeats = roleCodes.filter((r) => roles[r]).length;
+  const totalSeats = roleCodes.length || 6;
+  const allSeatsFilled = totalSeats > 0 && filledSeats === totalSeats;
 
   const handleStart = async () => {
+    setStarting(true);
+    setError("");
     try {
-      const res = await fetch(
-        `${API_BASE}/api/runs/start/${teamId}`,
-        { method: "POST" }
-      );
-
-      if (!res.ok) {
-      const text = await res.text();
-      console.error("Start failed:", text);
-      alert("Failed to start simulation");
-    }
-
-    } catch (err) {
-      console.error(err);
+      const res = await fetch(`${API_BASE}/api/runs/start/${teamId}`, { method: "POST" });
+      if (!res.ok) throw new Error("Failed to start the simulation.");
+      // fetchRun (polling) will pick up the new run and navigate everyone in.
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setStarting(false);
     }
   };
 
-  // TESTING ONLY — remove before real use. Fills the unclaimed roles with bots so
-  // one person can start a run without five other browsers.
-  const [botsBusy, setBotsBusy] = useState(false);
+  // TESTING ONLY — fills the empty seats with bots so one person can start solo.
   const fillWithBots = async () => {
     setBotsBusy(true);
+    setError("");
     try {
-      const rolesRes = await fetch(`${API_BASE}/api/teams/${teamId}/roles`);
-      const roles = await rolesRes.json(); // { ROLE_CODE: occupantId | null }
-      for (const [roleCode, occupant] of Object.entries(roles)) {
-        if (occupant) continue; // already taken
+      for (const roleCode of roleCodes) {
+        if (roles[roleCode]) continue; // seat already taken
         const joinRes = await fetch(`${API_BASE}/api/teams/${teamId}/join`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ participantName: `bot-${roleCode}` }),
+          body: JSON.stringify({ participantName: `bot-${roleCode.toLowerCase()}` }),
         });
+        if (!joinRes.ok) continue;
         const joined = await joinRes.json();
         await fetch(`${API_BASE}/api/teams/${teamId}/assign-role`, {
           method: "POST",
@@ -113,117 +120,81 @@ export default function WaitingPage() {
           body: JSON.stringify({ participantId: joined.participantId, role: roleCode }),
         });
       }
-      await fetchParticipants();
-    } catch (err) {
-      console.error(err);
+      await Promise.all([fetchParticipants(), fetchRoles()]);
+    } catch (e) {
+      setError("Could not add bots. Try again.");
     } finally {
       setBotsBusy(false);
     }
   };
 
   return (
-    <div
-      style={{
-        maxWidth: "600px",
-        margin: "40px auto",
-        fontFamily: "Arial",
-        padding: "20px"
-      }}
-    >
-      <h2>Waiting Room</h2>
+    <div className="sim2">
+      <div className="s2-shell">
+        <h1>Waiting room</h1>
+        <p className="s2-sub">
+          Share the Team ID so the rest of the leadership team can join. The CEO starts once all six
+          seats are filled.
+        </p>
 
-      <p style={{ fontSize: "12px", color: "#666" }}>
-        Team ID: {teamId}
-      </p>
-
-      <p>
-        {participants.filter((p) => p.role).length} /{" "}
-        {participants.length} ready
-      </p>
-
-      <div
-        style={{
-          border: "1px solid #ddd",
-          borderRadius: "8px",
-          padding: "16px"
-        }}
-      >
-        {participants.map((p) => (
-          <div
-            key={p.participantId}
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              padding: "6px 0"
-            }}
-          >
-            <span>{p.name}</span>
-
-            <span
-              style={{
-                color: p.role ? "green" : "#999",
-                fontWeight: 500
-              }}
-            >
-              {p.role ? p.role : "Waiting..."}
+        <div className="s2-card">
+          <h2>Team ID</h2>
+          <p className="s2-sub" style={{ wordBreak: "break-all", fontFamily: "monospace" }}>
+            {teamId}
+          </p>
+          <div className="s2-row" style={{ justifyContent: "space-between", marginTop: 8 }}>
+            <span className="s2-sub">
+              {filledSeats} / {totalSeats} seats filled
             </span>
+            <button
+              className="s2-secondary"
+              onClick={() => navigator.clipboard?.writeText(teamId)}
+            >
+              Copy ID
+            </button>
           </div>
-        ))}
-      </div>
+        </div>
 
-      <div style={{ marginTop: "20px", textAlign: "center" }}>
+        <div className="s2-card">
+          <h2>Roster</h2>
+          {roleCodes.map((rc) => {
+            const occupant = participants.find((p) => p.role === rc);
+            return (
+              <div key={rc} className="s2-construct">
+                <span>
+                  {ROLE_LABELS[rc] || rc}
+                  {rc === role ? <span className="s2-sub"> · you</span> : null}
+                </span>
+                <span className="s2-sub" style={{ color: occupant ? "var(--s2-good, #3fb950)" : undefined }}>
+                  {occupant ? occupant.name : "empty"}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+
         {role === "CEO" ? (
-          <button
-            disabled={!allAssigned}
-            onClick={handleStart}
-            style={{
-              padding: "10px 20px",
-              background: allAssigned ? "#2563eb" : "#ccc",
-              color: "#fff",
-              border: "none",
-              borderRadius: "6px",
-              cursor: allAssigned ? "pointer" : "not-allowed"
-            }}
-          >
-            Start Simulation
+          <button onClick={handleStart} disabled={!allSeatsFilled || starting}>
+            {starting ? "Starting…" : allSeatsFilled ? "Start simulation" : "Waiting for all seats…"}
           </button>
         ) : (
-          <p style={{ color: "#666" }}>
-            Waiting for CEO to start simulation...
-          </p>
+          <p className="s2-sub">Waiting for the CEO to start the simulation…</p>
         )}
-      </div>
 
-      {/* TESTING ONLY — delete before real use. */}
-      {!allAssigned && (
-        <div
-          style={{
-            marginTop: "20px",
-            padding: "14px",
-            border: "1px dashed #bbb",
-            borderRadius: "8px",
-            textAlign: "center"
-          }}
-        >
-          <p style={{ fontSize: "12px", color: "#666", margin: "0 0 10px" }}>
-            Testing shortcut — fill the empty roles with bots so you can start solo.
-          </p>
-          <button
-            onClick={fillWithBots}
-            disabled={botsBusy}
-            style={{
-              padding: "8px 16px",
-              background: "#fff",
-              color: "#333",
-              border: "1px solid #999",
-              borderRadius: "6px",
-              cursor: botsBusy ? "not-allowed" : "pointer"
-            }}
-          >
-            {botsBusy ? "Adding bots…" : "Fill remaining roles with bots"}
-          </button>
-        </div>
-      )}
+        {/* TESTING ONLY — remove before real sessions. */}
+        {!allSeatsFilled && (
+          <div className="s2-card" style={{ borderStyle: "dashed", marginTop: 14 }}>
+            <p className="s2-sub" style={{ margin: "0 0 10px" }}>
+              Testing shortcut — fill the empty seats with bots so you can start solo.
+            </p>
+            <button className="s2-secondary" onClick={fillWithBots} disabled={botsBusy}>
+              {botsBusy ? "Adding bots…" : "Fill remaining seats with bots"}
+            </button>
+          </div>
+        )}
+
+        {error && <p className="s2-error">{error}</p>}
+      </div>
     </div>
   );
 }
