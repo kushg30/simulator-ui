@@ -3,6 +3,8 @@ import API_BASE from "../config";
 // Meridian Retail QBR — the simulation the debrief and wiki default to when no
 // team is live yet (e.g. a facilitator editing the FAQ before class).
 export const MERIDIAN_SIMULATION_ID = "5116d200-0000-4000-a000-000000000002";
+// Leadership Judgment — ANP Phoenix (Simulator 1).
+export const ANP_PHOENIX_SIMULATION_ID = "475db739-0708-48d4-b4db-5a23f1da50d9";
 
 // The facilitator token is kept in sessionStorage: it disappears when the tab
 // closes, so a shared classroom machine does not leave the controls unlocked.
@@ -87,6 +89,19 @@ export const overrideConstruct = (runId, construct, value, reason, actor) =>
   post(`/sim2/runs/${runId}/constructs/${construct}/override`, { value, reason, actor });
 export const revertConstruct = (runId, construct, actor) =>
   post(`/sim2/runs/${runId}/constructs/${construct}/revert`, { actor });
+
+// ── Simulator 1 debrief (Set-A hidden variables, faculty-only) ──────────────
+export const getSim1Debrief = (simulationId) =>
+  call(`/sim1/simulations/${simulationId}/debrief`);
+
+export const SIM1_CONSTRUCT_LABELS = {
+  stakeholder_trust: "Stakeholder Trust",
+  organizational_risk: "Organizational Risk",
+  ethical_exposure: "Ethical Exposure",
+  execution_quality: "Execution Quality",
+};
+// Constructs where a higher value is the adverse direction (flagged for faculty).
+export const SIM1_ADVERSE = new Set(["organizational_risk", "ethical_exposure"]);
 
 // ── reference wiki / FAQ (spec 9F) ──────────────────────────────────────────
 export const getWiki = (simulationId) => call(`/sim2/simulations/${simulationId}/wiki`);

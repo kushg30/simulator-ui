@@ -187,12 +187,14 @@ export default function FacultyDebrief({ simulationId }) {
         Correct / incorrect per round. Round 6 is a free-text reflection, so it is not graded.
       </p>
       <div style={{ overflowX: "auto" }}>
-        <table>
+        <table className="f-ans-table">
           <thead>
             <tr>
               <th>Team</th>
               {[1, 2, 3, 4, 5, 6].map((n) => (
-                <th key={n}>R{n}</th>
+                <th key={n} className="f-ans-col">
+                  R{n}
+                </th>
               ))}
             </tr>
           </thead>

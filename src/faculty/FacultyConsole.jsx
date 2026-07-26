@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import * as api from "./api";
 import FacultyDebrief from "./FacultyDebrief";
+import FacultySim1Debrief from "./FacultySim1Debrief";
 import FacultyWiki from "./FacultyWiki";
 import "./faculty.css";
 
@@ -27,7 +28,8 @@ export default function FacultyConsole() {
   const [error, setError] = useState("");
   const [okMsg, setOkMsg] = useState("");
   const [note, setNote] = useState("");
-  const [tab, setTab] = useState("live"); // "live" | "debrief"
+  const [tab, setTab] = useState("live"); // "live" | "debrief" | "wiki"
+  const [debriefSim, setDebriefSim] = useState("sim2"); // which simulation's results to show
 
   // delay/bypass form
   const [targetArtifact, setTargetArtifact] = useState("");
@@ -185,7 +187,27 @@ export default function FacultyConsole() {
 
         {tab === "debrief" && (
           <div className="f-card">
-            <FacultyDebrief simulationId={focusSimId} />
+            {/* Both simulations report here, kept clearly distinct — they score
+                entirely different constructs. */}
+            <div className="f-row" style={{ marginBottom: 14 }}>
+              <button
+                className={debriefSim === "sim2" ? "" : "f-ghost"}
+                onClick={() => setDebriefSim("sim2")}
+              >
+                Simulation 2 · Meridian QBR
+              </button>
+              <button
+                className={debriefSim === "sim1" ? "" : "f-ghost"}
+                onClick={() => setDebriefSim("sim1")}
+              >
+                Simulation 1 · Leadership Judgment
+              </button>
+            </div>
+            {debriefSim === "sim2" ? (
+              <FacultyDebrief simulationId={focusSimId} />
+            ) : (
+              <FacultySim1Debrief simulationId={api.ANP_PHOENIX_SIMULATION_ID} />
+            )}
           </div>
         )}
 
