@@ -3,21 +3,6 @@ import "./HomePolish.css";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 
-const stats = [
-  { value: "15 min", label: "From link to live session" },
-  { value: "6", label: "Distinct roles per team" },
-  { value: "4", label: "Timed, compounding rounds" },
-  { value: "0", label: "Scores — judgment, not points" },
-];
-
-const designedFor = [
-  "MBA Programs",
-  "Executive Education",
-  "Leadership Labs",
-  "Case-Method Classrooms",
-  "Corporate L&D",
-];
-
 
 const steps = [
   {
@@ -119,7 +104,19 @@ export default function HomePage() {
   const navigate = useNavigate();
   const [openFaq, setOpenFaq] = useState(null);
   const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const observerRef = useRef(null);
+
+  // Lock body scroll while the mobile menu is open.
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [menuOpen]);
+
+  const goTo = (id) => {
+    setMenuOpen(false);
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+  };
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -163,13 +160,32 @@ export default function HomePage() {
           <a href="#simulators">Simulations</a>
           <a href="#faq">FAQ</a>
         </div>
-        <button
-          className="nav-cta"
-          onClick={() => document.getElementById("simulators").scrollIntoView({ behavior: "smooth" })}
-        >
+        <button className="nav-cta" onClick={() => goTo("simulators")}>
           Browse Simulations
         </button>
+        <button
+          className={`nav-burger ${menuOpen ? "open" : ""}`}
+          aria-label="Toggle menu"
+          aria-expanded={menuOpen}
+          onClick={() => setMenuOpen((o) => !o)}
+        >
+          <span></span><span></span><span></span>
+        </button>
       </nav>
+
+      {/* MOBILE MENU */}
+      <div className={`mobile-menu ${menuOpen ? "open" : ""}`} onClick={() => setMenuOpen(false)}>
+        <div className="mobile-menu-panel" onClick={(e) => e.stopPropagation()}>
+          <a onClick={() => setMenuOpen(false)} href="#">Home</a>
+          <a onClick={() => goTo("about")}>About</a>
+          <a onClick={() => goTo("how")}>How It Works</a>
+          <a onClick={() => goTo("simulators")}>Simulations</a>
+          <a onClick={() => goTo("faq")}>FAQ</a>
+          <button className="btn-primary btn-lg" onClick={() => goTo("simulators")}>
+            Browse Simulations
+          </button>
+        </div>
+      </div>
 
       {/* HERO */}
       <section className="hero">
@@ -202,11 +218,6 @@ export default function HomePage() {
               </button>
               <button className="btn-ghost btn-lg">Schedule Demo</button>
             </div>
-            <div className="hero-trust">
-              <span>No pre-reading required</span>
-              <span>Runs in any browser</span>
-              <span>Built for the case method</span>
-            </div>
           </div>
 
           <div className="hero-right reveal reveal-delay">
@@ -226,30 +237,6 @@ export default function HomePage() {
         </div>
       </section>
 
-
-      {/* STATS BAR */}
-      <section className="stats-bar">
-        <div className="container stats-inner">
-          {stats.map((s, i) => (
-            <div className="stat-item" key={i}>
-              <div className="stat-value">{s.value}</div>
-              <div className="stat-label">{s.label}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* DESIGNED FOR */}
-      <section className="partners">
-        <div className="container">
-          <div className="partners-label">Designed for</div>
-          <div className="partners-strip">
-            {designedFor.map((p, i) => (
-              <span className="partner-logo" key={i}>{p}</span>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* ABOUT */}
       <section id="about" className="about">
