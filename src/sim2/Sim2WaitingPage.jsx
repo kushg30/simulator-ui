@@ -7,6 +7,7 @@ import {
   getRun,
   joinTeam,
   ROLE_LABELS,
+  ROLE_PROMPTS,
   startRound,
   startRun,
 } from "./api";
@@ -116,6 +117,13 @@ export default function Sim2WaitingPage() {
             review briefing
           </button>
         </p>
+
+        {ROLE_PROMPTS[role] && (
+          <div className="s2-card s2-private-brief">
+            <div className="s2-ref-section">Your private brief</div>
+            <div style={{ lineHeight: 1.6 }}>{ROLE_PROMPTS[role]}</div>
+          </div>
+        )}
 
         <div className="s2-card">
           <h2>

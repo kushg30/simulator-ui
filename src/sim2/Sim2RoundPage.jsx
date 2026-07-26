@@ -40,6 +40,8 @@ function useServerCountdown(remainingSeconds, paused) {
   return Math.max(0, base.seconds - elapsed);
 }
 
+const TOTAL_ROUNDS = 6; // Meridian Retail QBR
+
 function formatClock(totalSeconds) {
   if (totalSeconds === null) return "--:--";
   const m = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
@@ -70,6 +72,21 @@ export default function Sim2RoundPage() {
   const [file, setFile] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
+  const gotoRound = useCallback(
+    (n) =>
+      navigate(
+        `/sim2/round/${n}?runId=${runId}&participantId=${participantId}&role=${role}&teamId=${teamId}`
+      ),
+    [navigate, runId, participantId, role, teamId]
+  );
+  const gotoResults = useCallback(
+    (n) =>
+      navigate(
+        `/sim2/results/${n}?runId=${runId}&participantId=${participantId}&role=${role}&teamId=${teamId}`
+      ),
+    [navigate, runId, participantId, role, teamId]
+  );
+
   const refresh = useCallback(async () => {
     if (!runId || !participantId) return;
     try {
@@ -78,11 +95,25 @@ export default function Sim2RoundPage() {
         getRoundState(runId),
       ]);
       setArtifacts(list || []);
-      setRoundState((states || []).find((s) => s.roundNumber === roundNumber) || null);
+      const current = (states || []).find((s) => s.roundNumber === roundNumber) || null;
+      setRoundState(current);
+
+      // Follow the Team Lead: if a later round has been started, move to it.
+      const laterActive = (states || []).find(
+        (s) => s.status === "ACTIVE" && s.roundNumber > roundNumber
+      );
+      if (laterActive) {
+        gotoRound(laterActive.roundNumber);
+        return;
+      }
+      // Final round finished for everyone -> the reveal.
+      if (current && current.status === "COMPLETE" && roundNumber >= TOTAL_ROUNDS) {
+        gotoResults(roundNumber);
+      }
     } catch (e) {
       setError(e.message);
     }
-  }, [runId, participantId, roundNumber]);
+  }, [runId, participantId, roundNumber, gotoRound, gotoResults]);
 
   useEffect(() => {
     refresh();
@@ -239,7 +270,16 @@ export default function Sim2RoundPage() {
           {question && <p className="s2-sub">{question}</p>}
 
           {submitted ? (
-            <p className="s2-ok">This round has been submitted.</p>
+            <>
+              <p className="s2-ok">Round {roundNumber} submitted.</p>
+              <p className="s2-sub" style={{ margin: 0 }}>
+                {roundNumber >= TOTAL_ROUNDS
+                  ? "Final round complete — heading to the results…"
+                  : isLead
+                  ? "Continue to the results to review and start the next round."
+                  : "Waiting for the Team Lead to start the next round — you'll move on automatically."}
+              </p>
+            </>
           ) : isLead ? (
             <form onSubmit={handleSubmit}>
               <label htmlFor="s2-answer">Your answer</label>
