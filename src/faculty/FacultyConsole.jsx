@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import * as api from "./api";
 import FacultyDebrief from "./FacultyDebrief";
 import FacultySim1Debrief from "./FacultySim1Debrief";
@@ -21,6 +21,7 @@ export default function FacultyConsole() {
 
   const [overview, setOverview] = useState([]);
   const [selected, setSelected] = useState(null); // {runId, roundNumber, simulationId, teamName}
+  const manageRef = useRef(null); // per-team controls, scrolled into view on "Manage"
   const [artifacts, setArtifacts] = useState([]);
   const [catalogue, setCatalogue] = useState([]);
   const [log, setLog] = useState([]);
@@ -70,6 +71,17 @@ export default function FacultyConsole() {
     const id = setInterval(refresh, 5000);
     return () => clearInterval(id);
   }, [refresh]);
+
+  // When a team is selected via "Manage", bring its controls into view — the
+  // panel renders below the table, so scroll to it instead of making the
+  // facilitator hunt for it.
+  useEffect(() => {
+    if (!selected) return;
+    const t = setTimeout(() => {
+      manageRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 60);
+    return () => clearTimeout(t);
+  }, [selected]);
 
   async function selectRun(row) {
     setSelected(row);
@@ -346,7 +358,7 @@ export default function FacultyConsole() {
 
         {/* ── per-team controls ────────────────────────────────────────── */}
         {selectedRow && (
-          <div className="f-grid2">
+          <div className="f-grid2" ref={manageRef} style={{ scrollMarginTop: 16 }}>
             <div className="f-card">
               <h2>
                 Delay or skip — {selectedRow.teamName}, round {selectedRow.roundNumber}

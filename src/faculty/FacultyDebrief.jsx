@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   CONSTRUCT_LABELS,
   CONSTRUCT_ORDER,
@@ -22,8 +22,21 @@ export default function FacultyDebrief({ simulationId }) {
   const [editConstruct, setEditConstruct] = useState(CONSTRUCT_ORDER[0]);
   const [editValue, setEditValue] = useState("");
   const [editReason, setEditReason] = useState("");
+  const editorRef = useRef(null);
 
   const actor = localStorage.getItem("facultyActor") || "facilitator";
+
+  // The override editor renders below the leaderboard; scroll it into view (and
+  // focus the score field) when a facilitator clicks a score, so it's obvious
+  // where the panel opened.
+  useEffect(() => {
+    if (!editTeam) return;
+    const t = setTimeout(() => {
+      editorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      editorRef.current?.querySelector("input")?.focus();
+    }, 60);
+    return () => clearTimeout(t);
+  }, [editTeam]);
 
   const refresh = useCallback(() => {
     if (!simulationId) return;
@@ -242,7 +255,11 @@ export default function FacultyDebrief({ simulationId }) {
 
       {/* ── inline override editor ──────────────────────────────────── */}
       {editTeam && (
-        <div className="f-card" style={{ marginTop: 14 }}>
+        <div
+          className="f-card f-editor-open"
+          ref={editorRef}
+          style={{ marginTop: 14, scrollMarginTop: 16 }}
+        >
           <div className="f-spread">
             <h2 style={{ margin: 0 }}>
               Adjust {editTeam.teamName} — {CONSTRUCT_LABELS[editConstruct]}

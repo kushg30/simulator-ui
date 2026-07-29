@@ -1,0 +1,102 @@
+/* =============================================================================
+   simulatorPolish.css — premium finish for the Simulator 1 round screen,
+   loaded AFTER simulator.css. Additive/override only; deepens the ambience,
+   sharpens the panels, and adds micro-interaction without changing the layout.
+   ============================================================================= */
+
+:root {
+  --s1-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --s1-blue: #3b82f6;
+  --s1-blue-lite: #93c5fd;
+}
+
+/* ---- ambient depth behind the glass panels --------------------------------*/
+.round-screen {
+  position: relative;
+  /* Colour glows only — fade to transparent so the app's ambient background
+     still shows through the glass panels. */
+  background:
+    radial-gradient(1200px 700px at 78% -10%, rgba(59, 130, 246, 0.10), transparent 60%),
+    radial-gradient(900px 600px at 8% 108%, rgba(99, 102, 241, 0.08), transparent 60%);
+}
+/* a faint vignette so the edges settle and the centre reads first */
+.round-screen::before {
+  content: "";
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background: radial-gradient(120% 90% at 50% 40%, transparent 55%, rgba(0, 0, 0, 0.45) 100%);
+}
+
+/* ---- top bar: glassier, with a soft sheen ---------------------------------*/
+.top-bar {
+  background: linear-gradient(180deg, rgba(10, 14, 24, 0.9), rgba(5, 8, 16, 0.82));
+  box-shadow: 0 10px 30px -20px rgba(0, 0, 0, 0.9);
+}
+.app-title { text-shadow: 0 0 24px rgba(59, 130, 246, 0.25); }
+.time-value { font-variant-numeric: tabular-nums; text-shadow: 0 0 18px rgba(236, 238, 244, 0.15); }
+.time-value.warn { text-shadow: 0 0 18px rgba(245, 158, 11, 0.4); }
+.time-value.critical { text-shadow: 0 0 20px rgba(239, 68, 68, 0.5); }
+
+/* ---- left nav: smoother, lit active state ---------------------------------*/
+.primary-nav button {
+  transition: color 0.2s var(--s1-ease), background 0.2s var(--s1-ease);
+}
+.primary-nav button.active {
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.16), rgba(59, 130, 246, 0.04));
+}
+.primary-nav button.active::after {
+  content: "";
+  position: absolute; left: 0; top: 8px; bottom: 8px; width: 2px;
+  background: linear-gradient(180deg, transparent, var(--s1-blue), transparent);
+  box-shadow: 0 0 12px var(--s1-blue);
+}
+.primary-nav button.active .nav-icon { filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.6)); }
+.nav-badge { animation: s1-badge 2.4s ease-in-out infinite; }
+@keyframes s1-badge {
+  0%, 100% { box-shadow: 0 0 10px rgba(59, 130, 246, 0.7); }
+  50% { box-shadow: 0 0 16px rgba(59, 130, 246, 1); }
+}
+
+/* ---- list: crisper selection + smooth hover -------------------------------*/
+.artifact-item { transition: background 0.2s var(--s1-ease), border-color 0.2s var(--s1-ease); }
+.artifact-item.selected {
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.14), rgba(59, 130, 246, 0.03));
+}
+.artifact-item.selected::before {
+  content: "";
+  position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  background: linear-gradient(180deg, transparent, var(--s1-blue), transparent);
+  box-shadow: 0 0 10px var(--s1-blue);
+}
+
+/* ---- content cards: a touch more depth + entrance -------------------------*/
+.artifact-card, .finance-memo, .finance-message, .board-message,
+.investor-draft, .slack-artifact, .calendar-invite, .mail-viewer {
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.06) inset,
+    0 20px 60px -24px rgba(0, 0, 0, 0.85),
+    0 0 60px -30px rgba(59, 130, 246, 0.35);
+}
+
+/* ---- action buttons: subtle sheen -----------------------------------------*/
+.doc-actions button, .slack-actions button, .tagging-check-options button,
+.calendar-rsvp-actions button, .final-decision-options button {
+  position: relative; overflow: hidden; isolation: isolate;
+}
+.doc-actions button:hover:not(:disabled),
+.slack-actions button:hover:not(:disabled),
+.tagging-check-options button:hover:not(:disabled),
+.calendar-rsvp-actions button:hover:not(:disabled) {
+  box-shadow: 0 8px 22px -12px rgba(59, 130, 246, 0.55);
+}
+
+/* ---- empty & loading states: quieter, more designed -----------------------*/
+.viewer.empty::before { content: "◆"; margin-right: 10px; color: rgba(59, 130, 246, 0.4); }
+.list-empty { opacity: 0.9; }
+
+/* ---- selection colour ------------------------------------------------------*/
+::selection { background: rgba(59, 130, 246, 0.3); color: #fff; }
+
+/* ---- reduced motion --------------------------------------------------------*/
+@media (prefers-reduced-motion: reduce) {
+  .nav-badge, .role-label::before, .time-value.critical { animation: none !important; }
+}

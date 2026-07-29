@@ -5,6 +5,7 @@ import ArtifactDetail from "./ArtifactDetail";
 import ArtifactList from "./ArtifactList";
 import ScreenFlashOverlay from "./ScreenFlashOverlay";
 import "../simulator.css";
+import "./simulatorPolish.css";
 import API_BASE from "../config";
 
 // ─────────────────────────────────────────────────────────────
