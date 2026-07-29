@@ -26,15 +26,56 @@
   background: radial-gradient(120% 90% at 50% 40%, transparent 55%, rgba(0, 0, 0, 0.45) 100%);
 }
 
+/* ---- READABILITY: the base theme sets many labels far too dim (#1e2236 /
+   #2e3450 / #3d4460) — legible on the designer's monitor, muddy everywhere
+   else. Lift every low-contrast label/meta to a readable slate. -------------*/
+.time-label,
+.list-header-label,
+.nav-label,
+.doc-type-tag,
+.doc-meta-label,
+.email-topbar-label,
+.diagnostic-label { color: #9aa4bd !important; }
+
+.artifact-item .meta,
+.slack-channel-meta,
+.slack-time,
+.email-from-addr,
+.email-sent-time,
+.email-to-line,
+.meeting-meta,
+.email-signature { color: #7f89a3 !important; }
+
+.primary-nav button { color: #8b93a8; }               /* idle nav icons/labels readable */
+.primary-nav button:hover { color: #c8ccd8; }
+.list-empty, .viewer.empty { color: #6b7494 !important; }
+.doc-meta-value { color: #b6bccd; }
+.doc-body, .email-body, .message-bubble { color: #c2c8d6; }  /* body copy brighter */
+.artifact-item .title { color: #d6dae6; }
+
 /* ---- top bar: glassier, with a soft sheen ---------------------------------*/
 .top-bar {
-  background: linear-gradient(180deg, rgba(10, 14, 24, 0.9), rgba(5, 8, 16, 0.82));
+  background: linear-gradient(180deg, rgba(10, 14, 24, 0.92), rgba(5, 8, 16, 0.86));
   box-shadow: 0 10px 30px -20px rgba(0, 0, 0, 0.9);
 }
 .app-title { text-shadow: 0 0 24px rgba(59, 130, 246, 0.25); }
-.time-value { font-variant-numeric: tabular-nums; text-shadow: 0 0 18px rgba(236, 238, 244, 0.15); }
-.time-value.warn { text-shadow: 0 0 18px rgba(245, 158, 11, 0.4); }
-.time-value.critical { text-shadow: 0 0 20px rgba(239, 68, 68, 0.5); }
+.phase-label { color: #f0b04a !important; opacity: 0.9 !important; }
+.role-label { color: #9aa4bd; }
+
+/* timer: readable label, glowing tabular digits, calm by default -------------*/
+.time-label { letter-spacing: 0.18em; }
+.time-value {
+  font-variant-numeric: tabular-nums;
+  color: #eef1f8;
+  text-shadow: 0 0 18px rgba(120, 170, 255, 0.25);
+}
+.time-value.warn { color: #fbbf24; text-shadow: 0 0 20px rgba(245, 158, 11, 0.45); }
+.time-value.critical {
+  color: #f87171;
+  text-shadow: 0 0 22px rgba(239, 68, 68, 0.55);
+  animation: s1-pulse 1.6s ease-in-out infinite;  /* gentle, not a hard blink */
+}
+@keyframes s1-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.72; } }
 
 /* ---- left nav: smoother, lit active state ---------------------------------*/
 .primary-nav button {
@@ -92,6 +133,18 @@
 /* ---- empty & loading states: quieter, more designed -----------------------*/
 .viewer.empty::before { content: "◆"; margin-right: 10px; color: rgba(59, 130, 246, 0.4); }
 .list-empty { opacity: 0.9; }
+
+.slack-text, .ops-stat-label { color: #c2c8d6 !important; }
+.slack-author, .meeting-title, .slack-channel-name { color: #eef1f8; }
+.email-from-name { color: #eef1f8; }
+
+/* ---- content canvas: faint grid texture for depth (very subtle) -----------*/
+.content-canvas {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.012) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.012) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
 
 /* ---- selection colour ------------------------------------------------------*/
 ::selection { background: rgba(59, 130, 246, 0.3); color: #fff; }

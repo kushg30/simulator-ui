@@ -215,9 +215,12 @@ export default function SimulationPage() {
     setActiveFlash(null);
   };
 
+  // Round runs ~30 min; ease into amber near the end and red only in the final
+  // stretch, so the timer is calm for most of the round instead of alarming early.
   const timerClass =
-    simSeconds > 900 ? "critical" :
-    simSeconds > 600 ? "warn" : "";
+    simSeconds > 1620 ? "critical" : // > 27 min
+    simSeconds > 1200 ? "warn" :     // > 20 min
+    "";
 
   if (!runId || !participantId)
     return <div className="sim-error">Invalid session.</div>;

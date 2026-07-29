@@ -60,6 +60,8 @@ export const resume = (runId, round, note, actor) =>
   post(`/runs/${runId}/rounds/${round}/resume`, { note, actor });
 export const pauseAll = (simulationId, note, actor) =>
   post(`/simulations/${simulationId}/pause-all`, { note, actor });
+export const terminateRun = (runId, note, actor) =>
+  post(`/runs/${runId}/terminate`, { note, actor });
 export const resumeAll = (simulationId, note, actor) =>
   post(`/simulations/${simulationId}/resume-all`, { note, actor });
 

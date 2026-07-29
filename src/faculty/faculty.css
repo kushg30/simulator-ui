@@ -147,6 +147,32 @@
 }
 .fac .f-mini:hover { color: var(--f-text); }
 
+/* Terminate confirmation modal */
+.fac .f-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(3, 5, 9, 0.66);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: f-fade 0.18s ease both;
+}
+.fac .f-modal {
+  width: 100%;
+  max-width: 460px;
+  background: var(--f-panel);
+  border: 1px solid var(--f-bad);
+  border-radius: 12px;
+  padding: 22px;
+  box-shadow: 0 30px 70px -20px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(218, 54, 51, 0.35);
+  animation: f-editor-in 0.24s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.fac .f-modal h2 { color: var(--f-bad); }
+@keyframes f-fade { from { opacity: 0; } to { opacity: 1; } }
+
 /* Debrief override editor — highlight when it opens so it's easy to spot */
 .fac .f-editor-open {
   border-color: var(--f-accent);
