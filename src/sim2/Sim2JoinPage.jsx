@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   createTeam,
@@ -7,6 +7,7 @@ import {
   getRun,
   joinTeam,
   ROLE_LABELS,
+  warmup,
 } from "./api";
 import "./sim2.css";
 
@@ -23,6 +24,10 @@ export default function Sim2JoinPage() {
   const [teamId, setTeamId] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    warmup();
+  }, []);
 
   async function handleCreate(e) {
     e.preventDefault();

@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { simulator1 } from "../data/simulator1";
+import { warmup } from "../config";
 import "../ContextPage.css";
 
 const TABS = [
@@ -12,6 +13,11 @@ const TABS = [
 export default function ContextPage() {
   const [tab, setTab] = useState("company");
   const navigate = useNavigate();
+
+  // Wake the backend while the brief is being read, so creating/joining is instant.
+  useEffect(() => {
+    warmup();
+  }, []);
 
   return (
     <div className="context-page">

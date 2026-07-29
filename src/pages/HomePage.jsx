@@ -2,6 +2,7 @@ import "./HomePage.css";
 import "./HomePolish.css";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
+import { warmup } from "../config";
 
 
 const steps = [
@@ -106,6 +107,12 @@ export default function HomePage() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const observerRef = useRef(null);
+
+  // Warm the backend as soon as anyone lands on the site, so the first
+  // create/join later in the flow doesn't pay the cold-start cost.
+  useEffect(() => {
+    warmup();
+  }, []);
 
   // Lock body scroll while the mobile menu is open.
   useEffect(() => {
