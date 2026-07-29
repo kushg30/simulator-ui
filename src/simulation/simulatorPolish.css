@@ -146,6 +146,38 @@
   background-size: 40px 40px;
 }
 
+/* ---- round transition overlay ---------------------------------------------*/
+.round-transition {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(120% 100% at 50% 40%, rgba(10, 16, 30, 0.86), rgba(4, 6, 12, 0.96));
+  backdrop-filter: blur(10px);
+  animation: rt-fade 0.4s ease both;
+}
+@keyframes rt-fade { from { opacity: 0; } to { opacity: 1; } }
+.round-transition-inner { text-align: center; animation: rt-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes rt-rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+.round-transition-eyebrow {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px; letter-spacing: 0.28em; text-transform: uppercase;
+  color: #6b7494; margin-bottom: 16px;
+}
+.round-transition-title {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: clamp(40px, 7vw, 72px); font-weight: 700; letter-spacing: 0.04em;
+  color: #eef1f8;
+  background: linear-gradient(120deg, #eef1f8, #60a5fa 60%, #6366f1);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 60px rgba(59, 130, 246, 0.4);
+}
+.round-transition-sub {
+  margin-top: 14px; font-size: 14px; color: #9aa4bd; letter-spacing: 0.02em;
+}
+
 /* ---- selection colour ------------------------------------------------------*/
 ::selection { background: rgba(59, 130, 246, 0.3); color: #fff; }
 
