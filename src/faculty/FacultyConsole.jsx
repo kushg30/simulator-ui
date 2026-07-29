@@ -7,6 +7,26 @@ import "./faculty.css";
 
 const ACTOR_KEY = "facultyActor";
 
+/** Human-readable paused time: seconds, then minutes, hours, days as it grows. */
+function formatDuration(totalSeconds) {
+  const s = Math.max(0, Math.round(Number(totalSeconds) || 0));
+  if (s === 0) return "0s";
+  if (s < 60) return `${s}s`;
+  if (s < 3600) {
+    const m = Math.floor(s / 60);
+    const r = s % 60;
+    return r ? `${m}m ${r}s` : `${m}m`;
+  }
+  if (s < 86400) {
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    return m ? `${h}h ${m}m` : `${h}h`;
+  }
+  const d = Math.floor(s / 86400);
+  const h = Math.floor((s % 86400) / 3600);
+  return h ? `${d}d ${h}h` : `${d}d`;
+}
+
 /**
  * Facilitator console — platform-wide, works for every simulation on the platform.
  *
@@ -31,6 +51,10 @@ export default function FacultyConsole() {
   const [note, setNote] = useState("");
   const [tab, setTab] = useState("live"); // "live" | "debrief" | "wiki"
   const [debriefSim, setDebriefSim] = useState("sim2"); // which simulation's results to show
+
+  // terminate confirmation
+  const [terminateRow, setTerminateRow] = useState(null); // the team row pending termination
+  const [terminateText, setTerminateText] = useState("");
 
   // delay/bypass form
   const [targetArtifact, setTargetArtifact] = useState("");
@@ -314,7 +338,7 @@ export default function FacultyConsole() {
                           <span className="f-pill done">Between rounds</span>
                         )}
                       </td>
-                      <td className="f-note">{r.pausedSecondsTotal}s</td>
+                      <td className="f-note">{formatDuration(r.pausedSecondsTotal)}</td>
                       <td>
                         <div className="f-row">
                           {/* Pause only means something while a round is actually running. */}
@@ -345,6 +369,15 @@ export default function FacultyConsole() {
                           )}
                           <button className="f-ghost" onClick={() => selectRun(r)}>
                             Manage
+                          </button>
+                          <button
+                            className="f-danger"
+                            onClick={() => {
+                              setTerminateRow(r);
+                              setTerminateText("");
+                            }}
+                          >
+                            Terminate
                           </button>
                         </div>
                       </td>
@@ -568,6 +601,51 @@ export default function FacultyConsole() {
           </div>
         </div>
         </>
+        )}
+
+        {/* ── terminate confirmation ─────────────────────────────────────── */}
+        {terminateRow && (
+          <div className="f-modal-backdrop" onClick={() => setTerminateRow(null)}>
+            <div className="f-modal" onClick={(e) => e.stopPropagation()}>
+              <h2 style={{ marginTop: 0 }}>Terminate simulation run</h2>
+              <p className="f-note">
+                Are you sure you want to terminate this simulation run for{" "}
+                <strong>{terminateRow.teamName}</strong>? This ends the run for everyone — artifacts
+                stop firing and it leaves the console. This cannot be undone.
+              </p>
+              <label htmlFor="f-terminate">
+                Type <strong>terminate</strong> to confirm
+              </label>
+              <input
+                id="f-terminate"
+                type="text"
+                autoFocus
+                value={terminateText}
+                placeholder="terminate"
+                onChange={(e) => setTerminateText(e.target.value)}
+              />
+              <div className="f-row" style={{ marginTop: 16, justifyContent: "flex-end" }}>
+                <button className="f-ghost" onClick={() => setTerminateRow(null)}>
+                  Cancel
+                </button>
+                <button
+                  className="f-danger"
+                  disabled={terminateText.trim().toLowerCase() !== "terminate"}
+                  onClick={async () => {
+                    const row = terminateRow;
+                    setTerminateRow(null);
+                    if (selected?.runId === row.runId) setSelected(null);
+                    await act(
+                      () => api.terminateRun(row.runId, note, actor),
+                      `Terminated ${row.teamName}`
+                    );
+                  }}
+                >
+                  Terminate run
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>
