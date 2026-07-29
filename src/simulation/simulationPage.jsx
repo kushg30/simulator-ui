@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { useArtifacts, parseServerTime } from "./useartifacts";
 import ArtifactDetail from "./ArtifactDetail";
 import ArtifactList from "./ArtifactList";
@@ -63,6 +63,7 @@ export default function SimulationPage() {
   // Read the live session from the URL instead of hardcoded ids, so each
   // participant fetches their own artifacts for the real run.
   const [params] = useSearchParams();
+  const navigate = useNavigate();
   const runId         = params.get("runId");
   const participantId = params.get("participantId");
   const role          = params.get("role");
@@ -72,23 +73,43 @@ export default function SimulationPage() {
   const [activeTab,        setActiveTab]        = useState("inbox");
   const [selectedArtifact, setSelectedArtifact] = useState(null);
   const [artifactsState,   setArtifactsState]   = useState([]);
-  const [startTime,        setStartTime]        = useState(null);
   const [activeFlash,      setActiveFlash]      = useState(null);
   const [flashLoading,     setFlashLoading]     = useState(false);
   const [dismissed,        setDismissed]        = useState(new Set());
 
-  useEffect(() => {
-    if (startTime) return;
-    if (artifacts?.length > 0) {
-      const earliest = [...artifacts].sort(
-        (a, b) => new Date(a.openAt) - new Date(b.openAt)
-      )[0];
-      setStartTime(earliest.openAt);
-    } else {
-      setStartTime(new Date().toISOString());
-    }
-  }, [artifacts]); // eslint-disable-line
+  // ── round state: number, per-round start time, total, completion ──────────
+  const [round,       setRound]       = useState(null); // { roundNumber, startedAt, totalRounds }
+  const [transition,  setTransition]  = useState(null); // shows "Round N begins" briefly
 
+  useEffect(() => {
+    if (!runId) return;
+    let prev = null;
+    const poll = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/runs/${runId}/round-state`);
+        if (!res.ok) return;
+        const s = await res.json();
+        if (s.completed) {
+          navigate(`/results?runId=${runId}`);
+          return;
+        }
+        setRound(s);
+        if (prev !== null && s.roundNumber > prev) {
+          setTransition(s.roundNumber);
+          setTimeout(() => setTransition(null), 2600);
+        }
+        prev = s.roundNumber;
+      } catch {
+        /* transient */
+      }
+    };
+    poll();
+    const id = setInterval(poll, 3000);
+    return () => clearInterval(id);
+  }, [runId, navigate]);
+
+  // Timer counts from the CURRENT round's start, so it resets each round.
+  const startTime = round?.startedAt || null;
   const simSeconds = useSimulationTime(startTime);
 
   useEffect(() => {
@@ -248,6 +269,16 @@ export default function SimulationPage() {
   return (
     <div className="round-screen">
 
+      {transition && (
+        <div className="round-transition">
+          <div className="round-transition-inner">
+            <div className="round-transition-eyebrow">Previous round locked</div>
+            <div className="round-transition-title">Round {transition}</div>
+            <div className="round-transition-sub">A new timeline begins. The clock resets.</div>
+          </div>
+        </div>
+      )}
+
       {activeFlash && (
         <ScreenFlashOverlay
           artifact={activeFlash}
@@ -265,7 +296,10 @@ export default function SimulationPage() {
         </div>
         <div className="top-center">
           <div className="app-title">Leadership Simulator</div>
-          <div className="phase-label">Interpretation Phase</div>
+          <div className="phase-label">
+            Round {round?.roundNumber ?? 1}
+            {round?.totalRounds ? ` of ${round.totalRounds}` : ""} · Interpretation Phase
+          </div>
         </div>
         <div className="top-right time-block">
           <span className="time-label">Round Time</span>
