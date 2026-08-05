@@ -300,3 +300,16 @@
 .sim2 .s2-partial-table th{text-align:left;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--s2-muted);padding:6px 10px;border-bottom:1px solid rgba(255,255,255,0.1);}
 .sim2 .s2-partial-table td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.05);}
 .sim2 .s2-partial-table tr:last-child td{border-bottom:0;}
+
+/* ── Dataset download links ── */
+.sim2 .s2-file-link{display:inline-flex;align-items:center;gap:4px;margin:4px 8px 4px 0;padding:6px 12px;border:1px solid var(--s2-accent,#3b82f6);border-radius:7px;color:var(--s2-accent,#3b82f6);text-decoration:none;font-size:0.82rem;font-weight:600;transition:background .15s,color .15s;}
+.sim2 .s2-file-link:hover{background:var(--s2-accent,#3b82f6);color:#fff;}
+
+/* ── Role structure table: balanced columns (no sparse gap) ── */
+.sim2 .s2-role-table{table-layout:fixed;}
+.sim2 .s2-role-table th:nth-child(1),.sim2 .s2-role-table td:nth-child(1){width:26%;}
+.sim2 .s2-role-table th:nth-child(2),.sim2 .s2-role-table td:nth-child(2){width:42%;padding-right:24px;}
+.sim2 .s2-role-table th:nth-child(3),.sim2 .s2-role-table td:nth-child(3){width:32%;}
+.sim2 .s2-role-table td{vertical-align:top;line-height:1.5;}
+.sim2 .s2-role-table td:nth-child(1){font-weight:600;color:var(--s2-text,#e6edf3);}
+.sim2 .s2-role-table td:nth-child(3){color:var(--s2-muted,#8b98a9);font-size:0.85rem;}

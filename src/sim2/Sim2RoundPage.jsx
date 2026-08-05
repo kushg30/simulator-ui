@@ -331,7 +331,9 @@ export default function Sim2RoundPage() {
                 <div className="s2-files">
                   Attached:{" "}
                   {payload.files.map((f) => (
-                    <code key={f}>{f}</code>
+                    <a key={f} className="s2-file-link" href={`/sim2-data/${f}`} download>
+                      ⬇ {f}
+                    </a>
                   ))}
                 </div>
               )}
