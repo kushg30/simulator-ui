@@ -92,6 +92,10 @@ export const overrideConstruct = (runId, construct, value, reason, actor) =>
 export const revertConstruct = (runId, construct, actor) =>
   post(`/sim2/runs/${runId}/constructs/${construct}/revert`, { actor });
 
+// ── Simulator 2 engagement (Breaking News broadcast) ────────────────────────
+export const broadcastBreakingNews = (simulationId, message, actor) =>
+  post(`/sim2/simulations/${simulationId}/broadcast`, { message, actor });
+
 // ── Simulator 1 debrief (Set-A hidden variables, faculty-only) ──────────────
 export const getSim1Debrief = (simulationId) =>
   call(`/sim1/simulations/${simulationId}/debrief`);

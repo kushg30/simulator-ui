@@ -56,6 +56,11 @@ export default function FacultyConsole() {
   const [terminateRow, setTerminateRow] = useState(null); // the team row pending termination
   const [terminateText, setTerminateText] = useState("");
 
+  // Sim 2 Breaking News broadcast
+  const [breakingMsg, setBreakingMsg] = useState(
+    "BREAKING: A competing retailer has just announced a festive discount campaign across South and West India."
+  );
+
   // delay/bypass form
   const [targetArtifact, setTargetArtifact] = useState("");
   const [delayMinutes, setDelayMinutes] = useState(5);
@@ -292,6 +297,36 @@ export default function FacultyConsole() {
             placeholder="e.g. projector failure in room 2"
             onChange={(e) => setNote(e.target.value)}
           />
+        </div>
+
+        {/* ── Sim 2 Breaking News broadcast ───────────────────────────── */}
+        <div className="f-card">
+          <h2>Breaking News — Simulator 2</h2>
+          <p className="f-note">
+            Sends a full-width interrupt to every Meridian QBR team at once (Round 3 device). No new
+            data — it forces teams to decide live whether it changes a number they treated as settled.
+          </p>
+          <label htmlFor="f-breaking">Message</label>
+          <input
+            id="f-breaking"
+            type="text"
+            value={breakingMsg}
+            onChange={(e) => setBreakingMsg(e.target.value)}
+          />
+          <div className="f-row" style={{ marginTop: 12 }}>
+            <button
+              className="f-warn"
+              disabled={!breakingMsg.trim()}
+              onClick={() =>
+                act(
+                  () => api.broadcastBreakingNews(api.MERIDIAN_SIMULATION_ID, breakingMsg, actor),
+                  "Breaking News sent to all Sim 2 teams"
+                )
+              }
+            >
+              Send Breaking News
+            </button>
+          </div>
         </div>
 
         {/* ── session overview ─────────────────────────────────────────── */}
