@@ -3,6 +3,7 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
   getArtifacts,
   getBroadcast,
+  getPartialLeaderboard,
   getQuestion,
   getRoundState,
   MERIDIAN_SIMULATION_ID,
@@ -79,6 +80,17 @@ export default function Sim2RoundPage() {
   const [breaking, setBreaking] = useState(null); // { message } when a new broadcast lands
   const [boardCallText, setBoardCallText] = useState("");
   const [boardCallDone, setBoardCallDone] = useState(false);
+  const [partialBoard, setPartialBoard] = useState(null); // Partial Leaderboard (between R2/R3)
+
+  // Between Rounds 2 and 3 the system reveals Data Trust + Turnaround only.
+  const roundDone = roundState?.status === "COMPLETE";
+  useEffect(() => {
+    if (roundNumber !== 2 || !roundDone) return;
+    const load = () => getPartialLeaderboard().then(setPartialBoard).catch(() => {});
+    load();
+    const id = setInterval(load, 5000);
+    return () => clearInterval(id);
+  }, [roundNumber, roundDone]);
 
   // Poll for a facilitator Breaking News broadcast; show it once (tracked by id).
   useEffect(() => {
@@ -364,6 +376,40 @@ export default function Sim2RoundPage() {
                   ? "Continue to the results to review and start the next round."
                   : "Waiting for the Team Lead to start the next round — you'll move on automatically."}
               </p>
+
+              {roundNumber === 2 && partialBoard?.teams?.length > 0 && (
+                <div className="s2-partial">
+                  <div className="s2-partial-head">
+                    Partial leaderboard — <strong>Data Trust</strong> &amp;{" "}
+                    <strong>Turnaround</strong> only. The other three constructs and your final rank
+                    stay hidden until the end.
+                  </div>
+                  <table className="s2-partial-table">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Team</th>
+                        <th>Data Trust</th>
+                        <th>Turnaround</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {partialBoard.teams.map((t) => (
+                        <tr key={t.teamName}>
+                          <td>{t.rank}</td>
+                          <td>{t.teamName}</td>
+                          <td>{t.dataTrust ?? "—"}</td>
+                          <td>{t.turnaround ?? "—"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  <div className="s2-sub" style={{ marginTop: 8 }}>
+                    Data Trust here is provisional — it reflects your data-quality choices so far and
+                    can still move as later rounds are scored.
+                  </div>
+                </div>
+              )}
             </>
           ) : isLead ? (
             <form onSubmit={handleSubmit}>

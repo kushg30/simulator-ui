@@ -126,6 +126,10 @@ export function getWiki(runId, round) {
 export function getBroadcast(simulationId = MERIDIAN_SIMULATION_ID) {
   return fetch(`${API_BASE}/api/sim2/simulations/${simulationId}/broadcast`).then(toJson);
 }
+// Partial Leaderboard reveal (Data Trust + Turnaround), shown between R2 and R3.
+export function getPartialLeaderboard(simulationId = MERIDIAN_SIMULATION_ID) {
+  return fetch(`${API_BASE}/api/sim2/simulations/${simulationId}/partial-leaderboard`).then(toJson);
+}
 // Record the team's Emergency Board Call one-line response.
 export function postBoardCall(runId, { roundNumber, response, participantId }) {
   return fetch(`${API_BASE}/api/sim2/runs/${runId}/board-call`, {
