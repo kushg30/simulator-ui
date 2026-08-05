@@ -13,12 +13,12 @@ const PROBLEM = `The Board wants a Quarterly Business Review it can trust, filte
 (The Head of Strategy and "the Board" are NPCs throughout — they send memos and ask questions, but are never played by a student.)`;
 
 const ROLES = [
-  ["TEAM_LEAD", "Coordinates every round; submits each round's file, answer and confidence tag", "Insight Communication"],
-  ["DATA_QUALITY_ANALYST", "Round 1", "Text & Logical functions"],
-  ["CATEGORY_REGIONAL_ANALYST", "Round 2", "Lookup/Reference, Statistical functions"],
-  ["REPORTING_DASHBOARD_ANALYST", "Round 3", "Tables, PivotTables & Charts"],
-  ["PEOPLE_ANALYTICS_ASSOCIATE", "Round 4", "Slicers, Timelines, Dashboard design"],
-  ["AUTOMATION_BI_ASSOCIATE", "Round 5", "Power BI / Tableau"],
+  ["TEAM_LEAD", "Coordinates every round and submits each round's file, answer and confidence tag on the team's behalf.", "Insight Communication"],
+  ["DATA_QUALITY_ANALYST", "Round 1 — parses the raw transaction feed and classifies the customer notes, so the numbers can be trusted at all.", "Text & Logical functions"],
+  ["CATEGORY_REGIONAL_ANALYST", "Round 2 — works out which categories are genuinely more profitable, resolving the SKU margin conflict along the way.", "Lookup/Reference, Statistical functions"],
+  ["REPORTING_DASHBOARD_ANALYST", "Round 3 — turns the analysis into the one-page PivotTable/Chart summary the Board can actually act on.", "Tables, PivotTables & Charts"],
+  ["PEOPLE_ANALYTICS_ASSOCIATE", "Round 4 — adds slicers and a timeline so the Board can filter the dashboard live in the meeting.", "Slicers, Timelines, Dashboard design"],
+  ["AUTOMATION_BI_ASSOCIATE", "Round 5 — ports the model into Power BI or Tableau so it runs live and self-serve.", "Power BI / Tableau"],
 ];
 
 /**
@@ -101,7 +101,7 @@ export default function Sim2ContextPage() {
                 <thead>
                   <tr>
                     <th>Role</th>
-                    <th>Owns</th>
+                    <th>What they own</th>
                     <th>Skill anchor</th>
                   </tr>
                 </thead>
