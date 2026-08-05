@@ -116,7 +116,7 @@ export default function Sim2JoinPage() {
       <div className="s2-shell">
         <h1>Meridian Retail — Quarterly Business Review</h1>
         <p className="s2-sub">
-          A six-round analytics engagement. Build a QBR the Board can trust, filter and act on.
+          A five-round analytics engagement. Build a QBR the Board can trust, filter and act on.
         </p>
 
         <div className="s2-card">

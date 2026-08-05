@@ -104,7 +104,7 @@ export default function Sim2ResultsPage() {
 
         {isComplete && (
           <div className="s2-card">
-            <h2>Final reveal — all six rounds</h2>
+            <h2>Final reveal — all five rounds</h2>
             <p className="s2-sub">
               Your five leadership constructs, scored 0–100 across the whole engagement.
             </p>

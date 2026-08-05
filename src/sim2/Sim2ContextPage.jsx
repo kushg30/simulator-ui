@@ -16,9 +16,9 @@ const ROLES = [
   ["TEAM_LEAD", "Coordinates every round; submits each round's file, answer and confidence tag", "Insight Communication"],
   ["DATA_QUALITY_ANALYST", "Round 1", "Text & Logical functions"],
   ["CATEGORY_REGIONAL_ANALYST", "Round 2", "Lookup/Reference, Statistical functions"],
-  ["REPORTING_DASHBOARD_ANALYST", "Round 3", "Tables, PivotTables/Charts, Slicers"],
-  ["PEOPLE_ANALYTICS_ASSOCIATE", "Round 4", "Data Models, DAX"],
-  ["AUTOMATION_BI_ASSOCIATE", "Rounds 5–6", "Power BI, VBA/Macros"],
+  ["REPORTING_DASHBOARD_ANALYST", "Round 3", "Tables, PivotTables & Charts"],
+  ["PEOPLE_ANALYTICS_ASSOCIATE", "Round 4", "Slicers, Timelines, Dashboard design"],
+  ["AUTOMATION_BI_ASSOCIATE", "Round 5", "Power BI / Tableau"],
 ];
 
 /**
