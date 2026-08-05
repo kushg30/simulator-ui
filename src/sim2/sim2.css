@@ -305,11 +305,14 @@
 .sim2 .s2-file-link{display:inline-flex;align-items:center;gap:4px;margin:4px 8px 4px 0;padding:6px 12px;border:1px solid var(--s2-accent,#3b82f6);border-radius:7px;color:var(--s2-accent,#3b82f6);text-decoration:none;font-size:0.82rem;font-weight:600;transition:background .15s,color .15s;}
 .sim2 .s2-file-link:hover{background:var(--s2-accent,#3b82f6);color:#fff;}
 
-/* ── Role structure table: balanced columns (no sparse gap) ── */
+/* ── Role structure table: 4 balanced columns (Role · Leads · What · Skill) ── */
 .sim2 .s2-role-table{table-layout:fixed;}
-.sim2 .s2-role-table th:nth-child(1),.sim2 .s2-role-table td:nth-child(1){width:26%;}
-.sim2 .s2-role-table th:nth-child(2),.sim2 .s2-role-table td:nth-child(2){width:42%;padding-right:24px;}
-.sim2 .s2-role-table th:nth-child(3),.sim2 .s2-role-table td:nth-child(3){width:32%;}
+.sim2 .s2-role-table th:nth-child(1),.sim2 .s2-role-table td:nth-child(1){width:20%;}
+.sim2 .s2-role-table th:nth-child(2),.sim2 .s2-role-table td:nth-child(2){width:13%;}
+.sim2 .s2-role-table th:nth-child(3),.sim2 .s2-role-table td:nth-child(3){width:40%;padding-right:24px;}
+.sim2 .s2-role-table th:nth-child(4),.sim2 .s2-role-table td:nth-child(4){width:27%;}
 .sim2 .s2-role-table td{vertical-align:top;line-height:1.5;}
 .sim2 .s2-role-table td:nth-child(1){font-weight:600;color:var(--s2-text,#e6edf3);}
 .sim2 .s2-role-table td:nth-child(3){color:var(--s2-muted,#8b98a9);font-size:0.85rem;}
+.sim2 .s2-role-table td:nth-child(4){color:var(--s2-muted,#8b98a9);font-size:0.85rem;}
+.sim2 .s2-role-badge{display:inline-block;font-size:0.72rem;font-weight:600;letter-spacing:0.02em;padding:3px 9px;border-radius:999px;white-space:nowrap;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);color:#93c5fd;}

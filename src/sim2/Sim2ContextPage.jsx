@@ -12,13 +12,14 @@ const PROBLEM = `The Board wants a Quarterly Business Review it can trust, filte
 
 (The Head of Strategy and "the Board" are NPCs throughout — they send memos and ask questions, but are never played by a student.)`;
 
+// [code, leads, description, skill anchor]
 const ROLES = [
-  ["TEAM_LEAD", "Coordinates every round and submits each round's file, answer and confidence tag on the team's behalf.", "Insight Communication"],
-  ["DATA_QUALITY_ANALYST", "Round 1 — parses the raw transaction feed and classifies the customer notes, so the numbers can be trusted at all.", "Text & Logical functions"],
-  ["CATEGORY_REGIONAL_ANALYST", "Round 2 — works out which categories are genuinely more profitable, resolving the SKU margin conflict along the way.", "Lookup/Reference, Statistical functions"],
-  ["REPORTING_DASHBOARD_ANALYST", "Round 3 — turns the analysis into the one-page PivotTable/Chart summary the Board can actually act on.", "Tables, PivotTables & Charts"],
-  ["PEOPLE_ANALYTICS_ASSOCIATE", "Round 4 — adds slicers and a timeline so the Board can filter the dashboard live in the meeting.", "Slicers, Timelines, Dashboard design"],
-  ["AUTOMATION_BI_ASSOCIATE", "Round 5 — ports the model into Power BI or Tableau so it runs live and self-serve.", "Power BI / Tableau"],
+  ["TEAM_LEAD", "All rounds", "Coordinates the team and submits each round's file, answer and confidence tag on the team's behalf.", "Insight Communication"],
+  ["DATA_QUALITY_ANALYST", "Round 1", "Parses the raw transaction feed and classifies the customer notes, so the numbers can be trusted at all.", "Text & Logical functions"],
+  ["CATEGORY_REGIONAL_ANALYST", "Round 2", "Works out which categories are genuinely more profitable, resolving the SKU margin conflict along the way.", "Lookup/Reference, Statistical functions"],
+  ["REPORTING_DASHBOARD_ANALYST", "Round 3", "Turns the analysis into the one-page PivotTable/Chart summary the Board can act on.", "Tables, PivotTables & Charts"],
+  ["PEOPLE_ANALYTICS_ASSOCIATE", "Round 4", "Adds slicers and a timeline so the Board can filter the dashboard live in the meeting.", "Slicers, Timelines, Dashboard design"],
+  ["AUTOMATION_BI_ASSOCIATE", "Round 5", "Ports the model into Power BI or Tableau so it runs live and self-serve.", "Power BI / Tableau"],
 ];
 
 /**
@@ -101,18 +102,22 @@ export default function Sim2ContextPage() {
                 <thead>
                   <tr>
                     <th>Role</th>
-                    <th>What they own</th>
+                    <th>Leads</th>
+                    <th>What they do</th>
                     <th>Skill anchor</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {ROLES.map(([code, owns, skill]) => (
+                  {ROLES.map(([code, leads, desc, skill]) => (
                     <tr key={code} className={code === role ? "s2-role-you" : ""}>
                       <td>
                         {ROLE_LABELS[code] || code}
                         {code === role ? <span className="s2-sub"> — you</span> : null}
                       </td>
-                      <td>{owns}</td>
+                      <td>
+                        <span className="s2-role-badge">{leads}</span>
+                      </td>
+                      <td>{desc}</td>
                       <td>{skill}</td>
                     </tr>
                   ))}
