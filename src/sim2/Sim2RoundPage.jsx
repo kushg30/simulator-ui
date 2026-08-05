@@ -2,9 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
   getArtifacts,
+  getBroadcast,
   getQuestion,
   getRoundState,
+  MERIDIAN_SIMULATION_ID,
   parsePayload,
+  postBoardCall,
   recordDecision,
   ROLE_LABELS,
   submitRound,
@@ -40,7 +43,7 @@ function useServerCountdown(remainingSeconds, paused) {
   return Math.max(0, base.seconds - elapsed);
 }
 
-const TOTAL_ROUNDS = 6; // Meridian Retail QBR
+const TOTAL_ROUNDS = 5; // Meridian Retail QBR (v2)
 
 function formatClock(totalSeconds) {
   if (totalSeconds === null) return "--:--";
@@ -71,6 +74,35 @@ export default function Sim2RoundPage() {
   const [confidence, setConfidence] = useState("MEDIUM");
   const [file, setFile] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+
+  // ── engagement devices (v2) ───────────────────────────────────────────────
+  const [breaking, setBreaking] = useState(null); // { message } when a new broadcast lands
+  const [boardCallText, setBoardCallText] = useState("");
+  const [boardCallDone, setBoardCallDone] = useState(false);
+
+  // Poll for a facilitator Breaking News broadcast; show it once (tracked by id).
+  useEffect(() => {
+    let stop = false;
+    const poll = async () => {
+      try {
+        const b = await getBroadcast(MERIDIAN_SIMULATION_ID);
+        if (stop || !b || !b.broadcastId) return;
+        const seen = localStorage.getItem("s2_last_broadcast");
+        if (b.broadcastId !== seen) {
+          localStorage.setItem("s2_last_broadcast", b.broadcastId);
+          setBreaking(b);
+        }
+      } catch {
+        /* transient */
+      }
+    };
+    poll();
+    const id = setInterval(poll, 4000);
+    return () => {
+      stop = true;
+      clearInterval(id);
+    };
+  }, []);
 
   const gotoRound = useCallback(
     (n) =>
@@ -181,12 +213,65 @@ export default function Sim2RoundPage() {
 
   const submitted = roundState?.status === "COMPLETE";
 
+  // Emergency Board Call artifact is shown as a forced modal, not a normal card.
+  const boardCallArtifact = artifacts.find((a) => parsePayload(a.payload).board_call);
+  const normalArtifacts = artifacts.filter((a) => !parsePayload(a.payload).board_call);
+
+  async function submitBoardCall() {
+    if (!boardCallText.trim()) return;
+    try {
+      await postBoardCall(runId, {
+        roundNumber,
+        response: boardCallText.trim(),
+        participantId,
+      });
+      setBoardCallDone(true);
+    } catch (e) {
+      setError(e.message);
+    }
+  }
+
   return (
     <div className="sim2">
+      {/* Breaking News — full-width facilitator interrupt */}
+      {breaking && (
+        <div className="s2-breaking" onClick={() => setBreaking(null)}>
+          <div className="s2-breaking-inner" onClick={(e) => e.stopPropagation()}>
+            <div className="s2-breaking-tag">● Breaking</div>
+            <div className="s2-breaking-msg">{breaking.message}</div>
+            <button onClick={() => setBreaking(null)}>Acknowledge</button>
+          </div>
+        </div>
+      )}
+
+      {/* Emergency Board Call — forced one-line response */}
+      {boardCallArtifact && !boardCallDone && (
+        <div className="s2-breaking">
+          <div className="s2-breaking-inner" onClick={(e) => e.stopPropagation()}>
+            <div className="s2-breaking-tag s2-boardcall-tag">Emergency Board Call · 60s</div>
+            <div className="s2-breaking-msg">
+              {parsePayload(boardCallArtifact.payload).body}
+            </div>
+            <input
+              type="text"
+              autoFocus
+              value={boardCallText}
+              placeholder="One word / one line…"
+              onChange={(e) => setBoardCallText(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && submitBoardCall()}
+              style={{ maxWidth: 420, margin: "0 auto 14px", display: "block" }}
+            />
+            <button onClick={submitBoardCall} disabled={!boardCallText.trim()}>
+              Send to the Board
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="s2-shell">
         <div className="s2-row" style={{ justifyContent: "space-between" }}>
           <div>
-            <h1>Round {roundNumber} — Clean this before I trust a single number in it</h1>
+            <h1>Round {roundNumber} of {TOTAL_ROUNDS}</h1>
             <p className="s2-sub">
               You are the <strong>{ROLE_LABELS[role] || role}</strong>
             </p>
@@ -210,7 +295,7 @@ export default function Sim2RoundPage() {
           </div>
         )}
 
-        {artifacts.length === 0 && (
+        {normalArtifacts.length === 0 && (
           <div className="s2-card">
             <p className="s2-sub" style={{ margin: 0 }}>
               Nothing has landed yet. Artifacts are released on the round clock.
@@ -218,7 +303,7 @@ export default function Sim2RoundPage() {
           </div>
         )}
 
-        {artifacts.map((a) => {
+        {normalArtifacts.map((a) => {
           const payload = parsePayload(a.payload);
           const options = parsePayload(a.decisionOptions);
           const optionList = Array.isArray(options) ? options : [];

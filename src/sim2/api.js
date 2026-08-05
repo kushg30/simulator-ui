@@ -121,6 +121,20 @@ export function getWiki(runId, round) {
   return fetch(`${API_BASE}/api/sim2/runs/${runId}/wiki?round=${round}`).then(toJson);
 }
 
+// ── engagement devices (v2) ─────────────────────────────────────────────────
+// Latest facilitator Breaking News broadcast for the simulation ({} if none).
+export function getBroadcast(simulationId = MERIDIAN_SIMULATION_ID) {
+  return fetch(`${API_BASE}/api/sim2/simulations/${simulationId}/broadcast`).then(toJson);
+}
+// Record the team's Emergency Board Call one-line response.
+export function postBoardCall(runId, { roundNumber, response, participantId }) {
+  return fetch(`${API_BASE}/api/sim2/runs/${runId}/board-call`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ roundNumber, response, participantId }),
+  }).then(toJson);
+}
+
 // ── display helpers ─────────────────────────────────────────────────────────
 
 // Role codes are kept from v1; only the v2 display names / round ownership change.
