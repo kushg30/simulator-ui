@@ -292,3 +292,11 @@
 .sim2 .s2-breaking-msg{font-size:clamp(22px,3.4vw,34px);font-weight:700;line-height:1.3;color:#f5f6fa;letter-spacing:-0.01em;margin-bottom:26px;}
 .sim2 .s2-breaking-inner button{background:#fff;color:#111;border:0;border-radius:8px;padding:12px 26px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;}
 .sim2 .s2-breaking-inner button:disabled{opacity:.5;cursor:not-allowed;}
+
+/* ── Partial Leaderboard reveal (between R2 and R3) ── */
+.sim2 .s2-partial{margin-top:16px;border:1px solid var(--s2-border,rgba(255,255,255,0.12));border-radius:12px;padding:16px 18px;background:rgba(255,255,255,0.02);}
+.sim2 .s2-partial-head{font-size:13px;color:var(--s2-muted);line-height:1.6;margin-bottom:12px;}
+.sim2 .s2-partial-table{width:100%;border-collapse:collapse;font-size:14px;}
+.sim2 .s2-partial-table th{text-align:left;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--s2-muted);padding:6px 10px;border-bottom:1px solid rgba(255,255,255,0.1);}
+.sim2 .s2-partial-table td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.05);}
+.sim2 .s2-partial-table tr:last-child td{border-bottom:0;}
