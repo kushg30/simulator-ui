@@ -184,6 +184,58 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* Debrief — cohort ranking bars + trajectory cards */
+.fac .f-rank-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+  margin-top: 10px;
+}
+.fac .f-rank-card {
+  background: var(--f-panel);
+  border: 1px solid var(--f-border);
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+.fac .f-rank-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--f-text);
+  margin-bottom: 10px;
+}
+.fac .f-rank-row {
+  display: grid;
+  grid-template-columns: 84px 1fr 30px;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 0;
+}
+.fac .f-rank-name {
+  font-size: 0.78rem;
+  color: var(--f-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fac .f-rank-track {
+  height: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.fac .f-rank-fill {
+  display: block;
+  height: 100%;
+  background: var(--f-accent);
+  border-radius: 6px;
+}
+.fac .f-rank-val {
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--f-text);
+  text-align: right;
+}
+
 /* Debrief answer grid */
 .fac .f-ans-table { table-layout: fixed; }
 .fac .f-ans-table th.f-ans-col { text-align: center; width: 64px; }
