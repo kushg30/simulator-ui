@@ -121,10 +121,10 @@ export function getWiki(runId, round) {
   return fetch(`${API_BASE}/api/sim2/runs/${runId}/wiki?round=${round}`).then(toJson);
 }
 
-// ── engagement devices (v2) ─────────────────────────────────────────────────
-// Latest facilitator Breaking News broadcast for the simulation ({} if none).
-export function getBroadcast(simulationId = MERIDIAN_SIMULATION_ID) {
-  return fetch(`${API_BASE}/api/sim2/simulations/${simulationId}/broadcast`).then(toJson);
+// ── engagement devices ──────────────────────────────────────────────────────
+// Latest Breaking News broadcast, personalised to this run's Round 2 answer ({} if none).
+export function getBroadcast(runId) {
+  return fetch(`${API_BASE}/api/sim2/runs/${runId}/broadcast`).then(toJson);
 }
 // Partial Leaderboard reveal (Data Trust + Turnaround), shown between R2 and R3.
 export function getPartialLeaderboard(simulationId = MERIDIAN_SIMULATION_ID) {
