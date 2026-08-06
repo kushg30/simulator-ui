@@ -6,7 +6,6 @@ import {
   getPartialLeaderboard,
   getQuestion,
   getRoundState,
-  MERIDIAN_SIMULATION_ID,
   parsePayload,
   postBoardCall,
   recordDecision,
@@ -94,10 +93,11 @@ export default function Sim2RoundPage() {
 
   // Poll for a facilitator Breaking News broadcast; show it once (tracked by id).
   useEffect(() => {
+    if (!runId) return;
     let stop = false;
     const poll = async () => {
       try {
-        const b = await getBroadcast(MERIDIAN_SIMULATION_ID);
+        const b = await getBroadcast(runId);
         if (stop || !b || !b.broadcastId) return;
         const seen = localStorage.getItem("s2_last_broadcast");
         if (b.broadcastId !== seen) {
@@ -114,7 +114,7 @@ export default function Sim2RoundPage() {
       stop = true;
       clearInterval(id);
     };
-  }, []);
+  }, [runId]);
 
   const gotoRound = useCallback(
     (n) =>

@@ -56,10 +56,6 @@ export default function FacultyConsole() {
   const [terminateRow, setTerminateRow] = useState(null); // the team row pending termination
   const [terminateText, setTerminateText] = useState("");
 
-  // Sim 2 Breaking News broadcast
-  const [breakingMsg, setBreakingMsg] = useState(
-    "BREAKING: A competing retailer has just announced a festive discount campaign across South and West India."
-  );
 
   // delay/bypass form
   const [targetArtifact, setTargetArtifact] = useState("");
@@ -301,26 +297,20 @@ export default function FacultyConsole() {
 
         {/* ── Sim 2 Breaking News broadcast ───────────────────────────── */}
         <div className="f-card">
-          <h2>Breaking News — Simulator 2</h2>
+          <h2>Breaking News — Simulator 2 (Round 3)</h2>
           <p className="f-note">
-            Sends a full-width interrupt to every Meridian QBR team at once (Round 3 device). No new
-            data — it forces teams to decide live whether it changes a number they treated as settled.
+            Fires the Round 3 interrupt to every Meridian team at once, <strong>personalised to each
+            team's Round 2 answer</strong>: a training/execution team hears the training budget was
+            approved; a market/environment team hears a board member pushed back. Trigger it manually
+            when teams are mid-Round 3.
           </p>
-          <label htmlFor="f-breaking">Message</label>
-          <input
-            id="f-breaking"
-            type="text"
-            value={breakingMsg}
-            onChange={(e) => setBreakingMsg(e.target.value)}
-          />
           <div className="f-row" style={{ marginTop: 12 }}>
             <button
               className="f-warn"
-              disabled={!breakingMsg.trim()}
               onClick={() =>
                 act(
-                  () => api.broadcastBreakingNews(api.MERIDIAN_SIMULATION_ID, breakingMsg, actor),
-                  "Breaking News sent to all Sim 2 teams"
+                  () => api.broadcastBreakingNews(api.MERIDIAN_SIMULATION_ID, "R3 Breaking News", actor),
+                  "Breaking News sent — each team sees the variant matching its Round 2 answer"
                 )
               }
             >
