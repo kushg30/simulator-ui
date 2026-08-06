@@ -144,27 +144,29 @@ export function postBoardCall(runId, { roundNumber, response, participantId }) {
 // Role codes are kept from v1; only the v2 display names / round ownership change.
 // REPORTING_DASHBOARD_ANALYST → Reporting Analyst (R3), PEOPLE_ANALYTICS_ASSOCIATE
 // → Dashboard Analyst (R4), AUTOMATION_BI_ASSOCIATE → BI Associate (R5).
+// v3 role display names (codes unchanged). R2 owner = Insights & Root-Cause
+// Analyst, R3 = Automation Analyst, R4 = Visualization Analyst.
 export const ROLE_LABELS = {
   TEAM_LEAD: "Team Lead",
   DATA_QUALITY_ANALYST: "Data Quality Analyst",
-  CATEGORY_REGIONAL_ANALYST: "Category & Regional Analyst",
-  REPORTING_DASHBOARD_ANALYST: "Reporting Analyst",
-  PEOPLE_ANALYTICS_ASSOCIATE: "Dashboard Analyst",
+  CATEGORY_REGIONAL_ANALYST: "Insights & Root-Cause Analyst",
+  REPORTING_DASHBOARD_ANALYST: "Automation Analyst",
+  PEOPLE_ANALYTICS_ASSOCIATE: "Visualization Analyst",
   AUTOMATION_BI_ASSOCIATE: "BI Associate",
 };
 
-// Role-specific private prompts (v2), shown once after role confirmation.
+// Role-specific private prompts (v3), shown once after role confirmation.
 export const ROLE_PROMPTS = {
   TEAM_LEAD:
-    "Your manager won't check your formulas. A wrong number today follows you into next quarter's review.",
+    "Your manager won't check anyone's formulas. A wrong number today follows the team into next quarter's review.",
   DATA_QUALITY_ANALYST:
     "Nobody checks your formulas today. Everybody eventually notices a wrong output.",
   CATEGORY_REGIONAL_ANALYST:
-    "Two conflicting numbers can both look authoritative. Only one of you has to decide which.",
+    "A plausible explanation and the correct one can both sound convincing. Only the data tells you which.",
   REPORTING_DASHBOARD_ANALYST:
-    "A clean-looking table photographs better than a correct one, and the Board reads only the summary line.",
+    "A macro that works today and breaks next month is worse than no macro at all.",
   PEOPLE_ANALYTICS_ASSOCIATE:
-    "A dashboard that looks interactive isn't the same as one that answers the question asked.",
+    "A chart that looks finished isn't the same as one that answers the question asked.",
   AUTOMATION_BI_ASSOCIATE:
     "A tool migration that loses one decimal place is still a loss.",
 };
