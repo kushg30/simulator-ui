@@ -24,7 +24,22 @@ export default function FacultyDebrief({ simulationId }) {
   const [editReason, setEditReason] = useState("");
   const editorRef = useRef(null);
 
+  // Final Board Presentation live-scoring: per-team criteria {ask, numbers, rec}.
+  const [pres, setPres] = useState({});
+
   const actor = localStorage.getItem("facultyActor") || "facilitator";
+
+  const presCriteria = [
+    ["ask", "Clear ask answered"],
+    ["numbers", "Numbers cited"],
+    ["rec", "Actionable recommendation"],
+  ];
+  const presScore = (c) => {
+    const met = presCriteria.filter(([k]) => c?.[k]).length;
+    return Math.round((met / presCriteria.length) * 100);
+  };
+  const toggleCriterion = (runId, key) =>
+    setPres((p) => ({ ...p, [runId]: { ...(p[runId] || {}), [key]: !(p[runId] || {})[key] } }));
 
   // The override editor renders below the leaderboard; scroll it into view (and
   // focus the score field) when a facilitator clicks a score, so it's obvious
@@ -90,6 +105,26 @@ export default function FacultyDebrief({ simulationId }) {
       );
       setMsg(`Set ${CONSTRUCT_LABELS[editConstruct]} for ${editTeam.teamName} to ${editValue}`);
       setEditTeam(null);
+      refresh();
+    } catch (e) {
+      setMsg(e.message);
+    }
+  }
+
+  // Live-score Insight Communication from the Final Board Presentation criteria.
+  async function savePresentation(team) {
+    const c = pres[team.runId] || {};
+    const score = presScore(c);
+    const met = presCriteria.filter(([k]) => c[k]).map(([, label]) => label);
+    try {
+      await overrideConstruct(
+        team.runId,
+        "INSIGHT_COMMUNICATION",
+        score,
+        `Final Board Presentation — ${met.length ? met.join(", ") : "no criteria met"}`,
+        actor
+      );
+      setMsg(`Insight Communication for ${team.teamName} set to ${score} from the presentation`);
       refresh();
     } catch (e) {
       setMsg(e.message);
@@ -246,6 +281,55 @@ export default function FacultyDebrief({ simulationId }) {
                       </td>
                     );
                   })}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {/* ── Final Board Presentation — live Insight Communication scoring ──── */}
+      <h2 style={{ marginTop: 22 }}>Final Board Presentation — score Insight Communication live</h2>
+      <p className="f-note" style={{ marginBottom: 10 }}>
+        As each Team Lead presents (60s), tick the criteria they meet. Saving writes the score to
+        Insight Communication for that team.
+      </p>
+      <div style={{ overflowX: "auto" }}>
+        <table>
+          <thead>
+            <tr>
+              <th>Team</th>
+              {presCriteria.map(([k, label]) => (
+                <th key={k} style={{ textAlign: "center" }}>{label}</th>
+              ))}
+              <th style={{ textAlign: "center" }}>Score</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {teams.map((t) => {
+              const c = pres[t.runId] || {};
+              return (
+                <tr key={t.runId}>
+                  <td>{t.teamName}</td>
+                  {presCriteria.map(([k]) => (
+                    <td key={k} style={{ textAlign: "center" }}>
+                      <input
+                        type="checkbox"
+                        checked={Boolean(c[k])}
+                        onChange={() => toggleCriterion(t.runId, k)}
+                        style={{ width: "auto" }}
+                      />
+                    </td>
+                  ))}
+                  <td style={{ textAlign: "center" }}>
+                    <span className="f-band f-band-high">{presScore(c)}</span>
+                  </td>
+                  <td>
+                    <button className="f-mini" onClick={() => savePresentation(t)}>
+                      save
+                    </button>
+                  </td>
                 </tr>
               );
             })}
