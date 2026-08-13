@@ -43,7 +43,16 @@ function useServerCountdown(remainingSeconds, paused) {
   return Math.max(0, base.seconds - elapsed);
 }
 
-const TOTAL_ROUNDS = 5; // Meridian Retail QBR (v2)
+const TOTAL_ROUNDS = 5; // Meridian Retail QBR (used for advance logic, never displayed)
+
+// v4: the role that owns (and submits) each round. Round 5 is the Team Lead's.
+const ROUND_OWNER = {
+  1: "DATA_QUALITY_ANALYST",
+  2: "CATEGORY_REGIONAL_ANALYST",
+  3: "REPORTING_DASHBOARD_ANALYST",
+  4: "PEOPLE_ANALYTICS_ASSOCIATE",
+  5: "TEAM_LEAD",
+};
 
 function formatClock(totalSeconds) {
   if (totalSeconds === null) return "--:--";
@@ -64,6 +73,8 @@ export default function Sim2RoundPage() {
   const role = params.get("role");
   const teamId = params.get("teamId");
   const isLead = role === "TEAM_LEAD";
+  const ownerRole = ROUND_OWNER[roundNumber] || "TEAM_LEAD";
+  const isOwner = role === ownerRole; // only the round owner submits (v4)
 
   const [artifacts, setArtifacts] = useState([]);
   const [roundState, setRoundState] = useState(null);
@@ -413,7 +424,7 @@ export default function Sim2RoundPage() {
                 </div>
               )}
             </>
-          ) : isLead ? (
+          ) : isOwner ? (
             <form onSubmit={handleSubmit}>
               <label htmlFor="s2-answer">Your answer</label>
               <input
@@ -450,7 +461,8 @@ export default function Sim2RoundPage() {
             </form>
           ) : (
             <p className="s2-sub" style={{ margin: 0 }}>
-              Your Team Lead submits on behalf of the team.
+              This round is owned by the <strong>{ROLE_LABELS[ownerRole] || ownerRole}</strong>, who
+              submits it. Your screen is read-only for this round — work together, but they submit.
             </p>
           )}
 
