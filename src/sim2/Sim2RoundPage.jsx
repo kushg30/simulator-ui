@@ -54,6 +54,14 @@ const ROUND_OWNER = {
   5: "TEAM_LEAD",
 };
 
+// v4 structured-submission vocabularies.
+const DATA_ISSUES = ["Incorrect", "Incomplete", "Improper Formatting", "Duplicated"];
+const ROOT_CAUSES = ["Training/Execution Gap", "Market/Environment Condition"];
+const MONTHS = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
 function formatClock(totalSeconds) {
   if (totalSeconds === null) return "--:--";
   const m = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
@@ -81,10 +89,43 @@ export default function Sim2RoundPage() {
   const [question, setQuestion] = useState("");
   const [error, setError] = useState("");
 
-  const [typedAnswer, setTypedAnswer] = useState("");
   const [confidence, setConfidence] = useState("MEDIUM");
   const [file, setFile] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+
+  // v4 structured submission: per-round graded fields, plus the multi-select tags
+  // (R1) and the one-line / Board Brief free text (all owned rounds).
+  const [fields, setFields] = useState({});
+  const [tags, setTags] = useState([]);
+  const [note, setNote] = useState("");
+  const setField = (k, v) => setFields((f) => ({ ...f, [k]: v }));
+  const toggleTag = (t) =>
+    setTags((prev) => (prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]));
+
+  // The graded fields for this round, in the order the MULTI answer key expects them.
+  const gradedParts = useCallback(() => {
+    switch (roundNumber) {
+      case 1: return [fields.revenue, fields.refunds];
+      case 2: return [fields.rootCause, fields.gap];
+      case 3: return [fields.rows];
+      case 4:
+      case 5: return [fields.product, fields.productCount, fields.month, fields.monthCount];
+      default: return [fields.answer];
+    }
+  }, [roundNumber, fields]);
+
+  // Assemble the string sent as typedAnswer: graded fields first (so the MULTI key
+  // grades them), then the captured tags / one-line / Board Brief as labelled meta.
+  const buildTypedAnswer = useCallback(() => {
+    const graded = gradedParts().map((v) => String(v ?? "").trim()).join("; ");
+    let meta = "";
+    if (roundNumber === 1) meta = ` | issues: ${tags.join(", ")} | note: ${note.trim()}`;
+    else if (roundNumber === 2 || roundNumber === 3) meta = ` | note: ${note.trim()}`;
+    else if (roundNumber === 5) meta = ` | brief: ${note.trim()}`;
+    return (graded + meta).trim();
+  }, [gradedParts, roundNumber, tags, note]);
+
+  const canSubmit = gradedParts().every((v) => String(v ?? "").trim() !== "");
 
   // ── engagement devices (v2) ───────────────────────────────────────────────
   const [breaking, setBreaking] = useState(null); // { message } when a new broadcast lands
@@ -210,7 +251,7 @@ export default function Sim2RoundPage() {
     try {
       await submitRound(runId, roundNumber, {
         participantId,
-        typedAnswer: typedAnswer.trim(),
+        typedAnswer: buildTypedAnswer(),
         confidence,
         file,
       });
@@ -426,14 +467,96 @@ export default function Sim2RoundPage() {
             </>
           ) : isOwner ? (
             <form onSubmit={handleSubmit}>
-              <label htmlFor="s2-answer">Your answer</label>
-              <input
-                id="s2-answer"
-                type="text"
-                value={typedAnswer}
-                placeholder="e.g. 1302602"
-                onChange={(e) => setTypedAnswer(e.target.value)}
-              />
+              {roundNumber === 1 && (
+                <>
+                  <label htmlFor="s2-revenue">Total revenue for Bluetooth Speaker</label>
+                  <input id="s2-revenue" type="text" inputMode="decimal" placeholder="e.g. 62667"
+                    value={fields.revenue ?? ""} onChange={(e) => setField("revenue", e.target.value)} />
+
+                  <label htmlFor="s2-refunds">Number of notes classifying as Refund Request</label>
+                  <input id="s2-refunds" type="text" inputMode="numeric" placeholder="e.g. 59"
+                    value={fields.refunds ?? ""} onChange={(e) => setField("refunds", e.target.value)} />
+
+                  <label>Which data issues did you find in the raw feed?</label>
+                  <div className="s2-row" style={{ flexWrap: "wrap", gap: 12, marginBottom: 8 }}>
+                    {DATA_ISSUES.map((t) => (
+                      <label key={t} className="s2-check">
+                        <input type="checkbox" checked={tags.includes(t)}
+                          onChange={() => toggleTag(t)} /> {t}
+                      </label>
+                    ))}
+                  </div>
+
+                  <label htmlFor="s2-note">In one line, how did you handle it?</label>
+                  <input id="s2-note" type="text" maxLength={140} value={note}
+                    placeholder="Cite a specific number." onChange={(e) => setNote(e.target.value)} />
+                </>
+              )}
+
+              {roundNumber === 2 && (
+                <>
+                  <label htmlFor="s2-root">Root cause</label>
+                  <select id="s2-root" value={fields.rootCause ?? ""}
+                    onChange={(e) => setField("rootCause", e.target.value)}>
+                    <option value="">Select…</option>
+                    {ROOT_CAUSES.map((c) => <option key={c} value={c}>{c}</option>)}
+                  </select>
+
+                  <label htmlFor="s2-gap">Supporting attainment gap (percentage points)</label>
+                  <input id="s2-gap" type="text" inputMode="decimal" placeholder="e.g. 25.5"
+                    value={fields.gap ?? ""} onChange={(e) => setField("gap", e.target.value)} />
+
+                  <label htmlFor="s2-note">In one line, what number convinced you?</label>
+                  <input id="s2-note" type="text" maxLength={140} value={note}
+                    onChange={(e) => setNote(e.target.value)} />
+                </>
+              )}
+
+              {roundNumber === 3 && (
+                <>
+                  <label htmlFor="s2-rows">Total combined row count after cleaning</label>
+                  <input id="s2-rows" type="text" inputMode="numeric" placeholder="e.g. 270"
+                    value={fields.rows ?? ""} onChange={(e) => setField("rows", e.target.value)} />
+
+                  <label htmlFor="s2-note">In one line, describe your cleaning steps</label>
+                  <input id="s2-note" type="text" maxLength={140} value={note}
+                    onChange={(e) => setNote(e.target.value)} />
+                </>
+              )}
+
+              {(roundNumber === 4 || roundNumber === 5) && (
+                <>
+                  <label htmlFor="s2-product">Most ordered product</label>
+                  <input id="s2-product" type="text" placeholder="e.g. Notebook Set"
+                    value={fields.product ?? ""} onChange={(e) => setField("product", e.target.value)} />
+
+                  <label htmlFor="s2-pcount">Order count for that product</label>
+                  <input id="s2-pcount" type="text" inputMode="numeric" placeholder="e.g. 35"
+                    value={fields.productCount ?? ""}
+                    onChange={(e) => setField("productCount", e.target.value)} />
+
+                  <label htmlFor="s2-month">Highest volume month</label>
+                  <select id="s2-month" value={fields.month ?? ""}
+                    onChange={(e) => setField("month", e.target.value)}>
+                    <option value="">Select…</option>
+                    {MONTHS.map((m) => <option key={m} value={m}>{m}</option>)}
+                  </select>
+
+                  <label htmlFor="s2-mcount">Order count for that month</label>
+                  <input id="s2-mcount" type="text" inputMode="numeric" placeholder="e.g. 90"
+                    value={fields.monthCount ?? ""}
+                    onChange={(e) => setField("monthCount", e.target.value)} />
+                </>
+              )}
+
+              {roundNumber === 5 && (
+                <>
+                  <label htmlFor="s2-brief">Board Brief — what your team found across the engagement</label>
+                  <textarea id="s2-brief" maxLength={600} rows={5} value={note}
+                    placeholder="Plain language. Cite the numbers the Board should remember."
+                    onChange={(e) => setNote(e.target.value)} />
+                </>
+              )}
 
               <label htmlFor="s2-confidence">Confidence</label>
               <select
@@ -446,7 +569,11 @@ export default function Sim2RoundPage() {
                 <option value="LOW">Low</option>
               </select>
 
-              <label htmlFor="s2-file">Workbook</label>
+              <label htmlFor="s2-file">
+                {roundNumber === 3 ? "Workbook (.xlsm)"
+                  : roundNumber === 5 ? "Power BI file or screenshot"
+                  : "Workbook"}
+              </label>
               <input
                 id="s2-file"
                 type="file"
@@ -454,7 +581,7 @@ export default function Sim2RoundPage() {
               />
 
               <div className="s2-row" style={{ marginTop: 16 }}>
-                <button type="submit" disabled={submitting || isPaused || !typedAnswer.trim()}>
+                <button type="submit" disabled={submitting || isPaused || !canSubmit}>
                   {isPaused ? "Paused" : submitting ? "Submitting…" : "Submit round"}
                 </button>
               </div>
