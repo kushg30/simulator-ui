@@ -144,37 +144,34 @@ export function postBoardCall(runId, { roundNumber, response, participantId }) {
 // Role codes are kept from v1; only the v2 display names / round ownership change.
 // REPORTING_DASHBOARD_ANALYST → Reporting Analyst (R3), PEOPLE_ANALYTICS_ASSOCIATE
 // → Dashboard Analyst (R4), AUTOMATION_BI_ASSOCIATE → BI Associate (R5).
-// v3 role display names (codes unchanged). R2 owner = Insights & Root-Cause
-// Analyst, R3 = Automation Analyst, R4 = Visualization Analyst.
+// v4 role display names (codes unchanged; team of 5). R2 owner = Diagnostics
+// Analyst; BI Associate removed — Round 5 is the Team Lead's.
 export const ROLE_LABELS = {
   TEAM_LEAD: "Team Lead",
   DATA_QUALITY_ANALYST: "Data Quality Analyst",
-  CATEGORY_REGIONAL_ANALYST: "Insights & Root-Cause Analyst",
+  CATEGORY_REGIONAL_ANALYST: "Diagnostics Analyst",
   REPORTING_DASHBOARD_ANALYST: "Automation Analyst",
   PEOPLE_ANALYTICS_ASSOCIATE: "Visualization Analyst",
-  AUTOMATION_BI_ASSOCIATE: "BI Associate",
 };
 
-// Role-specific private prompts (v3), shown once after role confirmation.
+// Role-specific private prompts (v4), shown once after role confirmation.
 export const ROLE_PROMPTS = {
   TEAM_LEAD:
-    "Your manager won't check anyone's formulas. A wrong number today follows the team into next quarter's review.",
+    "You don't build any of the initial rounds. But you sign your name to the last one, and you're the one standing in front of the Board when any of the previous four turn out to be wrong.",
   DATA_QUALITY_ANALYST:
-    "Nobody checks your formulas today. Everybody eventually notices a wrong output.",
+    "A number that's obviously broken gets caught before it reaches anyone important. A number that's quietly wrong doesn't — it just gets presented to the Board.",
   CATEGORY_REGIONAL_ANALYST:
-    "A plausible explanation and the correct one can both sound convincing. Only the data tells you which.",
+    "A plausible explanation and the correct one can both sound convincing. Only a specific number defends the difference.",
   REPORTING_DASHBOARD_ANALYST:
     "A macro that works today and breaks next month is worse than no macro at all.",
   PEOPLE_ANALYTICS_ASSOCIATE:
     "A chart that looks finished isn't the same as one that answers the question asked.",
-  AUTOMATION_BI_ASSOCIATE:
-    "A tool migration that loses one decimal place is still a loss.",
 };
 
 export const CONSTRUCT_LABELS = {
   DATA_TRUST_SCORE: "Data Trust Score",
   ANALYTICAL_RIGOR: "Analytical Rigor",
-  INSIGHT_COMMUNICATION: "Insight Communication",
+  INSIGHT_COMMUNICATION: "Board Clarity",
   JUDGMENT_CALIBRATION: "Judgment Calibration",
   TURNAROUND_DISCIPLINE: "Turnaround Discipline",
 };
