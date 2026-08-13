@@ -62,17 +62,16 @@ export default function FacultyDebrief({ simulationId }) {
 
   const actor = localStorage.getItem("facultyActor") || "facilitator";
 
+  // v4 Final Board Presentation: three criteria, 0–10 each, total out of 30 → 0–100.
   const presCriteria = [
-    ["ask", "Clear ask answered"],
-    ["numbers", "Numbers cited"],
-    ["rec", "Actionable recommendation"],
+    ["clarity", "Clarity of Numbers"],
+    ["coherence", "Coherence Across Rounds"],
+    ["time", "Time Discipline"],
   ];
-  const presScore = (c) => {
-    const met = presCriteria.filter(([k]) => c?.[k]).length;
-    return Math.round((met / presCriteria.length) * 100);
-  };
-  const toggleCriterion = (runId, key) =>
-    setPres((p) => ({ ...p, [runId]: { ...(p[runId] || {}), [key]: !(p[runId] || {})[key] } }));
+  const presTotal = (c) => presCriteria.reduce((s, [k]) => s + (Number(c?.[k]) || 0), 0);
+  const presScore = (c) => Math.round((presTotal(c) / 30) * 100);
+  const setCriterion = (runId, key, val) =>
+    setPres((p) => ({ ...p, [runId]: { ...(p[runId] || {}), [key]: val } }));
 
   // The override editor renders below the leaderboard; scroll it into view (and
   // focus the score field) when a facilitator clicks a score, so it's obvious
@@ -144,20 +143,20 @@ export default function FacultyDebrief({ simulationId }) {
     }
   }
 
-  // Live-score Insight Communication from the Final Board Presentation criteria.
+  // Live-score Board Clarity from the Final Board Presentation criteria.
   async function savePresentation(team) {
     const c = pres[team.runId] || {};
     const score = presScore(c);
-    const met = presCriteria.filter(([k]) => c[k]).map(([, label]) => label);
+    const detail = presCriteria.map(([k, label]) => `${label} ${Number(c[k]) || 0}/10`).join(", ");
     try {
       await overrideConstruct(
         team.runId,
         "INSIGHT_COMMUNICATION",
         score,
-        `Final Board Presentation — ${met.length ? met.join(", ") : "no criteria met"}`,
+        `Final Board Presentation (${presTotal(c)}/30) — ${detail}`,
         actor
       );
-      setMsg(`Insight Communication for ${team.teamName} set to ${score} from the presentation`);
+      setMsg(`Board Clarity for ${team.teamName} set to ${score} from the presentation`);
       refresh();
     } catch (e) {
       setMsg(e.message);
@@ -371,11 +370,11 @@ export default function FacultyDebrief({ simulationId }) {
         </table>
       </div>
 
-      {/* ── Final Board Presentation — live Insight Communication scoring ──── */}
-      <h2 style={{ marginTop: 22 }}>Final Board Presentation — score Insight Communication live</h2>
+      {/* ── Final Board Presentation — live Board Clarity scoring ──────────── */}
+      <h2 style={{ marginTop: 22 }}>Final Board Presentation — score Board Clarity live</h2>
       <p className="f-note" style={{ marginBottom: 10 }}>
-        As each Team Lead presents (60s), tick the criteria they meet. Saving writes the score to
-        Insight Communication for that team.
+        Each Team Lead presents for 120 seconds. Score each criterion 0–10; the total out of 30 is
+        saved to Board Clarity for that team.
       </p>
       <div style={{ overflowX: "auto" }}>
         <table>
@@ -385,6 +384,7 @@ export default function FacultyDebrief({ simulationId }) {
               {presCriteria.map(([k, label]) => (
                 <th key={k} style={{ textAlign: "center" }}>{label}</th>
               ))}
+              <th style={{ textAlign: "center" }}>Total</th>
               <th style={{ textAlign: "center" }}>Score</th>
               <th></th>
             </tr>
@@ -398,13 +398,19 @@ export default function FacultyDebrief({ simulationId }) {
                   {presCriteria.map(([k]) => (
                     <td key={k} style={{ textAlign: "center" }}>
                       <input
-                        type="checkbox"
-                        checked={Boolean(c[k])}
-                        onChange={() => toggleCriterion(t.runId, k)}
-                        style={{ width: "auto" }}
+                        type="number"
+                        min="0"
+                        max="10"
+                        value={c[k] ?? ""}
+                        placeholder="0"
+                        onChange={(e) => setCriterion(t.runId, k, e.target.value)}
+                        style={{ width: 52, textAlign: "center" }}
                       />
                     </td>
                   ))}
+                  <td style={{ textAlign: "center" }} className="f-note">
+                    {presTotal(c)}/30
+                  </td>
                   <td style={{ textAlign: "center" }}>
                     <span className="f-band f-band-high">{presScore(c)}</span>
                   </td>
