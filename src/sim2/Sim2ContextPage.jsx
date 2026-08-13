@@ -12,14 +12,13 @@ const PROBLEM = `The Board wants a Quarterly Business Review it can trust, filte
 
 (The Head of Strategy and "the Board" are NPCs throughout — they send memos and ask questions, but are never played by a student.)`;
 
-// [code, leads, description, skill anchor] — v3
+// [code, leads, deliverable] — v4 (team of 5)
 const ROLES = [
-  ["TEAM_LEAD", "Kickoff · Board Call · Final", "Frames the kickoff, answers the Emergency Board Call, and presents the team's headline finding live at the end. Only they submit on those touchpoints.", "Insight Communication"],
-  ["DATA_QUALITY_ANALYST", "Round 1", "Parses the raw transaction feed and classifies the customer notes, so the numbers can be trusted at all.", "Text & Logical functions"],
-  ["CATEGORY_REGIONAL_ANALYST", "Round 2", "Runs a root-cause analysis on why West missed its target — training/execution vs market — and quantifies the gap.", "Root-cause analysis + ROI framing"],
-  ["REPORTING_DASHBOARD_ANALYST", "Round 3", "Automates the monthly cleanup with macros and Power Query, combining the new month's feed with Round 1's.", "Macros & Power Query"],
-  ["PEOPLE_ANALYTICS_ASSOCIATE", "Round 4", "Builds the Tableau story the Board reads — the most-ordered product and the month-over-month order trend.", "Tableau"],
-  ["AUTOMATION_BI_ASSOCIATE", "Round 5", "Ports the model into Power BI so the Board can open and explore it without the team in the room.", "Power BI"],
+  ["TEAM_LEAD", "Kickoff · R2 Board Call · R5 · Final", "Coordinates across all rounds; builds and submits Round 5 solo, then presents the team's findings to the Board."],
+  ["DATA_QUALITY_ANALYST", "Round 1", "Parses unstructured raw text into usable fields and identifies the data-quality problems in the feed."],
+  ["CATEGORY_REGIONAL_ANALYST", "Round 2", "A defended causal call on why West missed target — training vs market — backed by a specific number."],
+  ["REPORTING_DASHBOARD_ANALYST", "Round 3", "Builds a macro to make the monthly file-combining process repeatable, and confirms the row count."],
+  ["PEOPLE_ANALYTICS_ASSOCIATE", "Round 4", "Builds the chart that answers a specific business question — the top product and the peak month."],
 ];
 
 /**
@@ -103,12 +102,11 @@ export default function Sim2ContextPage() {
                   <tr>
                     <th>Role</th>
                     <th>Leads</th>
-                    <th>What they do</th>
-                    <th>Skill anchor</th>
+                    <th>Deliverable</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {ROLES.map(([code, leads, desc, skill]) => (
+                  {ROLES.map(([code, leads, desc]) => (
                     <tr key={code} className={code === role ? "s2-role-you" : ""}>
                       <td>
                         {ROLE_LABELS[code] || code}
@@ -118,7 +116,6 @@ export default function Sim2ContextPage() {
                         <span className="s2-role-badge">{leads}</span>
                       </td>
                       <td>{desc}</td>
-                      <td>{skill}</td>
                     </tr>
                   ))}
                 </tbody>

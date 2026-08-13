@@ -120,7 +120,7 @@ export const deleteFaq = (entryId) => call(`/sim2/faq/${entryId}`, { method: "DE
 export const CONSTRUCT_LABELS = {
   DATA_TRUST_SCORE: "Data Trust",
   ANALYTICAL_RIGOR: "Analytical Rigor",
-  INSIGHT_COMMUNICATION: "Insight Comm.",
+  INSIGHT_COMMUNICATION: "Board Clarity",
   JUDGMENT_CALIBRATION: "Judgment Calib.",
   TURNAROUND_DISCIPLINE: "Turnaround",
 };

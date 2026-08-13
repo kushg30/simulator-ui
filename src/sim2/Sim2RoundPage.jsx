@@ -283,7 +283,7 @@ export default function Sim2RoundPage() {
       <div className="s2-shell">
         <div className="s2-row" style={{ justifyContent: "space-between" }}>
           <div>
-            <h1>Round {roundNumber} of {TOTAL_ROUNDS}</h1>
+            <h1>Round {roundNumber}</h1>
             <p className="s2-sub">
               You are the <strong>{ROLE_LABELS[role] || role}</strong>
             </p>
