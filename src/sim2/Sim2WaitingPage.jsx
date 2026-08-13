@@ -13,10 +13,10 @@ import {
 } from "./api";
 import "./sim2.css";
 
-const TOTAL_ROLES = 6;
+const TOTAL_ROLES = 5; // v4: team of five (BI Associate role removed)
 
 /**
- * Lobby. The Team Lead starts the run once all six roles are filled; everyone
+ * Lobby. The Team Lead starts the run once all five roles are filled; everyone
  * else is forwarded automatically as soon as Round 1 goes active.
  */
 export default function Sim2WaitingPage() {
