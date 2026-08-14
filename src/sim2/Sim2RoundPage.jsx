@@ -465,7 +465,7 @@ export default function Sim2RoundPage() {
                 </div>
               )}
             </>
-          ) : isOwner ? (
+          ) : isOwner || isLead ? (
             <form onSubmit={handleSubmit}>
               {roundNumber === 1 && (
                 <>
