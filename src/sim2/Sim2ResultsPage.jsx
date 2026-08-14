@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { band, CONSTRUCT_LABELS, getResults, startRound } from "./api";
+import { band, CONSTRUCT_LABELS, getResults, getRoundState, startRound } from "./api";
 import "./sim2.css";
 
 /**
@@ -46,6 +46,37 @@ export default function Sim2ResultsPage() {
     if (!runId) return;
     getResults(runId, roundNumber).then(setData).catch((e) => setError(e.message));
   }, [runId, roundNumber]);
+
+  // Auto-advance: the person who submitted lands here, so this page — like the
+  // round page — must poll and follow the team into the next round once the Team
+  // Lead starts it. Without this, the submitter is stranded on the results screen.
+  useEffect(() => {
+    if (!runId) return;
+    let stop = false;
+    const poll = async () => {
+      try {
+        const states = await getRoundState(runId);
+        if (stop) return;
+        const laterActive = (states || []).find(
+          (s) => s.status === "ACTIVE" && s.roundNumber > roundNumber
+        );
+        if (laterActive) {
+          navigate(
+            `/sim2/round/${laterActive.roundNumber}?runId=${runId}` +
+              `&participantId=${participantId}&role=${role}&teamId=${teamId}`
+          );
+        }
+      } catch {
+        /* transient poll error — try again next tick */
+      }
+    };
+    poll();
+    const id = setInterval(poll, 4000);
+    return () => {
+      stop = true;
+      clearInterval(id);
+    };
+  }, [runId, roundNumber, navigate, participantId, role, teamId]);
 
   if (!runId) {
     return (
