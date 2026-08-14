@@ -431,6 +431,14 @@ export default function Sim2RoundPage() {
                   : "Waiting for the Team Lead to start the next round — you'll move on automatically."}
               </p>
 
+              {isLead && roundNumber < TOTAL_ROUNDS && (
+                <div className="s2-row" style={{ marginTop: 14 }}>
+                  <button onClick={() => gotoResults(roundNumber)}>
+                    Go to results — start Round {roundNumber + 1} →
+                  </button>
+                </div>
+              )}
+
               {roundNumber === 2 && partialBoard?.teams?.length > 0 && (
                 <div className="s2-partial">
                   <div className="s2-partial-head">
