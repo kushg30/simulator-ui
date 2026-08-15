@@ -179,6 +179,26 @@ export default function FacultyConsole() {
   // The debrief/wiki need a simulation even before any team is live.
   const focusSimId = simulationIds[0] || api.MERIDIAN_SIMULATION_ID;
 
+  // Whole-class pause state per simulation, read off the live overview so one of
+  // Pause-All / Resume-All can be greyed out to show the current status.
+  const simPauseState = (simId) => {
+    const active = overview.filter(
+      (r) => r.simulationId === simId && r.roundStatus === "ACTIVE" && !r.bypassed
+    );
+    const paused = active.filter((r) => r.paused).length;
+    return { active: active.length, paused };
+  };
+
+  // The action log stores created_at as a naive UTC timestamp; render it in the
+  // viewer's local time instead of showing raw UTC.
+  const fmtTime = (ts) => {
+    if (!ts) return "";
+    let s = String(ts);
+    if (!/[zZ]|[+-]\d\d:?\d\d$/.test(s)) s = s.replace(" ", "T") + "Z";
+    const d = new Date(s);
+    return isNaN(d.getTime()) ? String(ts) : d.toLocaleString();
+  };
+
   return (
     <div className="fac">
       <div className="f-shell">
@@ -267,20 +287,30 @@ export default function FacultyConsole() {
           <div className="f-row" style={{ marginTop: 12 }}>
             {simulationIds.map((simId) => {
               const name = overview.find((r) => r.simulationId === simId)?.simulationName || simId;
+              const { active, paused } = simPauseState(simId);
+              const allPaused = active > 0 && paused === active;
+              const nonePaused = paused === 0;
+              const statusLabel = active === 0 ? "no active rounds"
+                : allPaused ? "all paused"
+                : nonePaused ? "all running"
+                : `${paused}/${active} paused`;
               return (
-                <span key={simId} className="f-row">
+                <span key={simId} className="f-row" style={{ alignItems: "center" }}>
                   <button
                     className="f-warn"
+                    disabled={active === 0 || allPaused}
                     onClick={() => act(() => api.pauseAll(simId, note, actor), `Paused all — ${name}`)}
                   >
                     Pause all · {name}
                   </button>
                   <button
                     className="f-ghost"
+                    disabled={nonePaused}
                     onClick={() => act(() => api.resumeAll(simId, note, actor), `Resumed all — ${name}`)}
                   >
                     Resume all
                   </button>
+                  <span className="f-note">{statusLabel}</span>
                 </span>
               );
             })}
@@ -616,7 +646,7 @@ export default function FacultyConsole() {
             {log.length === 0 && <p className="f-note">No actions recorded yet.</p>}
             {log.map((a) => (
               <div key={a.actionId}>
-                <time>{String(a.createdAt).replace("T", " ").slice(0, 19)}</time>
+                <time>{fmtTime(a.createdAt)}</time>
                 <strong>{a.actionType}</strong> · {a.scope} · round {a.roundNumber ?? "—"} · by{" "}
                 {a.createdBy}
                 {a.delayMinutes ? ` · +${a.delayMinutes}m` : ""}

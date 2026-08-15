@@ -7,6 +7,20 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* A comfortable, always-visible page scrollbar. The `html` selector outranks the
+   thin 4px `::-webkit-scrollbar` rule some marketing pages set, so every screen
+   (student rounds, faculty console) gets a scrollbar that is easy to grab. */
+html { scrollbar-width: auto; scrollbar-color: #4b5563 transparent; }
+html::-webkit-scrollbar { width: 12px; height: 12px; }
+html::-webkit-scrollbar-track { background: transparent; }
+html::-webkit-scrollbar-thumb {
+  background: #4b5563;
+  border-radius: 6px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+html::-webkit-scrollbar-thumb:hover { background: #6b7280; background-clip: content-box; }
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
