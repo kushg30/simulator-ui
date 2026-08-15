@@ -321,13 +321,14 @@ export default function Sim2RoundPage() {
     }
   }, [remaining, roundIsComplete, isPaused]);
 
-  // Auto-submit exactly at zero (owner only), unless the round is already done.
+  // Auto-submit exactly at zero (owner only), unless the round is already done or a
+  // manual submit is already in flight.
   useEffect(() => {
-    if (remaining === 0 && isOwner && !roundIsComplete && !isPaused && !autoRef.current) {
+    if (remaining === 0 && isOwner && !roundIsComplete && !isPaused && !autoRef.current && !submitting) {
       autoRef.current = true;
       autoSubmitTimeout();
     }
-  }, [remaining, isOwner, roundIsComplete, isPaused, autoSubmitTimeout]);
+  }, [remaining, isOwner, roundIsComplete, isPaused, submitting, autoSubmitTimeout]);
 
   const timedOut = remaining !== null && remaining <= 0;
 
