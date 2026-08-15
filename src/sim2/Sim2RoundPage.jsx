@@ -54,9 +54,18 @@ const ROUND_OWNER = {
   5: "TEAM_LEAD",
 };
 
-// v4 structured-submission vocabularies.
+// v5 structured-submission vocabularies.
 const DATA_ISSUES = ["Incorrect", "Incomplete", "Improper Formatting", "Duplicated"];
-const ROOT_CAUSES = ["Training/Execution Gap", "Market/Environment Condition"];
+// v5: root cause reframed into four fishbone categories (People is correct).
+const ROOT_CAUSES = [
+  "People (Training & Skill Gap)",
+  "Process (Workflow / Execution)",
+  "Market (Environment / Demand)",
+  "Resource (Budget / Staffing)",
+];
+const CHART_TYPES = [
+  "Bar chart", "Column chart", "Line chart", "Combo chart", "Pie chart", "Table", "Other",
+];
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December",
@@ -102,30 +111,47 @@ export default function Sim2RoundPage() {
   const toggleTag = (t) =>
     setTags((prev) => (prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]));
 
-  // The graded fields for this round, in the order the MULTI answer key expects them.
+  const nb = (v) => String(v ?? "").trim() !== "";
+
+  // The graded fields for this round, in the order the MULTI answer key expects them
+  // (v5). Round 5 is a free-text synthesis with no graded numeric fields.
   const gradedParts = useCallback(() => {
     switch (roundNumber) {
-      case 1: return [fields.revenue, fields.refunds];
+      case 1: return [fields.revenue];
       case 2: return [fields.rootCause, fields.gap];
-      case 3: return [fields.rows];
-      case 4:
-      case 5: return [fields.product, fields.productCount, fields.month, fields.monthCount];
-      default: return [fields.answer];
+      case 3: return [fields.rows, fields.revenue];
+      case 4: return [fields.product, fields.productCount, fields.month, fields.monthCount];
+      default: return []; // R5 synthesis — no numeric answer
     }
   }, [roundNumber, fields]);
 
   // Assemble the string sent as typedAnswer: graded fields first (so the MULTI key
-  // grades them), then the captured tags / one-line / Board Brief as labelled meta.
+  // grades them), then the captured tags / free text as labelled meta the scoring
+  // reads for Board Clarity (and the facilitator sees).
   const buildTypedAnswer = useCallback(() => {
     const graded = gradedParts().map((v) => String(v ?? "").trim()).join("; ");
     let meta = "";
     if (roundNumber === 1) meta = ` | issues: ${tags.join(", ")} | note: ${note.trim()}`;
-    else if (roundNumber === 2 || roundNumber === 3) meta = ` | note: ${note.trim()}`;
-    else if (roundNumber === 5) meta = ` | brief: ${note.trim()}`;
+    else if (roundNumber === 2) meta = ` | note: ${note.trim()}`;
+    else if (roundNumber === 3) meta = ` | macro: ${fields.macro || ""} | note: ${note.trim()}`;
+    else if (roundNumber === 4) meta = ` | chart: ${fields.chart || ""}`;
+    else if (roundNumber === 5)
+      meta =
+        ` | situation: ${String(fields.situation || "").trim()}` +
+        ` | complication: ${String(fields.complication || "").trim()}` +
+        ` | question: ${String(fields.question || "").trim()}` +
+        ` | answer: ${String(fields.answer || "").trim()}`;
     return (graded + meta).trim();
-  }, [gradedParts, roundNumber, tags, note]);
+  }, [gradedParts, roundNumber, tags, note, fields]);
 
-  const canSubmit = gradedParts().every((v) => String(v ?? "").trim() !== "");
+  const canSubmit = (() => {
+    if (roundNumber === 5) {
+      return ["situation", "complication", "question", "answer"].every((k) => nb(fields[k]));
+    }
+    const extra =
+      roundNumber === 3 ? [fields.macro] : roundNumber === 4 ? [fields.chart] : [];
+    return gradedParts().every(nb) && extra.every(nb);
+  })();
 
   // ── engagement devices (v2) ───────────────────────────────────────────────
   const [breaking, setBreaking] = useState(null); // { message } when a new broadcast lands
@@ -477,13 +503,9 @@ export default function Sim2RoundPage() {
             <form onSubmit={handleSubmit}>
               {roundNumber === 1 && (
                 <>
-                  <label htmlFor="s2-revenue">Total revenue for Bluetooth Speaker</label>
+                  <label htmlFor="s2-revenue">Total revenue for Bluetooth Speaker (Price × Quantity)</label>
                   <input id="s2-revenue" type="text" inputMode="decimal" placeholder="e.g. 62667"
                     value={fields.revenue ?? ""} onChange={(e) => setField("revenue", e.target.value)} />
-
-                  <label htmlFor="s2-refunds">Number of notes classifying as Refund Request</label>
-                  <input id="s2-refunds" type="text" inputMode="numeric" placeholder="e.g. 59"
-                    value={fields.refunds ?? ""} onChange={(e) => setField("refunds", e.target.value)} />
 
                   <label>Which data issues did you find in the raw feed?</label>
                   <div className="s2-row" style={{ flexWrap: "wrap", gap: 12, marginBottom: 8 }}>
@@ -503,14 +525,14 @@ export default function Sim2RoundPage() {
 
               {roundNumber === 2 && (
                 <>
-                  <label htmlFor="s2-root">Root cause</label>
+                  <label htmlFor="s2-root">Root cause (People / Process / Market / Resource)</label>
                   <select id="s2-root" value={fields.rootCause ?? ""}
                     onChange={(e) => setField("rootCause", e.target.value)}>
                     <option value="">Select…</option>
                     {ROOT_CAUSES.map((c) => <option key={c} value={c}>{c}</option>)}
                   </select>
 
-                  <label htmlFor="s2-gap">Supporting attainment gap (percentage points)</label>
+                  <label htmlFor="s2-gap">Attainment gap vs rest of network (percentage points)</label>
                   <input id="s2-gap" type="text" inputMode="decimal" placeholder="e.g. 25.5"
                     value={fields.gap ?? ""} onChange={(e) => setField("gap", e.target.value)} />
 
@@ -522,17 +544,29 @@ export default function Sim2RoundPage() {
 
               {roundNumber === 3 && (
                 <>
-                  <label htmlFor="s2-rows">Total combined row count after cleaning</label>
+                  <label htmlFor="s2-rows">Total combined row count</label>
                   <input id="s2-rows" type="text" inputMode="numeric" placeholder="e.g. 270"
                     value={fields.rows ?? ""} onChange={(e) => setField("rows", e.target.value)} />
 
-                  <label htmlFor="s2-note">In one line, describe your cleaning steps</label>
+                  <label htmlFor="s2-revenue">Total combined revenue (Price × Quantity, all rows)</label>
+                  <input id="s2-revenue" type="text" inputMode="numeric" placeholder="e.g. 1381546"
+                    value={fields.revenue ?? ""} onChange={(e) => setField("revenue", e.target.value)} />
+
+                  <label htmlFor="s2-macro">Did you use a recorded macro?</label>
+                  <select id="s2-macro" value={fields.macro ?? ""}
+                    onChange={(e) => setField("macro", e.target.value)}>
+                    <option value="">Select…</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                  </select>
+
+                  <label htmlFor="s2-note">In one line, describe your macro / cleaning steps</label>
                   <input id="s2-note" type="text" maxLength={140} value={note}
-                    onChange={(e) => setNote(e.target.value)} />
+                    placeholder="Mention the macro / recording steps." onChange={(e) => setNote(e.target.value)} />
                 </>
               )}
 
-              {(roundNumber === 4 || roundNumber === 5) && (
+              {roundNumber === 4 && (
                 <>
                   <label htmlFor="s2-product">Most ordered product</label>
                   <input id="s2-product" type="text" placeholder="e.g. Notebook Set"
@@ -554,39 +588,55 @@ export default function Sim2RoundPage() {
                   <input id="s2-mcount" type="text" inputMode="numeric" placeholder="e.g. 90"
                     value={fields.monthCount ?? ""}
                     onChange={(e) => setField("monthCount", e.target.value)} />
+
+                  <label htmlFor="s2-chart">Chart type used (Tableau or Power BI — your choice)</label>
+                  <select id="s2-chart" value={fields.chart ?? ""}
+                    onChange={(e) => setField("chart", e.target.value)}>
+                    <option value="">Select…</option>
+                    {CHART_TYPES.map((c) => <option key={c} value={c}>{c}</option>)}
+                  </select>
                 </>
               )}
 
               {roundNumber === 5 && (
                 <>
-                  <label htmlFor="s2-brief">Board Brief — what your team found across the engagement</label>
-                  <textarea id="s2-brief" maxLength={600} rows={5} value={note}
-                    placeholder="Plain language. Cite the numbers the Board should remember."
-                    onChange={(e) => setNote(e.target.value)} />
+                  <p className="s2-sub" style={{ marginTop: 0 }}>
+                    Synthesise Rounds 1–4 into an <strong>SCQA</strong> brief for the Board. The
+                    Complication should reference specific findings from the earlier rounds.
+                  </p>
+                  <label htmlFor="s2-situation">Situation</label>
+                  <textarea id="s2-situation" rows={2} maxLength={400} value={fields.situation ?? ""}
+                    placeholder="Where the business stands." onChange={(e) => setField("situation", e.target.value)} />
+
+                  <label htmlFor="s2-complication">Complication</label>
+                  <textarea id="s2-complication" rows={3} maxLength={600} value={fields.complication ?? ""}
+                    placeholder="What your analysis uncovered — cite the numbers (62,667 · People/25.5 · 270/1,381,546 · Notebook Set/April)."
+                    onChange={(e) => setField("complication", e.target.value)} />
+
+                  <label htmlFor="s2-question">Question</label>
+                  <textarea id="s2-question" rows={2} maxLength={400} value={fields.question ?? ""}
+                    placeholder="The decision the Board now faces." onChange={(e) => setField("question", e.target.value)} />
+
+                  <label htmlFor="s2-answer">Answer</label>
+                  <textarea id="s2-answer" rows={3} maxLength={600} value={fields.answer ?? ""}
+                    placeholder="Your recommendation." onChange={(e) => setField("answer", e.target.value)} />
                 </>
               )}
 
-              <label htmlFor="s2-confidence">Confidence</label>
-              <select
-                id="s2-confidence"
-                value={confidence}
-                onChange={(e) => setConfidence(e.target.value)}
-              >
-                <option value="HIGH">High</option>
-                <option value="MEDIUM">Medium</option>
-                <option value="LOW">Low</option>
-              </select>
-
-              <label htmlFor="s2-file">
-                {roundNumber === 3 ? "Workbook (.xlsm)"
-                  : roundNumber === 5 ? "Power BI file or screenshot"
-                  : "Workbook"}
-              </label>
-              <input
-                id="s2-file"
-                type="file"
-                onChange={(e) => setFile(e.target.files?.[0] || null)}
-              />
+              {roundNumber !== 5 && (
+                <>
+                  <label htmlFor="s2-confidence">Confidence</label>
+                  <select
+                    id="s2-confidence"
+                    value={confidence}
+                    onChange={(e) => setConfidence(e.target.value)}
+                  >
+                    <option value="HIGH">High</option>
+                    <option value="MEDIUM">Medium</option>
+                    <option value="LOW">Low</option>
+                  </select>
+                </>
+              )}
 
               <div className="s2-row" style={{ marginTop: 16 }}>
                 <button type="submit" disabled={submitting || isPaused || !canSubmit}>
