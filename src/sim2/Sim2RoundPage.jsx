@@ -10,6 +10,7 @@ import {
   postBoardCall,
   recordDecision,
   ROLE_LABELS,
+  startRound,
   submitRound,
 } from "./api";
 import Sim2Reference from "./Sim2Reference";
@@ -340,6 +341,20 @@ export default function Sim2RoundPage() {
     }
   }
 
+  const [startingNext, setStartingNext] = useState(false);
+  async function startNextRound() {
+    const next = roundNumber + 1;
+    setStartingNext(true);
+    setError("");
+    try {
+      await startRound(runId, next);
+      gotoRound(next);
+    } catch (e) {
+      setError(e.message);
+      setStartingNext(false);
+    }
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     if (remaining !== null && remaining <= 0) return; // no submissions after time-out
@@ -539,16 +554,16 @@ export default function Sim2RoundPage() {
               <p className="s2-ok">Round {roundNumber} submitted.</p>
               <p className="s2-sub" style={{ margin: 0 }}>
                 {roundNumber >= TOTAL_ROUNDS
-                  ? "Final round complete — heading to the results…"
+                  ? "Final round complete — heading to the debrief…"
                   : isLead
-                  ? "Continue to the results to review and start the next round."
+                  ? "Start the next round when your team is ready."
                   : "Waiting for the Team Lead to start the next round — you'll move on automatically."}
               </p>
 
               {isLead && roundNumber < TOTAL_ROUNDS && (
                 <div className="s2-row" style={{ marginTop: 14 }}>
-                  <button onClick={() => gotoResults(roundNumber)}>
-                    Go to results — start Round {roundNumber + 1} →
+                  <button onClick={startNextRound} disabled={startingNext}>
+                    {startingNext ? "Starting…" : `Start Round ${roundNumber + 1} →`}
                   </button>
                 </div>
               )}
