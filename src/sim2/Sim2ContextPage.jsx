@@ -127,9 +127,11 @@ export default function Sim2ContextPage() {
           )}
         </div>
 
-        <button onClick={onContinue}>
-          {hasRole ? "Continue to the team room" : "Continue — create or join a team"}
-        </button>
+        <div className="s2-row" style={{ justifyContent: "flex-end" }}>
+          <button onClick={onContinue}>
+            {hasRole ? "Continue to the team room" : "Create or Join a team"}
+          </button>
+        </div>
       </div>
     </div>
   );

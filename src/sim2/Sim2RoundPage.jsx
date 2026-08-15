@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
   getArtifacts,
@@ -260,6 +260,76 @@ export default function Sim2RoundPage() {
     return "";
   }, [remaining, isPaused]);
 
+  // ── timer alarms + auto-submit-on-timeout (v5) ────────────────────────────
+  const [alarm, setAlarm] = useState(null); // "5" | "1"
+  const firedRef = useRef({ five: false, one: false });
+  const autoRef = useRef(false);
+  const roundIsComplete = roundState?.status === "COMPLETE";
+
+  const beep = () => {
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      const ctx = new Ctx();
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.connect(g);
+      g.connect(ctx.destination);
+      o.frequency.value = 880;
+      g.gain.value = 0.08;
+      o.start();
+      setTimeout(() => { o.stop(); ctx.close(); }, 300);
+    } catch {
+      /* audio not available — the visual pop-up still shows */
+    }
+  };
+
+  const autoSubmitTimeout = useCallback(async () => {
+    // Time is up and the owner has not submitted: submit an empty answer so the
+    // round closes (graded as incorrect / null) instead of hanging open.
+    try {
+      await submitRound(runId, roundNumber, {
+        participantId, typedAnswer: "", confidence, file: null,
+      });
+    } catch {
+      /* may already be submitted — fall through to the results page */
+    }
+    navigate(
+      `/sim2/results/${roundNumber}?runId=${runId}&participantId=${participantId}&role=${role}&teamId=${teamId}`
+    );
+  }, [runId, roundNumber, participantId, confidence, role, teamId, navigate]);
+
+  // Reset per-round alarm/auto-submit tracking when the round changes.
+  useEffect(() => {
+    firedRef.current = { five: false, one: false };
+    autoRef.current = false;
+    setAlarm(null);
+  }, [roundNumber]);
+
+  // Fire the 5-minute and 1-minute pop-ups once each (not while paused/complete).
+  useEffect(() => {
+    if (remaining == null || roundIsComplete || isPaused) return;
+    if (!firedRef.current.five && remaining <= 300 && remaining > 60) {
+      firedRef.current.five = true;
+      setAlarm("5");
+      beep();
+    }
+    if (!firedRef.current.one && remaining <= 60 && remaining > 0) {
+      firedRef.current.one = true;
+      setAlarm("1");
+      beep();
+    }
+  }, [remaining, roundIsComplete, isPaused]);
+
+  // Auto-submit exactly at zero (owner only), unless the round is already done.
+  useEffect(() => {
+    if (remaining === 0 && isOwner && !roundIsComplete && !isPaused && !autoRef.current) {
+      autoRef.current = true;
+      autoSubmitTimeout();
+    }
+  }, [remaining, isOwner, roundIsComplete, isPaused, autoSubmitTimeout]);
+
+  const timedOut = remaining !== null && remaining <= 0;
+
   async function chooseOption(artifact, optionId) {
     setError("");
     try {
@@ -272,6 +342,7 @@ export default function Sim2RoundPage() {
 
   async function handleSubmit(e) {
     e.preventDefault();
+    if (remaining !== null && remaining <= 0) return; // no submissions after time-out
     setSubmitting(true);
     setError("");
     try {
@@ -330,6 +401,23 @@ export default function Sim2RoundPage() {
             <div className="s2-breaking-tag">● Breaking</div>
             <div className="s2-breaking-msg">{breaking.message}</div>
             <button onClick={() => setBreaking(null)}>Acknowledge</button>
+          </div>
+        </div>
+      )}
+
+      {/* Timer alarm — 5-min / 1-min warning, any member can acknowledge */}
+      {alarm && (
+        <div className="s2-breaking" onClick={() => setAlarm(null)}>
+          <div className="s2-breaking-inner" onClick={(e) => e.stopPropagation()}>
+            <div className="s2-breaking-tag s2-alarm-tag">
+              ⏱ {alarm === "5" ? "5 minutes" : "1 minute"} to time-out
+            </div>
+            <div className="s2-breaking-msg">
+              {alarm === "5"
+                ? "Five minutes left in this round. Start finalising your answer."
+                : "One minute left. Submit now — the round auto-submits when the clock hits zero."}
+            </div>
+            <button onClick={() => setAlarm(null)}>Acknowledge</button>
           </div>
         </div>
       )}
@@ -499,12 +587,12 @@ export default function Sim2RoundPage() {
                 </div>
               )}
             </>
-          ) : isOwner || isLead ? (
+          ) : isOwner ? (
             <form onSubmit={handleSubmit}>
               {roundNumber === 1 && (
                 <>
                   <label htmlFor="s2-revenue">Total revenue for Bluetooth Speaker (Price × Quantity)</label>
-                  <input id="s2-revenue" type="text" inputMode="decimal" placeholder="e.g. 62667"
+                  <input id="s2-revenue" type="text" inputMode="decimal" placeholder="e.g. 48250"
                     value={fields.revenue ?? ""} onChange={(e) => setField("revenue", e.target.value)} />
 
                   <label>Which data issues did you find in the raw feed?</label>
@@ -533,7 +621,7 @@ export default function Sim2RoundPage() {
                   </select>
 
                   <label htmlFor="s2-gap">Attainment gap vs rest of network (percentage points)</label>
-                  <input id="s2-gap" type="text" inputMode="decimal" placeholder="e.g. 25.5"
+                  <input id="s2-gap" type="text" inputMode="decimal" placeholder="e.g. 12.0"
                     value={fields.gap ?? ""} onChange={(e) => setField("gap", e.target.value)} />
 
                   <label htmlFor="s2-note">In one line, what number convinced you?</label>
@@ -545,11 +633,11 @@ export default function Sim2RoundPage() {
               {roundNumber === 3 && (
                 <>
                   <label htmlFor="s2-rows">Total combined row count</label>
-                  <input id="s2-rows" type="text" inputMode="numeric" placeholder="e.g. 270"
+                  <input id="s2-rows" type="text" inputMode="numeric" placeholder="e.g. 305"
                     value={fields.rows ?? ""} onChange={(e) => setField("rows", e.target.value)} />
 
                   <label htmlFor="s2-revenue">Total combined revenue (Price × Quantity, all rows)</label>
-                  <input id="s2-revenue" type="text" inputMode="numeric" placeholder="e.g. 1381546"
+                  <input id="s2-revenue" type="text" inputMode="numeric" placeholder="e.g. 1250000"
                     value={fields.revenue ?? ""} onChange={(e) => setField("revenue", e.target.value)} />
 
                   <label htmlFor="s2-macro">Did you use a recorded macro?</label>
@@ -569,11 +657,11 @@ export default function Sim2RoundPage() {
               {roundNumber === 4 && (
                 <>
                   <label htmlFor="s2-product">Most ordered product</label>
-                  <input id="s2-product" type="text" placeholder="e.g. Notebook Set"
+                  <input id="s2-product" type="text" placeholder="e.g. Desk Lamp"
                     value={fields.product ?? ""} onChange={(e) => setField("product", e.target.value)} />
 
                   <label htmlFor="s2-pcount">Order count for that product</label>
-                  <input id="s2-pcount" type="text" inputMode="numeric" placeholder="e.g. 35"
+                  <input id="s2-pcount" type="text" inputMode="numeric" placeholder="e.g. 42"
                     value={fields.productCount ?? ""}
                     onChange={(e) => setField("productCount", e.target.value)} />
 
@@ -585,7 +673,7 @@ export default function Sim2RoundPage() {
                   </select>
 
                   <label htmlFor="s2-mcount">Order count for that month</label>
-                  <input id="s2-mcount" type="text" inputMode="numeric" placeholder="e.g. 90"
+                  <input id="s2-mcount" type="text" inputMode="numeric" placeholder="e.g. 65"
                     value={fields.monthCount ?? ""}
                     onChange={(e) => setField("monthCount", e.target.value)} />
 
@@ -610,7 +698,7 @@ export default function Sim2RoundPage() {
 
                   <label htmlFor="s2-complication">Complication</label>
                   <textarea id="s2-complication" rows={3} maxLength={600} value={fields.complication ?? ""}
-                    placeholder="What your analysis uncovered — cite the numbers (62,667 · People/25.5 · 270/1,381,546 · Notebook Set/April)."
+                    placeholder="What your analysis uncovered — reference the specific findings and figures from the earlier rounds."
                     onChange={(e) => setField("complication", e.target.value)} />
 
                   <label htmlFor="s2-question">Question</label>
@@ -639,10 +727,18 @@ export default function Sim2RoundPage() {
               )}
 
               <div className="s2-row" style={{ marginTop: 16 }}>
-                <button type="submit" disabled={submitting || isPaused || !canSubmit}>
-                  {isPaused ? "Paused" : submitting ? "Submitting…" : "Submit round"}
+                <button type="submit" disabled={submitting || isPaused || timedOut || !canSubmit}>
+                  {isPaused ? "Paused"
+                    : timedOut ? "Time is up"
+                    : submitting ? "Submitting…"
+                    : "Submit round"}
                 </button>
               </div>
+              {timedOut && (
+                <p className="s2-error" style={{ marginBottom: 0 }}>
+                  Time is up — this round was auto-submitted.
+                </p>
+              )}
             </form>
           ) : (
             <p className="s2-sub" style={{ margin: 0 }}>
