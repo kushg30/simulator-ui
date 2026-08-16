@@ -157,7 +157,7 @@ export const ROLE_LABELS = {
 // Role-specific private prompts (v4), shown once after role confirmation.
 export const ROLE_PROMPTS = {
   TEAM_LEAD:
-    "You don't build any of the initial rounds. But you sign your name to the last one, and you're the one standing in front of the Board when any of the previous four turn out to be wrong.",
+    "You don't build any of the first four rounds. But you sign your name to the last one, and you're the one standing in front of the Board when any of the previous four turn out to be wrong.",
   DATA_QUALITY_ANALYST:
     "A number that's obviously broken gets caught before it reaches anyone important. A number that's quietly wrong doesn't — it just gets presented to the Board.",
   CATEGORY_REGIONAL_ANALYST:
