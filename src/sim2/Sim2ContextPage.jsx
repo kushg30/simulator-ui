@@ -3,16 +3,18 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { ROLE_LABELS, ROLE_PROMPTS, warmup } from "./api";
 import "./sim2.css";
 
-// Content is taken verbatim from the Meridian Retail QBR script (the Prepare tab).
-const COMPANY = `Meridian Retail is a fast-growing, privately held omnichannel retail chain headquartered in Hyderabad, with its core store network across South and West India, plus two international, online-only markets in the UAE and Singapore.
+// Content is taken verbatim from Meridian_QBR_Final_v6.docx (the Prepare tab).
+const COMPANY = `Meridian Retail is a fast growing, privately held omnichannel retail chain. It is headquartered in Hyderabad. Its core stores are in South and West India. It also has two online only markets, in the UAE and Singapore. Six stores in total.
 
-The company is preparing for a Series C round, and the Board — a mix of founder-operators and institutional investors — has started asking sharper questions than the internal reporting function is built to answer. Most regional and category reporting has historically been assembled manually, store by store, close to each Board meeting. That worked when the company was smaller. It doesn't anymore.`;
+The Board is a mix of founder operators and institutional investors. Lately their questions have gotten sharper than the company's reporting can answer. Most numbers are still assembled by hand, store by store, in the days before each Board meeting. That worked when Meridian was smaller. Over the next five stages of this engagement, your team will be the ones finding out exactly where that approach breaks down, and what it takes to fix it before the Board notices.`;
 
-const PROBLEM = `The Board wants a Quarterly Business Review it can trust, filter, and act on — not a static file assembled the night before. The Head of Strategy has been told the current numbers "don't tie out" and has brought in your team as a short-term analytics engagement to fix that before the Board meets.
+const PROBLEM = `At the last Board meeting, the Head of Strategy quoted a revenue number for one of the company's best selling products. A Board member had a different number for the same product, from Finance. Nobody in the room could explain why the two didn't match, or which one to believe.
 
-(The Head of Strategy and "the Board" are NPCs throughout — they send memos and ask questions, but are never played by a student.)`;
+The Head of Strategy has brought your team in to make sure that never happens again. That starts with a question nobody at Meridian has actually stopped to ask: can any of this data be trusted in the first place? What you find out over the next five stages will decide what your team ultimately tells the Board.
 
-// [code, leads, deliverable] — v4 (team of 5)
+("Head of Strategy" and "the Board" are system-voiced characters — they send memos, ask questions, and interrupt at scripted points. No student plays either of them.)`;
+
+// [code, ownsRound, roleDefinition] — v6 (team of 5)
 const ROLES = [
   ["TEAM_LEAD", "Round 5 · Final", "Coordinates the team across every stage, and presents the team's final findings and recommendation to the Board."],
   ["DATA_QUALITY_ANALYST", "Round 1", "Checks whether raw data can be trusted before anyone builds on it, and spots the specific ways it's broken."],
@@ -121,7 +123,8 @@ export default function Sim2ContextPage() {
                 </tbody>
               </table>
               <p className="s2-sub" style={{ marginTop: 10 }}>
-                Discussion is collaborative, but the Team Lead submits each round on the team's behalf.
+                Discussion is collaborative, but the role that owns a round is the only one who submits
+                it — every other member's screen is read-only during that round.
               </p>
             </div>
           )}
