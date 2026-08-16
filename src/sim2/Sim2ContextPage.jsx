@@ -10,9 +10,7 @@ The Board is a mix of founder operators and institutional investors. Lately thei
 
 const PROBLEM = `At the last Board meeting, the Head of Strategy quoted a revenue number for one of the company's best selling products. A Board member had a different number for the same product, from Finance. Nobody in the room could explain why the two didn't match, or which one to believe.
 
-The Head of Strategy has brought your team in to make sure that never happens again. That starts with a question nobody at Meridian has actually stopped to ask: can any of this data be trusted in the first place? What you find out over the next five stages will decide what your team ultimately tells the Board.
-
-("Head of Strategy" and "the Board" are system-voiced characters — they send memos, ask questions, and interrupt at scripted points. No student plays either of them.)`;
+The Head of Strategy has brought your team in to make sure that never happens again. That starts with a question nobody at Meridian has actually stopped to ask: can any of this data be trusted in the first place? What you find out over the next five stages will decide what your team ultimately tells the Board.`;
 
 // [code, ownsRound, roleDefinition] — v6 (team of 5)
 const ROLES = [
