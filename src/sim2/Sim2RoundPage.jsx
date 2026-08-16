@@ -663,8 +663,13 @@ export default function Sim2RoundPage() {
                 </div>
               )}
             </>
-          ) : isOwner ? (
+          ) : (
             <form onSubmit={handleSubmit}>
+              {/* Every member sees the same fields; only the round owner can edit/submit. */}
+              <fieldset
+                disabled={!isOwner}
+                style={{ border: "none", padding: 0, margin: 0, minInlineSize: "auto" }}
+              >
               {roundNumber === 1 && (
                 <>
                   <label htmlFor="s2-revenue">Total revenue for Bluetooth Speaker (Price × Quantity)</label>
@@ -804,26 +809,32 @@ export default function Sim2RoundPage() {
                 <option value="MEDIUM">Medium</option>
                 <option value="LOW">Low</option>
               </select>
+              </fieldset>
 
-              <div className="s2-row" style={{ marginTop: 16 }}>
-                <button type="submit" disabled={submitting || isPaused || timedOut || !canSubmit}>
-                  {isPaused ? "Paused"
-                    : timedOut ? "Time is up"
-                    : submitting ? "Submitting…"
-                    : "Submit round"}
-                </button>
-              </div>
-              {timedOut && (
-                <p className="s2-error" style={{ marginBottom: 0 }}>
-                  Time is up — this round was auto-submitted.
+              {isOwner ? (
+                <>
+                  <div className="s2-row" style={{ marginTop: 16 }}>
+                    <button type="submit" disabled={submitting || isPaused || timedOut || !canSubmit}>
+                      {isPaused ? "Paused"
+                        : timedOut ? "Time is up"
+                        : submitting ? "Submitting…"
+                        : "Submit round"}
+                    </button>
+                  </div>
+                  {timedOut && (
+                    <p className="s2-error" style={{ marginBottom: 0 }}>
+                      Time is up — this round was auto-submitted.
+                    </p>
+                  )}
+                </>
+              ) : (
+                <p className="s2-sub" style={{ margin: "16px 0 0" }}>
+                  This round is owned by the <strong>{ROLE_LABELS[ownerRole] || ownerRole}</strong>,
+                  who submits it. You can see exactly what they see — work together — but only they
+                  submit.
                 </p>
               )}
             </form>
-          ) : (
-            <p className="s2-sub" style={{ margin: 0 }}>
-              This round is owned by the <strong>{ROLE_LABELS[ownerRole] || ownerRole}</strong>, who
-              submits it. Your screen is read-only for this round — work together, but they submit.
-            </p>
           )}
 
           {error && <p className="s2-error">{error}</p>}
