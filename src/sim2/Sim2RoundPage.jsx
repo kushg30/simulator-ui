@@ -55,22 +55,29 @@ const ROUND_OWNER = {
   5: "TEAM_LEAD",
 };
 
-// v5 structured-submission vocabularies.
+// v6 structured-submission vocabularies.
 const DATA_ISSUES = ["Incorrect", "Incomplete", "Improper Formatting", "Duplicated"];
-// v5: root cause reframed into four fishbone categories (People is correct).
+// Root cause: four fishbone categories (People is the data-supported one).
 const ROOT_CAUSES = [
   "People (Training & Skill Gap)",
-  "Process (Workflow / Execution)",
-  "Market (Environment / Demand)",
-  "Resource (Budget / Staffing)",
+  "Process (Execution & Operations Gap)",
+  "Market (External Demand Condition)",
+  "Resource (Budget or Staffing Constraint)",
 ];
-const CHART_TYPES = [
-  "Bar chart", "Column chart", "Line chart", "Combo chart", "Pie chart", "Table", "Other",
-];
+const TOOLS = ["Tableau", "Power BI"];
+const CHART_TYPES = ["Bar Chart", "Line Chart", "Map", "Other"];
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December",
 ];
+// Per-round Excel/tool reference hint (v6 "Reference:" line).
+const ROUND_REFERENCE = {
+  1: "MID()",
+  2: "AVERAGEIF(), CORREL()",
+  3: "Macro Recorder",
+  4: "PivotTable",
+  5: "Situation · Complication · Question · Answer (SCQA)",
+};
 
 function formatClock(totalSeconds) {
   if (totalSeconds === null) return "--:--";
@@ -135,7 +142,7 @@ export default function Sim2RoundPage() {
     if (roundNumber === 1) meta = ` | issues: ${tags.join(", ")} | note: ${note.trim()}`;
     else if (roundNumber === 2) meta = ` | note: ${note.trim()}`;
     else if (roundNumber === 3) meta = ` | macro: ${fields.macro || ""} | note: ${note.trim()}`;
-    else if (roundNumber === 4) meta = ` | chart: ${fields.chart || ""}`;
+    else if (roundNumber === 4) meta = ` | tool: ${fields.tool || ""} | chart: ${fields.chart || ""}`;
     else if (roundNumber === 5)
       meta =
         ` | situation: ${String(fields.situation || "").trim()}` +
@@ -150,7 +157,9 @@ export default function Sim2RoundPage() {
       return ["situation", "complication", "question", "answer"].every((k) => nb(fields[k]));
     }
     const extra =
-      roundNumber === 3 ? [fields.macro] : roundNumber === 4 ? [fields.chart] : [];
+      roundNumber === 3 ? [fields.macro]
+        : roundNumber === 4 ? [fields.tool, fields.chart]
+        : [];
     return gradedParts().every(nb) && extra.every(nb);
   })();
 
@@ -549,6 +558,11 @@ export default function Sim2RoundPage() {
         <div className="s2-card">
           <h2>Submit Round {roundNumber}</h2>
           {question && <p className="s2-sub">{question}</p>}
+          {ROUND_REFERENCE[roundNumber] && (
+            <p className="s2-sub" style={{ marginTop: 0 }}>
+              <strong>Reference:</strong> {ROUND_REFERENCE[roundNumber]}
+            </p>
+          )}
 
           {submitted ? (
             <>
@@ -693,7 +707,14 @@ export default function Sim2RoundPage() {
                     value={fields.monthCount ?? ""}
                     onChange={(e) => setField("monthCount", e.target.value)} />
 
-                  <label htmlFor="s2-chart">Chart type used (Tableau or Power BI — your choice)</label>
+                  <label htmlFor="s2-tool">Which tool did you use?</label>
+                  <select id="s2-tool" value={fields.tool ?? ""}
+                    onChange={(e) => setField("tool", e.target.value)}>
+                    <option value="">Select…</option>
+                    {TOOLS.map((t) => <option key={t} value={t}>{t}</option>)}
+                  </select>
+
+                  <label htmlFor="s2-chart">Chart type used for the product view</label>
                   <select id="s2-chart" value={fields.chart ?? ""}
                     onChange={(e) => setField("chart", e.target.value)}>
                     <option value="">Select…</option>
@@ -708,39 +729,35 @@ export default function Sim2RoundPage() {
                     Synthesise Rounds 1–4 into an <strong>SCQA</strong> brief for the Board. The
                     Complication should reference specific findings from the earlier rounds.
                   </p>
-                  <label htmlFor="s2-situation">Situation</label>
-                  <textarea id="s2-situation" rows={2} maxLength={400} value={fields.situation ?? ""}
+                  <label htmlFor="s2-situation">Situation — Meridian's current position</label>
+                  <textarea id="s2-situation" rows={2} maxLength={300} value={fields.situation ?? ""}
                     placeholder="Where the business stands." onChange={(e) => setField("situation", e.target.value)} />
 
-                  <label htmlFor="s2-complication">Complication</label>
-                  <textarea id="s2-complication" rows={3} maxLength={600} value={fields.complication ?? ""}
-                    placeholder="What your analysis uncovered — reference the specific findings and figures from the earlier rounds."
+                  <label htmlFor="s2-complication">Complication — what this engagement uncovered</label>
+                  <textarea id="s2-complication" rows={3} maxLength={400} value={fields.complication ?? ""}
+                    placeholder="Reference the specific findings and figures from the earlier rounds."
                     onChange={(e) => setField("complication", e.target.value)} />
 
-                  <label htmlFor="s2-question">Question</label>
-                  <textarea id="s2-question" rows={2} maxLength={400} value={fields.question ?? ""}
+                  <label htmlFor="s2-question">Question — the real strategic question for the Board</label>
+                  <textarea id="s2-question" rows={2} maxLength={200} value={fields.question ?? ""}
                     placeholder="The decision the Board now faces." onChange={(e) => setField("question", e.target.value)} />
 
-                  <label htmlFor="s2-answer">Answer</label>
-                  <textarea id="s2-answer" rows={3} maxLength={600} value={fields.answer ?? ""}
-                    placeholder="Your recommendation." onChange={(e) => setField("answer", e.target.value)} />
+                  <label htmlFor="s2-answer">Answer — your recommended next step</label>
+                  <textarea id="s2-answer" rows={3} maxLength={400} value={fields.answer ?? ""}
+                    placeholder="Grounded in what your team found." onChange={(e) => setField("answer", e.target.value)} />
                 </>
               )}
 
-              {roundNumber !== 5 && (
-                <>
-                  <label htmlFor="s2-confidence">Confidence</label>
-                  <select
-                    id="s2-confidence"
-                    value={confidence}
-                    onChange={(e) => setConfidence(e.target.value)}
-                  >
-                    <option value="HIGH">High</option>
-                    <option value="MEDIUM">Medium</option>
-                    <option value="LOW">Low</option>
-                  </select>
-                </>
-              )}
+              <label htmlFor="s2-confidence">Confidence</label>
+              <select
+                id="s2-confidence"
+                value={confidence}
+                onChange={(e) => setConfidence(e.target.value)}
+              >
+                <option value="HIGH">High</option>
+                <option value="MEDIUM">Medium</option>
+                <option value="LOW">Low</option>
+              </select>
 
               <div className="s2-row" style={{ marginTop: 16 }}>
                 <button type="submit" disabled={submitting || isPaused || timedOut || !canSubmit}>

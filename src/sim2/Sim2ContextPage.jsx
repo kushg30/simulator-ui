@@ -14,11 +14,11 @@ const PROBLEM = `The Board wants a Quarterly Business Review it can trust, filte
 
 // [code, leads, deliverable] — v4 (team of 5)
 const ROLES = [
-  ["TEAM_LEAD", "Kickoff · R2 Board Call · R5 · Final", "Coordinates across all rounds; synthesises the engagement into an SCQA brief in Round 5 and presents the team's findings to the Board."],
-  ["DATA_QUALITY_ANALYST", "Round 1", "Parses the unstructured raw feed into usable fields and identifies the data-quality problems in it."],
-  ["CATEGORY_REGIONAL_ANALYST", "Round 2", "A defended root-cause call on why West missed target — People, Process, Market or Resource — backed by a specific number."],
-  ["REPORTING_DASHBOARD_ANALYST", "Round 3", "Builds a macro to make the monthly file-combining repeatable, and confirms the combined row count and total revenue."],
-  ["PEOPLE_ANALYTICS_ASSOCIATE", "Round 4", "Builds the chart that answers a specific business question — the top product and the peak month (Tableau or Power BI)."],
+  ["TEAM_LEAD", "Round 5 · Final", "Coordinates the team across every stage, and presents the team's final findings and recommendation to the Board."],
+  ["DATA_QUALITY_ANALYST", "Round 1", "Checks whether raw data can be trusted before anyone builds on it, and spots the specific ways it's broken."],
+  ["CATEGORY_REGIONAL_ANALYST", "Round 2", "Investigates a performance problem and identifies the most defensible cause, backed by a specific number, not a guess."],
+  ["REPORTING_DASHBOARD_ANALYST", "Round 3", "Turns a manual, repeatable task into something that doesn't have to be rebuilt by hand every time."],
+  ["PEOPLE_ANALYTICS_ASSOCIATE", "Round 4", "Turns analyzed data into a visual that a non-technical audience can understand at a glance."],
 ];
 
 /**
