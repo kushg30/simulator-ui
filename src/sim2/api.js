@@ -130,6 +130,15 @@ export function getBroadcast(runId) {
 export function getPartialLeaderboard(simulationId = MERIDIAN_SIMULATION_ID) {
   return fetch(`${API_BASE}/api/sim2/simulations/${simulationId}/partial-leaderboard`).then(toJson);
 }
+// v6: revise the team's stated Round 2 confidence after Breaking News (before it locks).
+export function reviseConfidence(runId, confidence) {
+  return fetch(`${API_BASE}/api/sim2/runs/${runId}/rounds/2/revise-confidence`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ confidence }),
+  }).then(toJson);
+}
+
 // Record the team's Emergency Board Call one-line response.
 export function postBoardCall(runId, { roundNumber, response, participantId }) {
   return fetch(`${API_BASE}/api/sim2/runs/${runId}/board-call`, {
