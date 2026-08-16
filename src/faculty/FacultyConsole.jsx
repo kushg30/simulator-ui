@@ -330,9 +330,9 @@ export default function FacultyConsole() {
           <h2>Breaking News — Simulator 2 (Round 3)</h2>
           <p className="f-note">
             Fires the Round 3 interrupt to every Meridian team at once, <strong>personalised to each
-            team's Round 2 answer</strong>: a training/execution team hears the training budget was
-            approved; a market/environment team hears a board member pushed back. Trigger it manually
-            when teams are mid-Round 3.
+            team's Round 2 root-cause answer</strong>: a team that landed on the People / training
+            cause hears the training budget was approved; a team that answered Market hears a board
+            member push back. Trigger it manually when teams are mid-Round 3.
           </p>
           <div className="f-row" style={{ marginTop: 12 }}>
             <button

@@ -103,8 +103,8 @@ export default function Sim2RoundPage() {
   const [file, setFile] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
-  // v4 structured submission: per-round graded fields, plus the multi-select tags
-  // (R1) and the one-line / Board Brief free text (all owned rounds).
+  // v5 structured submission: per-round graded fields, plus the multi-select tags
+  // (R1), the per-round one-liner, and the R5 SCQA free-text fields.
   const [fields, setFields] = useState({});
   const [tags, setTags] = useState([]);
   const [note, setNote] = useState("");
