@@ -9,6 +9,7 @@ import {
   parsePayload,
   postBoardCall,
   recordDecision,
+  reviseConfidence,
   ROLE_LABELS,
   startRound,
   submitRound,
@@ -165,6 +166,9 @@ export default function Sim2RoundPage() {
 
   // ── engagement devices (v2) ───────────────────────────────────────────────
   const [breaking, setBreaking] = useState(null); // { message } when a new broadcast lands
+  const [reviseConf, setReviseConf] = useState("");
+  const [revising, setRevising] = useState(false);
+  const [revised, setRevised] = useState(false);
   const [boardCallText, setBoardCallText] = useState("");
   const [boardCallDone, setBoardCallDone] = useState(false);
   const [partialBoard, setPartialBoard] = useState(null); // Partial Leaderboard (between R2/R3)
@@ -403,6 +407,20 @@ export default function Sim2RoundPage() {
   const boardCallArtifact = artifacts.find((a) => parsePayload(a.payload).board_call);
   const normalArtifacts = artifacts.filter((a) => !parsePayload(a.payload).board_call);
 
+  async function doReviseConfidence() {
+    if (!reviseConf) return;
+    setRevising(true);
+    setError("");
+    try {
+      await reviseConfidence(runId, reviseConf);
+      setRevised(true);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setRevising(false);
+    }
+  }
+
   async function submitBoardCall() {
     if (!boardCallText.trim()) return;
     try {
@@ -425,6 +443,34 @@ export default function Sim2RoundPage() {
           <div className="s2-breaking-inner" onClick={(e) => e.stopPropagation()}>
             <div className="s2-breaking-tag">● Breaking</div>
             <div className="s2-breaking-msg">{breaking.message}</div>
+            {isLead && roundNumber === 3 && (
+              <div
+                className="s2-row"
+                style={{ justifyContent: "center", gap: 8, marginBottom: 18, flexWrap: "wrap" }}
+              >
+                <span className="s2-sub" style={{ margin: 0 }}>
+                  Revise your Round 2 confidence before it locks?
+                </span>
+                <select
+                  value={reviseConf}
+                  onChange={(e) => setReviseConf(e.target.value)}
+                  disabled={revised}
+                  style={{ width: "auto" }}
+                >
+                  <option value="">Keep as is</option>
+                  <option value="HIGH">High</option>
+                  <option value="MEDIUM">Medium</option>
+                  <option value="LOW">Low</option>
+                </select>
+                <button
+                  className="s2-secondary"
+                  disabled={!reviseConf || revising || revised}
+                  onClick={doReviseConfidence}
+                >
+                  {revised ? "Locked ✓" : revising ? "Saving…" : "Lock it in"}
+                </button>
+              </div>
+            )}
             <button onClick={() => setBreaking(null)}>Acknowledge</button>
           </div>
         </div>
