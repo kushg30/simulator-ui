@@ -3,7 +3,6 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
   getArtifacts,
   getBroadcast,
-  getPartialLeaderboard,
   getQuestion,
   getRoundState,
   parsePayload,
@@ -171,17 +170,6 @@ export default function Sim2RoundPage() {
   const [revised, setRevised] = useState(false);
   const [boardCallText, setBoardCallText] = useState("");
   const [boardCallDone, setBoardCallDone] = useState(false);
-  const [partialBoard, setPartialBoard] = useState(null); // Partial Leaderboard (between R2/R3)
-
-  // Between Rounds 2 and 3 the system reveals Data Trust + Turnaround only.
-  const roundDone = roundState?.status === "COMPLETE";
-  useEffect(() => {
-    if (roundNumber !== 2 || !roundDone) return;
-    const load = () => getPartialLeaderboard().then(setPartialBoard).catch(() => {});
-    load();
-    const id = setInterval(load, 5000);
-    return () => clearInterval(id);
-  }, [roundNumber, roundDone]);
 
   // Poll for a facilitator Breaking News broadcast; show it once (tracked by id).
   useEffect(() => {
@@ -629,39 +617,6 @@ export default function Sim2RoundPage() {
                 </div>
               )}
 
-              {roundNumber === 2 && partialBoard?.teams?.length > 0 && (
-                <div className="s2-partial">
-                  <div className="s2-partial-head">
-                    Partial leaderboard — <strong>Data Trust</strong> &amp;{" "}
-                    <strong>Turnaround</strong> only. The other three constructs and your final rank
-                    stay hidden until the end.
-                  </div>
-                  <table className="s2-partial-table">
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>Team</th>
-                        <th>Data Trust</th>
-                        <th>Turnaround</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {partialBoard.teams.map((t) => (
-                        <tr key={t.teamName}>
-                          <td>{t.rank}</td>
-                          <td>{t.teamName}</td>
-                          <td>{t.dataTrust ?? "—"}</td>
-                          <td>{t.turnaround ?? "—"}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  <div className="s2-sub" style={{ marginTop: 8 }}>
-                    Data Trust here is provisional — it reflects your data-quality choices so far and
-                    can still move as later rounds are scored.
-                  </div>
-                </div>
-              )}
             </>
           ) : (
             <form onSubmit={handleSubmit}>
@@ -688,7 +643,7 @@ export default function Sim2RoundPage() {
 
                   <label htmlFor="s2-note">In one line, how did you handle it?</label>
                   <input id="s2-note" type="text" maxLength={140} value={note}
-                    placeholder="Cite a specific number." onChange={(e) => setNote(e.target.value)} />
+                    placeholder="Optional — in your own words." onChange={(e) => setNote(e.target.value)} />
                 </>
               )}
 
@@ -830,8 +785,7 @@ export default function Sim2RoundPage() {
               ) : (
                 <p className="s2-sub" style={{ margin: "16px 0 0" }}>
                   This round is owned by the <strong>{ROLE_LABELS[ownerRole] || ownerRole}</strong>,
-                  who submits it. You can see exactly what they see — work together — but only they
-                  submit.
+                  who submits it. Your screen is view-only for this round.
                 </p>
               )}
             </form>

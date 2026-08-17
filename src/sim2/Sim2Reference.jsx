@@ -26,7 +26,6 @@ export default function Sim2Reference({ runId, round }) {
   }, [open, loaded, runId, round]);
 
   const sections = [
-    ["FUNCTIONS", "Functions for this round"],
     ["FACTS", "Company facts"],
     ["FAQ", "FAQ"],
   ];
@@ -47,10 +46,6 @@ export default function Sim2Reference({ runId, round }) {
                 Close
               </button>
             </div>
-            <p className="s2-sub">
-              Functions for this round, company facts, and the faculty FAQ. Nothing here gives away an
-              answer.
-            </p>
 
             {!loaded ? (
               <p className="s2-sub">Loading…</p>

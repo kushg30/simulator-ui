@@ -57,21 +57,7 @@ export default function FacultyDebrief({ simulationId }) {
   const [editReason, setEditReason] = useState("");
   const editorRef = useRef(null);
 
-  // Final Board Presentation live-scoring: per-team criteria {ask, numbers, rec}.
-  const [pres, setPres] = useState({});
-
   const actor = localStorage.getItem("facultyActor") || "facilitator";
-
-  // v4 Final Board Presentation: three criteria, 0–10 each, total out of 30 → 0–100.
-  const presCriteria = [
-    ["clarity", "Clarity of Numbers"],
-    ["coherence", "Coherence Across Rounds"],
-    ["time", "Time Discipline"],
-  ];
-  const presTotal = (c) => presCriteria.reduce((s, [k]) => s + (Number(c?.[k]) || 0), 0);
-  const presScore = (c) => Math.round((presTotal(c) / 30) * 100);
-  const setCriterion = (runId, key, val) =>
-    setPres((p) => ({ ...p, [runId]: { ...(p[runId] || {}), [key]: val } }));
 
   // The override editor renders below the leaderboard; scroll it into view (and
   // focus the score field) when a facilitator clicks a score, so it's obvious
@@ -103,7 +89,7 @@ export default function FacultyDebrief({ simulationId }) {
 
   const teams = data.teams || [];
   if (teams.length === 0) {
-    return <p className="f-note">No team has finished all six rounds yet.</p>;
+    return <p className="f-note">No team has finished all five rounds yet.</p>;
   }
 
   const bandOf = (v) => (v == null ? "na" : v >= 75 ? "high" : v >= 40 ? "med" : "low");
@@ -137,26 +123,6 @@ export default function FacultyDebrief({ simulationId }) {
       );
       setMsg(`Set ${CONSTRUCT_LABELS[editConstruct]} for ${editTeam.teamName} to ${editValue}`);
       setEditTeam(null);
-      refresh();
-    } catch (e) {
-      setMsg(e.message);
-    }
-  }
-
-  // Live-score Board Clarity from the Final Board Presentation criteria.
-  async function savePresentation(team) {
-    const c = pres[team.runId] || {};
-    const score = presScore(c);
-    const detail = presCriteria.map(([k, label]) => `${label} ${Number(c[k]) || 0}/10`).join(", ");
-    try {
-      await overrideConstruct(
-        team.runId,
-        "INSIGHT_COMMUNICATION",
-        score,
-        `Final Board Presentation (${presTotal(c)}/30) — ${detail}`,
-        actor
-      );
-      setMsg(`Board Clarity for ${team.teamName} set to ${score} from the presentation`);
       refresh();
     } catch (e) {
       setMsg(e.message);
@@ -314,14 +280,14 @@ export default function FacultyDebrief({ simulationId }) {
       {/* ── per-round answers grid ──────────────────────────────────── */}
       <h2 style={{ marginTop: 22 }}>Answers by round</h2>
       <p className="f-note" style={{ marginBottom: 8 }}>
-        Correct / incorrect per round. Round 6 is a free-text reflection, so it is not graded.
+        Correct / incorrect per round. Round 5 is a free-text reflection, so it is not graded.
       </p>
       <div style={{ overflowX: "auto" }}>
         <table className="f-ans-table">
           <thead>
             <tr>
               <th>Team</th>
-              {[1, 2, 3, 4, 5, 6].map((n) => (
+              {[1, 2, 3, 4, 5].map((n) => (
                 <th key={n} className="f-ans-col">
                   R{n}
                 </th>
@@ -337,7 +303,7 @@ export default function FacultyDebrief({ simulationId }) {
               return (
                 <tr key={t.runId}>
                   <td>{t.teamName}</td>
-                  {[1, 2, 3, 4, 5, 6].map((n) => {
+                  {[1, 2, 3, 4, 5].map((n) => {
                     const s = byRound[n];
                     let mark = "·";
                     let cls = "na";
@@ -363,62 +329,6 @@ export default function FacultyDebrief({ simulationId }) {
                       </td>
                     );
                   })}
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-
-      {/* ── Final Board Presentation — live Board Clarity scoring ──────────── */}
-      <h2 style={{ marginTop: 22 }}>Final Board Presentation — score Board Clarity live</h2>
-      <p className="f-note" style={{ marginBottom: 10 }}>
-        Each Team Lead presents for 120 seconds. Score each criterion 0–10; the total out of 30 is
-        saved to Board Clarity for that team.
-      </p>
-      <div style={{ overflowX: "auto" }}>
-        <table>
-          <thead>
-            <tr>
-              <th>Team</th>
-              {presCriteria.map(([k, label]) => (
-                <th key={k} style={{ textAlign: "center" }}>{label}</th>
-              ))}
-              <th style={{ textAlign: "center" }}>Total</th>
-              <th style={{ textAlign: "center" }}>Score</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {teams.map((t) => {
-              const c = pres[t.runId] || {};
-              return (
-                <tr key={t.runId}>
-                  <td>{t.teamName}</td>
-                  {presCriteria.map(([k]) => (
-                    <td key={k} style={{ textAlign: "center" }}>
-                      <input
-                        type="number"
-                        min="0"
-                        max="10"
-                        value={c[k] ?? ""}
-                        placeholder="0"
-                        onChange={(e) => setCriterion(t.runId, k, e.target.value)}
-                        style={{ width: 52, textAlign: "center" }}
-                      />
-                    </td>
-                  ))}
-                  <td style={{ textAlign: "center" }} className="f-note">
-                    {presTotal(c)}/30
-                  </td>
-                  <td style={{ textAlign: "center" }}>
-                    <span className="f-band f-band-high">{presScore(c)}</span>
-                  </td>
-                  <td>
-                    <button className="f-mini" onClick={() => savePresentation(t)}>
-                      save
-                    </button>
-                  </td>
                 </tr>
               );
             })}
@@ -497,7 +407,7 @@ export default function FacultyDebrief({ simulationId }) {
                   {t.dataTrustPattern}.
                 </>
               ) : (
-                <>Data Trust held across all six rounds.</>
+                <>Data Trust held across all five rounds.</>
               )}
             </div>
             <div className="f-note" style={{ marginTop: 2 }}>
