@@ -75,7 +75,6 @@ const ROUND_REFERENCE = {
   1: "MID()",
   2: "AVERAGEIF(), CORREL()",
   3: "Macro Recorder",
-  4: "PivotTable",
   5: "Situation · Complication · Question · Answer (SCQA)",
 };
 
@@ -713,7 +712,7 @@ function Sim2RoundView() {
                   <input id="s2-gap" type="text" inputMode="decimal" placeholder="e.g. 12.0"
                     value={fields.gap ?? ""} onChange={(e) => setField("gap", e.target.value)} />
 
-                  <label htmlFor="s2-note">In one line, what number convinced you?</label>
+                  <label htmlFor="s2-note">In one line, explain how did you handle this round?</label>
                   <input id="s2-note" type="text" maxLength={140} value={note}
                     onChange={(e) => setNote(e.target.value)} />
                 </>
