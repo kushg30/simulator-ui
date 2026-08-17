@@ -119,6 +119,8 @@ function Sim2RoundView() {
   const [confidence, setConfidence] = useState("MEDIUM");
   const [file, setFile] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [confirmSubmit, setConfirmSubmit] = useState(false); // submit confirmation gate
+  const [confirmText, setConfirmText] = useState("");
 
   // v5 structured submission: per-round graded fields, plus the multi-select tags
   // (R1), the per-round one-liner, and the R5 SCQA free-text fields.
@@ -377,8 +379,17 @@ function Sim2RoundView() {
     }
   }
 
-  async function handleSubmit(e) {
+  // The submit button opens a confirmation gate; the round is only sent once the
+  // owner explicitly types "yes" — a round submission cannot be undone by the team.
+  function requestSubmit(e) {
     e.preventDefault();
+    if (submitting || isPaused || timedOut || !canSubmit) return;
+    setConfirmText("");
+    setConfirmSubmit(true);
+  }
+
+  async function doSubmit() {
+    setConfirmSubmit(false);
     if (remaining !== null && remaining <= 0) return; // no submissions after time-out
     setSubmitting(true);
     setError("");
@@ -480,6 +491,36 @@ function Sim2RoundView() {
               </div>
             )}
             <button onClick={() => setBreaking(null)}>Acknowledge</button>
+          </div>
+        </div>
+      )}
+
+      {/* Submit confirmation gate — the owner must type "yes" to submit */}
+      {confirmSubmit && (
+        <div className="s2-breaking" onClick={() => setConfirmSubmit(false)}>
+          <div className="s2-breaking-inner" onClick={(e) => e.stopPropagation()}>
+            <div className="s2-breaking-tag s2-confirm-tag">Confirm submission</div>
+            <div className="s2-breaking-msg">
+              Are you sure you want to submit Round {roundNumber}? This locks the team's answer and
+              cannot be undone.
+            </div>
+            <input
+              type="text"
+              autoFocus
+              value={confirmText}
+              placeholder='Type "yes" to confirm'
+              onChange={(e) => setConfirmText(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && confirmText.trim().toLowerCase() === "yes" && doSubmit()}
+              style={{ maxWidth: 320, margin: "0 auto 16px", display: "block", textAlign: "center" }}
+            />
+            <div className="s2-row" style={{ justifyContent: "center", gap: 10 }}>
+              <button className="s2-secondary" onClick={() => setConfirmSubmit(false)}>
+                Cancel
+              </button>
+              <button onClick={doSubmit} disabled={confirmText.trim().toLowerCase() !== "yes"}>
+                Submit Round {roundNumber}
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -631,7 +672,7 @@ function Sim2RoundView() {
 
             </>
           ) : (
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={requestSubmit}>
               {/* Every member sees the same fields; only the round owner can edit/submit. */}
               <fieldset
                 disabled={!isOwner}
