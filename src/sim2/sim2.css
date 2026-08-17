@@ -317,3 +317,4 @@
 .sim2 .s2-check{display:inline-flex;align-items:center;gap:6px;font-weight:400;margin:0;cursor:pointer;}
 .sim2 .s2-check input{width:auto;margin:0;}
 .sim2 .s2-alarm-tag{color:var(--s2-warn);}
+.sim2 .s2-confirm-tag{background:var(--s2-accent);box-shadow:0 0 30px -6px rgba(59,130,246,0.7);}
