@@ -86,7 +86,17 @@ function formatClock(totalSeconds) {
   return `${m}:${s}`;
 }
 
+// React Router reuses the same element across a param change, so moving from
+// /sim2/round/2 to /sim2/round/3 would NOT remount — the previous round's timer
+// base, round state and auto-submit refs would leak into the next round (causing
+// premature auto-submits and stuck progression). Keying on the round number forces
+// a clean remount for every round.
 export default function Sim2RoundPage() {
+  const { roundNumber } = useParams();
+  return <Sim2RoundView key={roundNumber} />;
+}
+
+function Sim2RoundView() {
   const { roundNumber: roundParam } = useParams();
   const [params] = useSearchParams();
   const navigate = useNavigate();
@@ -262,11 +272,19 @@ export default function Sim2RoundPage() {
     return "";
   }, [remaining, isPaused]);
 
-  // ── timer alarms + auto-submit-on-timeout (v5) ────────────────────────────
+  // ── timer alarms + auto-submit-on-timeout ─────────────────────────────────
   const [alarm, setAlarm] = useState(null); // "5" | "1"
   const firedRef = useRef({ five: false, one: false });
   const autoRef = useRef(false);
+  // Auto-submit must only fire after we've actually watched the clock run for THIS
+  // round (seen a healthy positive value while it was active). This blocks a spurious
+  // "remaining === 0" from stale/loading state ever triggering a submit.
+  const sawTimeRef = useRef(false);
   const roundIsComplete = roundState?.status === "COMPLETE";
+  const roundIsActiveHere = roundState?.roundNumber === roundNumber && roundState?.status === "ACTIVE";
+  if (roundIsActiveHere && remaining !== null && remaining > 5) {
+    sawTimeRef.current = true;
+  }
 
   const beep = () => {
     try {
@@ -322,16 +340,18 @@ export default function Sim2RoundPage() {
     }
   }, [remaining, roundIsComplete, isPaused]);
 
-  // Auto-submit exactly at zero (owner only), unless the round is already done or a
-  // manual submit is already in flight.
+  // Auto-submit exactly at zero (owner only) — but only for a round that is genuinely
+  // active here and whose clock we actually watched run down. Never on stale/loading 0.
   useEffect(() => {
-    if (remaining === 0 && isOwner && !roundIsComplete && !isPaused && !autoRef.current && !submitting) {
+    if (remaining === 0 && sawTimeRef.current && roundIsActiveHere && isOwner
+        && !roundIsComplete && !isPaused && !autoRef.current && !submitting) {
       autoRef.current = true;
       autoSubmitTimeout();
     }
-  }, [remaining, isOwner, roundIsComplete, isPaused, submitting, autoSubmitTimeout]);
+  }, [remaining, roundIsActiveHere, isOwner, roundIsComplete, isPaused, submitting, autoSubmitTimeout]);
 
-  const timedOut = remaining !== null && remaining <= 0;
+  // Only a genuine time-out (clock watched down to 0 on the active round) blocks submission.
+  const timedOut = remaining === 0 && sawTimeRef.current && roundIsActiveHere;
 
   async function chooseOption(artifact, optionId) {
     setError("");
@@ -528,14 +548,6 @@ export default function Sim2RoundPage() {
             <p className="s2-sub" style={{ margin: "6px 0 0" }}>
               Your clock is stopped and nothing new will arrive until the round resumes. Paused time
               is not counted against you.
-            </p>
-          </div>
-        )}
-
-        {normalArtifacts.length === 0 && (
-          <div className="s2-card">
-            <p className="s2-sub" style={{ margin: 0 }}>
-              Nothing has landed yet. Artifacts are released on the round clock.
             </p>
           </div>
         )}

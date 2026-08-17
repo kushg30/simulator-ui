@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { getResults, getRoundState, startRound } from "./api";
+import { getResults, getRoundState, ROLE_LABELS, startRound } from "./api";
 import "./sim2.css";
 
 /**
@@ -94,6 +94,11 @@ export default function Sim2ResultsPage() {
     <div className="sim2">
       <div className="s2-shell">
         <h1>Round {roundNumber} — submitted</h1>
+        {role && (
+          <p className="s2-sub">
+            You are the <strong>{ROLE_LABELS[role] || role}</strong>
+          </p>
+        )}
         <p className="s2-sub">
           Your response has been recorded. Scores are held back and reviewed with your facilitator
           in the debrief — not shown here.
