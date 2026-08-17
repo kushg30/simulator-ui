@@ -426,6 +426,19 @@ export default function FacultyConsole() {
                             Manage
                           </button>
                           <button
+                            className="f-ghost"
+                            disabled={!(r.roundsComplete > 0)}
+                            title="Re-open the team's last submitted round so they can submit it again"
+                            onClick={() =>
+                              act(
+                                () => api.restartLastRound(r.runId, note, actor),
+                                `Round restarted for ${r.teamName}`
+                              )
+                            }
+                          >
+                            Restart round
+                          </button>
+                          <button
                             className="f-danger"
                             onClick={() => {
                               setTerminateRow(r);

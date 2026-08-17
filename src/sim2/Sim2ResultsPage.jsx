@@ -57,12 +57,14 @@ export default function Sim2ResultsPage() {
       try {
         const states = await getRoundState(runId);
         if (stop) return;
-        const laterActive = (states || []).find(
-          (s) => s.status === "ACTIVE" && s.roundNumber > roundNumber
-        );
-        if (laterActive) {
+        // Follow the team into any round that is now active — a later round the Lead
+        // started, OR this same round if a facilitator restarted it (undo a mis-submit).
+        const active = (states || [])
+          .filter((s) => s.status === "ACTIVE")
+          .sort((a, b) => b.roundNumber - a.roundNumber)[0];
+        if (active) {
           navigate(
-            `/sim2/round/${laterActive.roundNumber}?runId=${runId}` +
+            `/sim2/round/${active.roundNumber}?runId=${runId}` +
               `&participantId=${participantId}&role=${role}&teamId=${teamId}`
           );
         }
