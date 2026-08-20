@@ -23,6 +23,7 @@ export default function Sim2WaitingPage() {
   const teamId = params.get("teamId");
   const participantId = params.get("participantId");
   const role = params.get("role");
+  const joinCode = params.get("joinCode");
   const isLead = role === "TEAM_LEAD";
 
   const [participants, setParticipants] = useState([]);
@@ -81,8 +82,7 @@ export default function Sim2WaitingPage() {
       <div className="s2-shell">
         <h1>Waiting room</h1>
         <p className="s2-sub">
-          You are the <strong>{ROLE_LABELS[role] || role}</strong>. Team ID:{" "}
-          <code>{teamId}</code>{" "}
+          You are the <strong>{ROLE_LABELS[role] || role}</strong>.{" "}
           <button
             className="s2-linkish"
             onClick={() =>
@@ -94,6 +94,18 @@ export default function Sim2WaitingPage() {
             review briefing
           </button>
         </p>
+
+        {joinCode && (
+          <div className="s2-card" style={{ textAlign: "center" }}>
+            <div className="s2-ref-section">Team join code</div>
+            <div style={{ fontSize: "2.4rem", fontWeight: 700, letterSpacing: "0.18em", margin: "4px 0" }}>
+              {joinCode}
+            </div>
+            <p className="s2-sub" style={{ margin: 0 }}>
+              Read this out to your team — they enter it on the join page to join your team.
+            </p>
+          </div>
+        )}
 
         {ROLE_PROMPTS[role] && (
           <div className="s2-card s2-private-brief">

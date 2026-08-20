@@ -6,9 +6,18 @@ import {
   getRoundState,
   getRun,
   joinTeam,
+  resolveTeamCode,
   ROLE_LABELS,
   warmup,
 } from "./api";
+
+// Accept either the short join code (e.g. "4821") or a full UUID team id.
+async function toTeamId(input) {
+  const v = (input || "").trim();
+  if (/^[0-9a-f]{8}-[0-9a-f]{4}/i.test(v) || v.length > 10) return v; // looks like a UUID
+  const res = await resolveTeamCode(v);
+  return res.teamId;
+}
 import "./sim2.css";
 
 /**
@@ -37,7 +46,8 @@ export default function Sim2JoinPage() {
       const res = await createTeam(teamName.trim(), name.trim());
       // Brief already read on the landing page; go straight to the team room.
       navigate(
-        `/sim2/waiting?teamId=${res.teamId}&participantId=${res.participantId}&role=${res.role}`
+        `/sim2/waiting?teamId=${res.teamId}&participantId=${res.participantId}&role=${res.role}` +
+          `&joinCode=${res.joinCode || ""}`
       );
     } catch (err) {
       setError(err.message);
@@ -51,8 +61,9 @@ export default function Sim2JoinPage() {
     setBusy(true);
     setError("");
     try {
-      const res = await joinTeam(teamId.trim(), name.trim());
-      navigate(`/sim2/roles?teamId=${teamId.trim()}&participantId=${res.participantId}`);
+      const tid = await toTeamId(teamId);
+      const res = await joinTeam(tid, name.trim());
+      navigate(`/sim2/roles?teamId=${tid}&participantId=${res.participantId}`);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -62,6 +73,7 @@ export default function Sim2JoinPage() {
 
   // ── rejoin an existing session (e.g. after a facilitator paused overnight) ──
   const [rejoinId, setRejoinId] = useState("");
+  const [rejoinTeamId, setRejoinTeamId] = useState("");
   const [members, setMembers] = useState(null); // participant list, or null
   const [rejoinState, setRejoinState] = useState({ runId: null, states: [] });
 
@@ -71,11 +83,13 @@ export default function Sim2JoinPage() {
     setError("");
     setMembers(null);
     try {
-      const list = await getParticipants(rejoinId.trim());
+      const tid = await toTeamId(rejoinId);
+      setRejoinTeamId(tid);
+      const list = await getParticipants(tid);
       let runId = null;
       let states = [];
       try {
-        const run = await getRun(rejoinId.trim());
+        const run = await getRun(tid);
         runId = run && (run.runId || run.run_id);
         if (runId) states = await getRoundState(runId);
       } catch {
@@ -83,7 +97,7 @@ export default function Sim2JoinPage() {
       }
       setRejoinState({ runId, states });
       setMembers(list || []);
-      if (!list || list.length === 0) setError("No team found with that ID.");
+      if (!list || list.length === 0) setError("No team found with that code.");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -93,7 +107,7 @@ export default function Sim2JoinPage() {
 
   function rejoinAs(p) {
     const { runId, states } = rejoinState;
-    const base = `teamId=${rejoinId.trim()}&participantId=${p.participantId}&role=${p.role || ""}`;
+    const base = `teamId=${rejoinTeamId}&participantId=${p.participantId}&role=${p.role || ""}`;
     if (!runId) {
       navigate(`/sim2/waiting?${base}`); // still in the lobby
       return;
@@ -152,12 +166,13 @@ export default function Sim2JoinPage() {
         <div className="s2-card">
           <h2>Join an existing team</h2>
           <form onSubmit={handleJoin}>
-            <label htmlFor="s2-team-id">Team ID</label>
+            <label htmlFor="s2-team-id">Team code</label>
             <input
               id="s2-team-id"
               type="text"
+              inputMode="numeric"
               value={teamId}
-              placeholder="Paste the team ID from your Team Lead"
+              placeholder="e.g. 4821 — from your Team Lead"
               onChange={(e) => setTeamId(e.target.value)}
             />
             <div className="s2-row" style={{ marginTop: 14 }}>
@@ -175,16 +190,17 @@ export default function Sim2JoinPage() {
         <div className="s2-card">
           <h2>Rejoin a session</h2>
           <p className="s2-sub">
-            Coming back to a run that was already started or paused? Enter your Team ID to pick up
-            where you left off.
+            Coming back to a run that was already started or paused — or covering a teammate's role?
+            Enter your team code, then tap the role to pick up.
           </p>
           <form onSubmit={findSession}>
-            <label htmlFor="s2-rejoin-id">Team ID</label>
+            <label htmlFor="s2-rejoin-id">Team code</label>
             <input
               id="s2-rejoin-id"
               type="text"
+              inputMode="numeric"
               value={rejoinId}
-              placeholder="Your team's ID"
+              placeholder="e.g. 4821"
               onChange={(e) => setRejoinId(e.target.value)}
             />
             <div className="s2-row" style={{ marginTop: 14 }}>
