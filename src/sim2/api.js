@@ -33,6 +33,11 @@ export function createTeam(teamName, participantName) {
   }).then(toJson);
 }
 
+// Resolve a short 4-digit join code to a team id (students type the code, not the UUID).
+export function resolveTeamCode(code) {
+  return fetch(`${API_BASE}/api/teams/resolve/${encodeURIComponent(code)}`).then(toJson);
+}
+
 export function joinTeam(teamId, participantName) {
   return fetch(`${API_BASE}/api/teams/${teamId}/join`, {
     method: "POST",
