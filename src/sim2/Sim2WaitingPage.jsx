@@ -1,11 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
-  assignRole,
   getParticipants,
-  getRoles,
   getRun,
-  joinTeam,
   ROLE_LABELS,
   ROLE_PROMPTS,
   startRound,
@@ -79,26 +76,6 @@ export default function Sim2WaitingPage() {
     }
   }
 
-  // TESTING ONLY — remove before real use. Fills the unclaimed roles with bots so
-  // one person can start a run without five other browsers.
-  async function fillWithBots() {
-    setBusy(true);
-    setError("");
-    try {
-      const roles = await getRoles(teamId); // { ROLE_CODE: occupantId | null }
-      for (const [roleCode, occupant] of Object.entries(roles)) {
-        if (occupant) continue; // already taken
-        const joined = await joinTeam(teamId, `bot-${roleCode}`);
-        await assignRole(teamId, joined.participantId, roleCode);
-      }
-      await poll();
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setBusy(false);
-    }
-  }
-
   return (
     <div className="sim2">
       <div className="s2-shell">
@@ -157,21 +134,6 @@ export default function Sim2WaitingPage() {
           )}
           {error && <p className="s2-error">{error}</p>}
         </div>
-
-        {/* TESTING ONLY — delete this card before real use. */}
-        {!allAssigned && (
-          <div className="s2-card" style={{ borderStyle: "dashed", opacity: 0.9 }}>
-            <h2>Testing shortcut</h2>
-            <p className="s2-sub">
-              Fills the {TOTAL_ROLES - assigned} empty role
-              {TOTAL_ROLES - assigned === 1 ? "" : "s"} with bots so you can start solo. Remove
-              before real sessions.
-            </p>
-            <button className="s2-secondary" onClick={fillWithBots} disabled={busy}>
-              {busy ? "Adding bots…" : "Fill remaining roles with bots"}
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );
