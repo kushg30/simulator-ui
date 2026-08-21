@@ -554,6 +554,7 @@ section {
 }
 
 .sim-card {
+  position: relative;
   background: rgba(255,255,255,0.03);
   border: 1px solid rgba(255,255,255,0.07);
   border-radius: 18px;
@@ -597,6 +598,11 @@ section {
 }
 
 .sim-badge {
+  position: absolute;
+  top: 24px;
+  right: 22px;
+  z-index: 2;
+
   display: inline-flex;
   align-items: center;
 
@@ -609,8 +615,6 @@ section {
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.03em;
-
-  margin-bottom: 18px;
 }
 
 .badge-live {
