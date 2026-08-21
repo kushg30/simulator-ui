@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { getResults, getRoundState, ROLE_LABELS, startRound } from "./api";
+import { getResults, getRoundState, getTeam, ROLE_LABELS, startRound } from "./api";
 import "./sim2.css";
 
 /**
@@ -25,6 +25,12 @@ export default function Sim2ResultsPage() {
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
   const [starting, setStarting] = useState(false);
+  const [teamName, setTeamName] = useState("");
+
+  useEffect(() => {
+    if (!teamId) return;
+    getTeam(teamId).then((t) => setTeamName(t.teamName || "")).catch(() => {});
+  }, [teamId]);
 
   async function beginNextRound() {
     setStarting(true);
@@ -96,6 +102,11 @@ export default function Sim2ResultsPage() {
         <h1>Round {roundNumber} — submitted</h1>
         {role && (
           <p className="s2-sub">
+            {teamName && (
+              <>
+                Team <strong>{teamName}</strong> ·{" "}
+              </>
+            )}
             You are the <strong>{ROLE_LABELS[role] || role}</strong>
           </p>
         )}

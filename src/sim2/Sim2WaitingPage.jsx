@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   getParticipants,
   getRun,
+  getTeam,
   ROLE_LABELS,
   ROLE_PROMPTS,
   startRound,
@@ -27,8 +28,14 @@ export default function Sim2WaitingPage() {
   const isLead = role === "TEAM_LEAD";
 
   const [participants, setParticipants] = useState([]);
+  const [teamName, setTeamName] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (!teamId) return;
+    getTeam(teamId).then((t) => setTeamName(t.teamName || "")).catch(() => {});
+  }, [teamId]);
 
   const goToRound = useCallback(
     (runId) => {
@@ -82,6 +89,11 @@ export default function Sim2WaitingPage() {
       <div className="s2-shell">
         <h1>Waiting room</h1>
         <p className="s2-sub">
+          {teamName && (
+            <>
+              Team <strong>{teamName}</strong> ·{" "}
+            </>
+          )}
           You are the <strong>{ROLE_LABELS[role] || role}</strong>.{" "}
           <button
             className="s2-linkish"
