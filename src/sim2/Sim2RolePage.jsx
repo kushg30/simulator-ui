@@ -1,15 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { assignRole, getRoles, ROLE_LABELS } from "./api";
+import { assignRole, getRoles, getTeam, ROLE_LABELS } from "./api";
 import "./sim2.css";
 
 const ROLE_HINTS = {
-  TEAM_LEAD: "Coordinates every round and submits the team's answer",
-  DATA_QUALITY_ANALYST: "Round 1 · Text & Logical functions",
-  CATEGORY_REGIONAL_ANALYST: "Round 2 · Lookup/Reference, Statistical functions",
-  REPORTING_DASHBOARD_ANALYST: "Round 3 · Tables, PivotTables, Slicers",
-  PEOPLE_ANALYTICS_ASSOCIATE: "Round 4 · Data Models, DAX",
-  AUTOMATION_BI_ASSOCIATE: "Rounds 5–6 · Power BI, VBA/Macros",
+  TEAM_LEAD: "Coordinates the team · owns Round 5 (the Board recommendation)",
+  DATA_QUALITY_ANALYST: "Round 1 · can the Board trust this feed?",
+  CATEGORY_REGIONAL_ANALYST: "Round 2 · diagnose the West shortfall",
+  REPORTING_DASHBOARD_ANALYST: "Round 3 · automate the combine (macro)",
+  PEOPLE_ANALYTICS_ASSOCIATE: "Round 4 · build the visual story",
 };
 
 /** Roles auto-lock once taken and cannot be changed after submission. */
@@ -21,8 +20,14 @@ export default function Sim2RolePage() {
   const participantId = params.get("participantId");
 
   const [roles, setRoles] = useState({});
+  const [teamName, setTeamName] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (!teamId) return;
+    getTeam(teamId).then((t) => setTeamName(t.teamName || "")).catch(() => {});
+  }, [teamId]);
 
   const refresh = useCallback(() => {
     if (!teamId) return;
@@ -67,6 +72,11 @@ export default function Sim2RolePage() {
       <div className="s2-shell">
         <h1>Choose your role</h1>
         <p className="s2-sub">
+          {teamName && (
+            <>
+              Team <strong>{teamName}</strong>.{" "}
+            </>
+          )}
           Each role owns one round. Roles lock once taken and cannot be changed.
         </p>
 

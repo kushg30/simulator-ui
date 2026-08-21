@@ -5,6 +5,7 @@ import {
   getBroadcast,
   getQuestion,
   getRoundState,
+  getTeam,
   parsePayload,
   postBoardCall,
   recordDecision,
@@ -113,7 +114,13 @@ function Sim2RoundView() {
   const [artifacts, setArtifacts] = useState([]);
   const [roundState, setRoundState] = useState(null);
   const [question, setQuestion] = useState("");
+  const [teamName, setTeamName] = useState("");
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!teamId) return;
+    getTeam(teamId).then((t) => setTeamName(t.teamName || "")).catch(() => {});
+  }, [teamId]);
 
   const [confidence, setConfidence] = useState("MEDIUM");
   const [file, setFile] = useState(null);
@@ -570,6 +577,11 @@ function Sim2RoundView() {
           <div>
             <h1>Round {roundNumber}</h1>
             <p className="s2-sub">
+              {teamName && (
+                <>
+                  Team <strong>{teamName}</strong> ·{" "}
+                </>
+              )}
               You are the <strong>{ROLE_LABELS[role] || role}</strong>
             </p>
           </div>
@@ -736,7 +748,7 @@ function Sim2RoundView() {
                     <option value="No">No</option>
                   </select>
 
-                  <label htmlFor="s2-note">In one line, describe your macro / cleaning steps</label>
+                  <label htmlFor="s2-note">In Brief, describe your macro / cleaning steps</label>
                   <input id="s2-note" type="text" maxLength={140} value={note}
                     placeholder="Mention the macro / recording steps." onChange={(e) => setNote(e.target.value)} />
                 </>

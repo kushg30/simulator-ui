@@ -40,6 +40,10 @@ export default function Sim2JoinPage() {
 
   async function handleCreate(e) {
     e.preventDefault();
+    if (/^\d+$/.test(teamName.trim())) {
+      setError("Team name can't be only numbers — add a letter or word.");
+      return;
+    }
     setBusy(true);
     setError("");
     try {

@@ -50,6 +50,11 @@ export function getRoles(teamId) {
   return fetch(`${API_BASE}/api/teams/${teamId}/roles`).then(toJson);
 }
 
+// Team info (name + join code) for display on the role / round screens.
+export function getTeam(teamId) {
+  return fetch(`${API_BASE}/api/teams/${teamId}`).then(toJson);
+}
+
 export function assignRole(teamId, participantId, role) {
   return fetch(`${API_BASE}/api/teams/${teamId}/assign-role`, {
     method: "POST",
