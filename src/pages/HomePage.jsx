@@ -30,10 +30,28 @@ const simulators = [
     desc: "A firm detects early anomalies in its own systems before anyone has formally reported a problem. Six organizational roles – each with different information and different incentives – must decide what deserves attention before the moment passes.",
     icon: "🏛️",
     active: true,
+    duration: "2 hours",
+    players: "6 players per team",
+    rounds: "4 rounds",
     tags: [
       "Organizational Behavior",
       "Corporate Governance",
       "Leadership"
+    ]
+  },
+  {
+    title: "The Numbers Don't Tie Out: The Meridian Retail Case",
+    status: "LIVE",
+    desc: "A fast-growing retailer, days from a Board meeting. The Head of Strategy quoted a revenue figure; Finance had a different one for the same product — and no one could say which to trust. Five analytics roles must turn a raw data feed nobody has ever checked into numbers the Board can rely on, then stand behind the recommendation — across five timed rounds where an early miss quietly follows the team to the end.",
+    icon: "📊",
+    active: true,
+    duration: "90 minutes",
+    players: "5 players per team",
+    rounds: "5 rounds",
+    tags: [
+      "Data Analytics",
+      "Business Intelligence",
+      "Decision-Making"
     ]
   },
   {
@@ -46,18 +64,6 @@ const simulators = [
       "Operations Management",
       "Supply Chain",
       "Risk"
-    ]
-  },
-  {
-    title: "First Mover: The Nira Ventures Case",
-    status: "Coming Q4 2026",
-    desc: "A first-time founder. Seed funding secured. Three co-founders who agreed on the vision but not on who decides what. The first six months will either build a company-or quietly unravel one.",
-    icon: "🌐",
-    active: false,
-    tags: [
-      "Entrepreneurship",
-      "Organizational Behavior",
-      "Leadership"
     ]
   },
   {
@@ -344,9 +350,9 @@ export default function HomePage() {
 
               {sim.active && (
   <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginTop: "4px" }}>
-    <span style={{ fontSize: "13px", color: "#c9a84c" }}>⏱ 2 hours</span>
-    <span style={{ fontSize: "13px", color: "#c9a84c" }}>👥 6 players per team</span>
-    <span style={{ fontSize: "13px", color: "#c9a84c" }}>🔄 4 rounds</span>
+    <span style={{ fontSize: "13px", color: "#c9a84c" }}>⏱ {sim.duration}</span>
+    <span style={{ fontSize: "13px", color: "#c9a84c" }}>👥 {sim.players}</span>
+    <span style={{ fontSize: "13px", color: "#c9a84c" }}>🔄 {sim.rounds}</span>
   </div>
 )}
               </div>
