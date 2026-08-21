@@ -40,9 +40,9 @@ const simulators = [
     ]
   },
   {
-    title: "The Numbers Don't Tie Out: The Meridian Retail Case",
+    title: "Can the Board Trust This? The Meridian Retail Case",
     status: "LIVE",
-    desc: "A fast-growing retailer, days from a Board meeting. The Head of Strategy quoted a revenue figure; Finance had a different one for the same product — and no one could say which to trust. Five analytics roles must turn a raw data feed nobody has ever checked into numbers the Board can rely on, then stand behind the recommendation — across five timed rounds where an early miss quietly follows the team to the end.",
+    desc: "A fast-growing retailer, days from a Board meeting, with a revenue number Finance and Strategy can't reconcile. Five analytics roles must turn a raw, unchecked data feed into numbers the Board can trust — where an early miss quietly follows the team to the end.",
     icon: "📊",
     active: true,
     duration: "90 minutes",
