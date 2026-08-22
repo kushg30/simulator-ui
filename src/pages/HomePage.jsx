@@ -107,12 +107,57 @@ const faqs = [
   },
 ];
 
+// ── Student voices (from the post-session feedback forms) ────────────────────
+const VOICE_STATS = [
+  { value: "81", label: "students played" },
+  { value: "4.8", suffix: "/5", label: "average experience" },
+  { value: "83%", label: "rated it 5 out of 5" },
+  { value: "100%", label: "want more simulations" },
+];
+
+// Photo testimonials — put images at public/testimonials/<file>. Missing photos
+// fall back to an initials avatar, so this renders fine before the images land.
+const TESTIMONIALS = [
+  { name: "Krishna Patel", photo: "/testimonials/krishna.jpg", quote: "A fun and engaging experience that helped me understand management decision-making through teamwork — I enjoyed contributing to decisions even when I wasn't leading a department." },
+  { name: "Ananya Kumar", photo: "/testimonials/ananya.jpg", quote: "The simulation was challenging and something completely new." },
+  { name: "Asmita Chowdhury", photo: "/testimonials/asmita.jpg", quote: "Very insightful, and genuinely fun to work under pressure." },
+  { name: "Siri Ciroori", photo: "/testimonials/siri.jpg", quote: "Insightful — I loved the teamwork and the coordination it took." },
+  { name: "Himanshi Bahal", photo: "/testimonials/himanshi.jpg", quote: "Playing with the data and figuring out exactly what went wrong." },
+  { name: "Abhinav", photo: null, quote: "Excellent simulation — I'd love more problems like this to stress-test our thinking." },
+  { name: "Aditya Sachan", photo: null, quote: "It was amazing." },
+];
+
+// Anonymous written highlights from the experience survey.
+const VOICE_QUOTES = [
+  "Seeing how raw, messy data could be transformed into clear insights and real business decisions.",
+  "I felt like I was really an employee working in the company, doing my job.",
+  "A genuinely fun, unique and thoughtfully designed experience — you could see the effort that went into it.",
+  "Very interactive, with real-life problems that tested us. I hope to have more simulations going ahead.",
+  "Knowing a concept is one thing; applying it in practice is what we're really looking for.",
+  "Turning raw data into a clear insight — and a decision that can actually be defended.",
+];
+
+// Gallery — put session photos at public/gallery/1.jpg, 2.jpg, … Missing files hide themselves.
+const GALLERY = Array.from({ length: 12 }, (_, i) => `/gallery/${i + 1}.jpg`);
+
+const initials = (n) =>
+  (n || "").split(" ").filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
+
 export default function HomePage() {
   const navigate = useNavigate();
   const [openFaq, setOpenFaq] = useState(null);
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [activeT, setActiveT] = useState(0);
+  const [lightbox, setLightbox] = useState(null);
+  const [galleryOk, setGalleryOk] = useState({}); // index -> true once the image loads
   const observerRef = useRef(null);
+
+  // Auto-advance the testimonial carousel.
+  useEffect(() => {
+    const id = setInterval(() => setActiveT((i) => (i + 1) % TESTIMONIALS.length), 5000);
+    return () => clearInterval(id);
+  }, []);
 
   // Warm the backend as soon as anyone lands on the site, so the first
   // create/join later in the flow doesn't pay the cold-start cost.
@@ -171,6 +216,7 @@ export default function HomePage() {
           <a href="#about">About</a>
           <a href="#how">How It Works</a>
           <a href="#simulators">Simulations</a>
+          <a href="#voices">Voices</a>
           <a href="#faq">FAQ</a>
         </div>
         <button className="nav-cta" onClick={() => goTo("simulators")}>
@@ -193,6 +239,7 @@ export default function HomePage() {
           <a onClick={() => goTo("about")}>About</a>
           <a onClick={() => goTo("how")}>How It Works</a>
           <a onClick={() => goTo("simulators")}>Simulations</a>
+          <a onClick={() => goTo("voices")}>Voices</a>
           <a onClick={() => goTo("faq")}>FAQ</a>
           <button className="btn-primary btn-lg" onClick={() => goTo("simulators")}>
             Browse Simulations
@@ -361,6 +408,113 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* STUDENT VOICES */}
+      <section id="voices" className="voices">
+        <div className="container">
+          <div className="section-header reveal">
+            <div className="section-eyebrow" style={{ fontSize: "24px" }}>Student experience</div>
+            <h2>What students say</h2>
+          </div>
+
+          {/* credibility stats */}
+          <div className="voice-stats reveal">
+            {VOICE_STATS.map((s, i) => (
+              <div className="voice-stat" key={i}>
+                <div className="voice-stat-value">
+                  {s.value}
+                  {s.suffix && <span>{s.suffix}</span>}
+                </div>
+                <div className="voice-stat-label">{s.label}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* photo testimonial carousel */}
+          <div className="voice-carousel reveal">
+            <button
+              className="voice-arrow"
+              aria-label="Previous testimonial"
+              onClick={() => setActiveT((i) => (i - 1 + TESTIMONIALS.length) % TESTIMONIALS.length)}
+            >
+              ‹
+            </button>
+            <div className="voice-slide">
+              <div className="voice-avatar">
+                <span>{initials(TESTIMONIALS[activeT].name)}</span>
+                {TESTIMONIALS[activeT].photo && (
+                  <img
+                    src={TESTIMONIALS[activeT].photo}
+                    alt={TESTIMONIALS[activeT].name}
+                    onError={(e) => { e.currentTarget.style.display = "none"; }}
+                  />
+                )}
+              </div>
+              <blockquote>“{TESTIMONIALS[activeT].quote}”</blockquote>
+              <div className="voice-name">{TESTIMONIALS[activeT].name}</div>
+              <div className="voice-role">MBA participant</div>
+            </div>
+            <button
+              className="voice-arrow"
+              aria-label="Next testimonial"
+              onClick={() => setActiveT((i) => (i + 1) % TESTIMONIALS.length)}
+            >
+              ›
+            </button>
+          </div>
+          <div className="voice-dots">
+            {TESTIMONIALS.map((_, i) => (
+              <button
+                key={i}
+                className={`voice-dot ${i === activeT ? "on" : ""}`}
+                aria-label={`Testimonial ${i + 1}`}
+                onClick={() => setActiveT(i)}
+              />
+            ))}
+          </div>
+
+          {/* written quote wall */}
+          <div className="voice-quotes reveal">
+            {VOICE_QUOTES.map((q, i) => (
+              <div className="voice-quote" key={i}>
+                <p>“{q}”</p>
+                <div className="voice-quote-by">— MBA participant</div>
+              </div>
+            ))}
+          </div>
+
+          {/* session gallery (appears once images are present) */}
+          {Object.values(galleryOk).some(Boolean) && (
+            <div className="section-header reveal" style={{ marginTop: "52px" }}>
+              <div className="section-eyebrow">In the room</div>
+            </div>
+          )}
+          <div className="voice-gallery">
+            {GALLERY.map((src, i) => (
+              <button
+                key={i}
+                className="voice-tile"
+                style={{ display: galleryOk[i] ? "block" : "none" }}
+                onClick={() => setLightbox(src)}
+                aria-label={`Open session photo ${i + 1}`}
+              >
+                <img
+                  src={src}
+                  alt={`Session moment ${i + 1}`}
+                  onLoad={() => setGalleryOk((g) => ({ ...g, [i]: true }))}
+                  onError={(e) => { e.currentTarget.parentElement.style.display = "none"; }}
+                />
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {lightbox && (
+          <div className="voice-lightbox" onClick={() => setLightbox(null)}>
+            <button className="voice-lightbox-close" aria-label="Close">×</button>
+            <img src={lightbox} alt="Enlarged session view" onClick={(e) => e.stopPropagation()} />
+          </div>
+        )}
+      </section>
 
       {/* FAQ */}
       <section id="faq" className="faq-section">

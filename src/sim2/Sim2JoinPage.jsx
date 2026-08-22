@@ -10,6 +10,7 @@ import {
   ROLE_LABELS,
   warmup,
 } from "./api";
+import "./sim2.css";
 
 // Accept either the short join code (e.g. "4821") or a full UUID team id.
 async function toTeamId(input) {
@@ -18,7 +19,6 @@ async function toTeamId(input) {
   const res = await resolveTeamCode(v);
   return res.teamId;
 }
-import "./sim2.css";
 
 /**
  * Entry point for Simulator 2. Creating a team makes you the Team Lead
