@@ -138,7 +138,7 @@ const VOICE_QUOTES = [
 ];
 
 // Gallery — put session photos at public/gallery/1.jpg, 2.jpg, … Missing files hide themselves.
-const GALLERY = Array.from({ length: 12 }, (_, i) => `/gallery/${i + 1}.jpg`);
+const GALLERY = Array.from({ length: 8 }, (_, i) => `/gallery/${i + 1}.jpg`);
 
 const initials = (n) =>
   (n || "").split(" ").filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
@@ -219,6 +219,7 @@ export default function HomePage() {
           <a href="#how">How It Works</a>
           <a href="#simulators">Simulations</a>
           <a href="#voices">Voices</a>
+          <a href="#gallery">Gallery</a>
           <a href="#faq">FAQ</a>
         </div>
         <button className="nav-cta" onClick={() => goTo("simulators")}>
@@ -242,6 +243,7 @@ export default function HomePage() {
           <a onClick={() => goTo("how")}>How It Works</a>
           <a onClick={() => goTo("simulators")}>Simulations</a>
           <a onClick={() => goTo("voices")}>Voices</a>
+          <a onClick={() => goTo("gallery")}>Gallery</a>
           <a onClick={() => goTo("faq")}>FAQ</a>
           <button className="btn-primary btn-lg" onClick={() => goTo("simulators")}>
             Browse Simulations
@@ -497,17 +499,22 @@ export default function HomePage() {
             ))}
           </div>
 
-          {/* session gallery (appears once images are present) */}
-          {Object.values(galleryOk).some(Boolean) && (
-            <div className="section-header reveal" style={{ marginTop: "52px" }}>
-              <div className="section-eyebrow">In the room</div>
-            </div>
-          )}
-          <div className="voice-gallery">
+        </div>
+      </section>
+
+      {/* SESSION GALLERY */}
+      <section id="gallery" className="gallery-section">
+        <div className="container">
+          <div className="section-header reveal">
+            <div className="section-eyebrow">Gallery</div>
+            <h2>Moments from the room</h2>
+            <p>Teams working through the Meridian Retail case — live, together, under the clock.</p>
+          </div>
+          <div className="gallery-grid reveal">
             {GALLERY.map((src, i) => (
               <button
                 key={i}
-                className="voice-tile"
+                className="gallery-tile"
                 style={{ display: galleryOk[i] ? "block" : "none" }}
                 onClick={() => setLightbox(src)}
                 aria-label={`Open session photo ${i + 1}`}
@@ -518,6 +525,7 @@ export default function HomePage() {
                   onLoad={() => setGalleryOk((g) => ({ ...g, [i]: true }))}
                   onError={(e) => { e.currentTarget.parentElement.style.display = "none"; }}
                 />
+                <span className="gallery-tile-overlay" aria-hidden="true">⤢</span>
               </button>
             ))}
           </div>

@@ -1138,30 +1138,55 @@ section {
   color: #6b7384;
 }
 
-/* session gallery */
-.voice-gallery {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
+/* ================= SESSION GALLERY ================= */
+.gallery-section {
+  background: #0d1120;
 }
-.voice-tile {
+.gallery-grid {
+  column-count: 3;
+  column-gap: 16px;
+}
+.gallery-tile {
+  position: relative;
+  display: block;
+  width: 100%;
   padding: 0;
-  border: none;
+  margin: 0 0 16px;
+  border: 1px solid rgba(255,255,255,0.07);
   border-radius: 14px;
   overflow: hidden;
   cursor: pointer;
-  aspect-ratio: 4 / 3;
   background: rgba(255,255,255,0.03);
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  transition: border-color 0.25s;
 }
-.voice-tile img {
+.gallery-tile:hover {
+  border-color: rgba(201, 168, 76, 0.5);
+}
+.gallery-tile img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
   display: block;
-  transition: transform 0.35s;
+  transition: transform 0.5s ease;
 }
-.voice-tile:hover img {
-  transform: scale(1.06);
+.gallery-tile:hover img {
+  transform: scale(1.05);
+}
+.gallery-tile-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  color: #f0ece4;
+  background: linear-gradient(180deg, rgba(13,17,32,0) 40%, rgba(13,17,32,0.55));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.gallery-tile:hover .gallery-tile-overlay {
+  opacity: 1;
 }
 
 /* lightbox */
@@ -1203,8 +1228,8 @@ section {
   .voice-quotes {
     grid-template-columns: 1fr 1fr;
   }
-  .voice-gallery {
-    grid-template-columns: repeat(3, 1fr);
+  .gallery-grid {
+    column-count: 2;
   }
   .voice-slide {
     padding: 48px 78px;
@@ -1218,8 +1243,12 @@ section {
   .voice-quotes {
     grid-template-columns: 1fr;
   }
-  .voice-gallery {
-    grid-template-columns: 1fr 1fr;
+  .gallery-grid {
+    column-count: 2;
+    column-gap: 12px;
+  }
+  .gallery-tile {
+    margin-bottom: 12px;
   }
   .voice-slide {
     padding: 44px 54px;
