@@ -118,13 +118,13 @@ const VOICE_STATS = [
 // Photo testimonials — put images at public/testimonials/<file>. Missing photos
 // fall back to an initials avatar, so this renders fine before the images land.
 const TESTIMONIALS = [
-  { name: "Krishna Patel", photo: "/testimonials/krishna.jpg", quote: "A fun and engaging experience that helped me understand management decision-making through teamwork — I enjoyed contributing to decisions even when I wasn't leading a department." },
-  { name: "Ananya Kumar", photo: "/testimonials/ananya.jpg", quote: "The simulation was challenging and something completely new." },
-  { name: "Asmita Chowdhury", photo: "/testimonials/asmita.jpg", quote: "Very insightful, and genuinely fun to work under pressure." },
-  { name: "Siri Ciroori", photo: "/testimonials/siri.jpg", quote: "Insightful — I loved the teamwork and the coordination it took." },
-  { name: "Himanshi Bahal", photo: "/testimonials/himanshi.jpg", quote: "Playing with the data and figuring out exactly what went wrong." },
-  { name: "Abhinav", photo: null, quote: "Excellent simulation — I'd love more problems like this to stress-test our thinking." },
-  { name: "Aditya Sachan", photo: null, quote: "It was amazing." },
+  { name: "Krishna Patel", role: "Member of Placement Cell", photo: "/testimonials/krishna.jpg", quote: "A fun and engaging experience that helped me understand management decision-making through teamwork — I enjoyed contributing to decisions even when I wasn't leading a department." },
+  { name: "Ananya Kumar", role: "Member of Corporate Council", photo: "/testimonials/ananya.jpg", quote: "The simulation was challenging and something completely new." },
+  { name: "Asmita Chowdhury", role: "MBA participant", photo: "/testimonials/asmita.jpg", quote: "Very insightful, and genuinely fun to work under pressure." },
+  { name: "Siri Ciroori", role: "MBA participant", photo: "/testimonials/siri.jpg", quote: "Insightful — I loved the teamwork and the coordination it took." },
+  { name: "Himanshi Bahal", role: "MBA participant", photo: "/testimonials/himanshi.jpg", quote: "Playing with the data and figuring out exactly what went wrong." },
+  { name: "Abhinav Nair", role: "Core Member, MINT Finance Club", photo: "/testimonials/abhinav.jpg", quote: "Excellent simulation — I'd love more problems like this to stress-test our thinking." },
+  { name: "Aditya Sachan", role: "Member, Career Assistance Team", photo: "/testimonials/aditya.jpg", quote: "It was amazing." },
 ];
 
 // Anonymous written highlights from the experience survey.
@@ -138,7 +138,7 @@ const VOICE_QUOTES = [
 ];
 
 // Gallery — put session photos at public/gallery/1.jpg, 2.jpg, … Missing files hide themselves.
-const GALLERY = Array.from({ length: 8 }, (_, i) => `/gallery/${i + 1}.jpg`);
+const GALLERY = Array.from({ length: 9 }, (_, i) => `/gallery/${i + 1}.jpg`);
 
 const initials = (n) =>
   (n || "").split(" ").filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
@@ -458,7 +458,7 @@ export default function HomePage() {
                     </div>
                     <blockquote>“{t.quote}”</blockquote>
                     <div className="voice-name">{t.name}</div>
-                    <div className="voice-role">MBA participant</div>
+                    <div className="voice-role">{t.role}</div>
                   </div>
                 ))}
               </div>
