@@ -149,15 +149,17 @@ export default function HomePage() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeT, setActiveT] = useState(0);
+  const [paused, setPaused] = useState(false);
   const [lightbox, setLightbox] = useState(null);
   const [galleryOk, setGalleryOk] = useState({}); // index -> true once the image loads
   const observerRef = useRef(null);
 
-  // Auto-advance the testimonial carousel.
+  // Auto-advance the testimonial carousel (pauses on hover).
   useEffect(() => {
-    const id = setInterval(() => setActiveT((i) => (i + 1) % TESTIMONIALS.length), 5000);
+    if (paused) return undefined;
+    const id = setInterval(() => setActiveT((i) => (i + 1) % TESTIMONIALS.length), 5500);
     return () => clearInterval(id);
-  }, []);
+  }, [paused]);
 
   // Warm the backend as soon as anyone lands on the site, so the first
   // create/join later in the flow doesn't pay the cold-start cost.
@@ -430,31 +432,44 @@ export default function HomePage() {
           </div>
 
           {/* photo testimonial carousel */}
-          <div className="voice-carousel reveal">
+          <div
+            className="voice-carousel reveal"
+            onMouseEnter={() => setPaused(true)}
+            onMouseLeave={() => setPaused(false)}
+          >
+            <div className="voice-viewport">
+              <div
+                className="voice-track"
+                style={{ transform: `translateX(-${activeT * 100}%)` }}
+              >
+                {TESTIMONIALS.map((t, i) => (
+                  <div className="voice-slide" key={i} aria-hidden={i !== activeT}>
+                    <div className="voice-avatar">
+                      <span>{initials(t.name)}</span>
+                      {t.photo && (
+                        <img
+                          src={t.photo}
+                          alt={t.name}
+                          onError={(e) => { e.currentTarget.style.display = "none"; }}
+                        />
+                      )}
+                    </div>
+                    <blockquote>“{t.quote}”</blockquote>
+                    <div className="voice-name">{t.name}</div>
+                    <div className="voice-role">MBA participant</div>
+                  </div>
+                ))}
+              </div>
+            </div>
             <button
-              className="voice-arrow"
+              className="voice-arrow prev"
               aria-label="Previous testimonial"
               onClick={() => setActiveT((i) => (i - 1 + TESTIMONIALS.length) % TESTIMONIALS.length)}
             >
               ‹
             </button>
-            <div className="voice-slide">
-              <div className="voice-avatar">
-                <span>{initials(TESTIMONIALS[activeT].name)}</span>
-                {TESTIMONIALS[activeT].photo && (
-                  <img
-                    src={TESTIMONIALS[activeT].photo}
-                    alt={TESTIMONIALS[activeT].name}
-                    onError={(e) => { e.currentTarget.style.display = "none"; }}
-                  />
-                )}
-              </div>
-              <blockquote>“{TESTIMONIALS[activeT].quote}”</blockquote>
-              <div className="voice-name">{TESTIMONIALS[activeT].name}</div>
-              <div className="voice-role">MBA participant</div>
-            </div>
             <button
-              className="voice-arrow"
+              className="voice-arrow next"
               aria-label="Next testimonial"
               onClick={() => setActiveT((i) => (i + 1) % TESTIMONIALS.length)}
             >
