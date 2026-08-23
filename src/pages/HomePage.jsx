@@ -109,7 +109,7 @@ const faqs = [
 
 // ── Student voices (from the post-session feedback forms) ────────────────────
 const VOICE_STATS = [
-  { value: "81", label: "students played" },
+  { value: "118", label: "students played" },
   { value: "4.8", suffix: "/5", label: "average experience" },
   { value: "83%", label: "rated it 5 out of 5" },
   { value: "100%", label: "want more simulations" },
@@ -118,13 +118,13 @@ const VOICE_STATS = [
 // Photo testimonials — put images at public/testimonials/<file>. Missing photos
 // fall back to an initials avatar, so this renders fine before the images land.
 const TESTIMONIALS = [
-  { name: "Krishna Patel", role: "Member of Placement Cell", photo: "/testimonials/krishna.jpg", quote: "A fun and engaging experience that helped me understand management decision-making through teamwork — I enjoyed contributing to decisions even when I wasn't leading a department." },
-  { name: "Ananya Kumar", role: "Member of Corporate Council", photo: "/testimonials/ananya.jpg", quote: "The simulation was challenging and something completely new." },
-  { name: "Asmita Chowdhury", role: "MBA participant", photo: "/testimonials/asmita.jpg", quote: "Very insightful, and genuinely fun to work under pressure." },
-  { name: "Siri Ciroori", role: "MBA participant", photo: "/testimonials/siri.jpg", quote: "Insightful — I loved the teamwork and the coordination it took." },
-  { name: "Himanshi Bahal", role: "MBA participant", photo: "/testimonials/himanshi.jpg", quote: "Playing with the data and figuring out exactly what went wrong." },
-  { name: "Abhinav Nair", role: "Core Member, MINT Finance Club", photo: "/testimonials/abhinav.jpg", quote: "Excellent simulation — I'd love more problems like this to stress-test our thinking." },
-  { name: "Aditya Sachan", role: "Member, Career Assistance Team", photo: "/testimonials/aditya.jpg", quote: "It was amazing." },
+  { name: "Krishna Patel", role: "Member of Placement Cell, SIBM'28", photo: "/testimonials/krishna.jpg", quote: "A fun and engaging experience that helped me understand management decision-making through teamwork — I enjoyed contributing to decisions even when I wasn't leading a department." },
+  { name: "Ananya Kumar", role: "Member of Corporate Council, SIBM'28", photo: "/testimonials/ananya.jpg", quote: "The simulation was challenging and something completely new." },
+  { name: "Asmita Chowdhury", role: "MBA Student, SIBM'28", photo: "/testimonials/asmita.jpg", quote: "Very insightful, and genuinely fun to work under pressure." },
+  { name: "Siri Ciroori", role: "MBA Student, SIBM'28", photo: "/testimonials/siri.jpg", quote: "Insightful — I loved the teamwork and the coordination it took." },
+  { name: "Himanshi Bahal", role: "MBA Student, SIBM'28", photo: "/testimonials/himanshi.jpg", quote: "Playing with the data and figuring out exactly what went wrong." },
+  { name: "Abhinav Nair", role: "Core Member, MINT Finance Club, SIBM'28", photo: "/testimonials/abhinav.jpg", quote: "Excellent simulation — I'd love more problems like this to stress-test our thinking." },
+  { name: "Aditya Sachan", role: "Member, Career Assistance Team, SIBM'28", photo: "/testimonials/aditya.jpg", quote: "It was amazing." },
 ];
 
 // Anonymous written highlights from the experience survey.
@@ -490,11 +490,16 @@ export default function HomePage() {
           </div>
 
           {/* written quote wall */}
+          <div className="voice-quotes-head reveal">
+            <div className="section-eyebrow">Participant feedback highlights</div>
+            <p className="voice-quotes-sub">
+              Symbiosis Institute of Business &amp; Management, Hyderabad · MBA 2026–28
+            </p>
+          </div>
           <div className="voice-quotes reveal">
             {VOICE_QUOTES.map((q, i) => (
               <div className="voice-quote" key={i}>
                 <p>“{q}”</p>
-                <div className="voice-quote-by">— MBA participant</div>
               </div>
             ))}
           </div>
