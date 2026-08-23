@@ -1,0 +1,95 @@
+.simgate {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  font-family: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.simgate-card {
+  width: 100%;
+  max-width: 440px;
+  background: rgba(13, 17, 32, 0.78);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(201, 168, 76, 0.28);
+  border-radius: 20px;
+  padding: 40px 36px;
+  text-align: center;
+  box-shadow: 0 30px 70px -30px rgba(0, 0, 0, 0.8);
+}
+
+.simgate-eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #c9a84c;
+  margin-bottom: 16px;
+}
+
+.simgate-card h1 {
+  font-family: "Playfair Display", serif;
+  font-size: 28px;
+  color: #f0ece4;
+  margin: 0 0 12px;
+  line-height: 1.2;
+}
+
+.simgate-card p {
+  font-size: 14px;
+  line-height: 1.65;
+  color: #8b93a8;
+  margin: 0 0 26px;
+}
+
+.simgate-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px 16px;
+  font-size: 16px;
+  letter-spacing: 0.04em;
+  color: #f0ece4;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  outline: none;
+  text-align: center;
+  transition: border-color 0.2s;
+}
+.simgate-input:focus {
+  border-color: #c9a84c;
+}
+.simgate-input::placeholder {
+  color: #5f6678;
+  letter-spacing: normal;
+}
+
+.simgate-error {
+  margin-top: 12px;
+  font-size: 13px;
+  color: #f0716b;
+}
+
+.simgate-btn {
+  width: 100%;
+  margin-top: 20px;
+  padding: 14px 16px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #0d1120;
+  background: #c9a84c;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+.simgate-btn:hover {
+  background: #d8b95e;
+  transform: translateY(-1px);
+}
+.simgate-btn:active {
+  transform: translateY(0);
+}

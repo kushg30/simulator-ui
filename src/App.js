@@ -19,6 +19,9 @@ import Sim2ResultsPage from "./sim2/Sim2ResultsPage";
 // Faculty console — platform-wide, controls every simulation
 import FacultyConsole from "./faculty/FacultyConsole";
 
+// Access gate — students must enter the facilitator's access code to reach a sim
+import SimGate from "./components/SimGate";
+
 // ─────────────────────────────────────────────────────────────
 // Neural canvas — runs ONCE for the entire app lifetime.
 // Draws on #neural-bg which lives in public/index.html.
@@ -129,26 +132,29 @@ export default function App() {
 
   return (
     <Routes>
-      <Route path="/sim1"           element={<ContextPage />} />
-      <Route path="/teamjoin"       element={<TeamJoinPage />} />
-      <Route path="/context"        element={<ContextPage />} />
-      <Route path="/role-selection" element={<RoleSelectionPage />} />
-      <Route path="/waiting"        element={<WaitingPage />} />
+      {/* Public marketing homepage — open to everyone. */}
       <Route path="/"               element={<HomePage />} />
-      <Route path="/simulator"      element={<SimulationPage />} />
-      <Route path="/results" element={<ResultsDashboard />} />
 
-      {/* ── Simulator 2 — Meridian Retail QBR ──────────────────────────
+      {/* ── Simulator 1 — ANP Phoenix (access-gated) ─────────────────── */}
+      <Route path="/sim1"           element={<SimGate><ContextPage /></SimGate>} />
+      <Route path="/teamjoin"       element={<SimGate><TeamJoinPage /></SimGate>} />
+      <Route path="/context"        element={<SimGate><ContextPage /></SimGate>} />
+      <Route path="/role-selection" element={<SimGate><RoleSelectionPage /></SimGate>} />
+      <Route path="/waiting"        element={<SimGate><WaitingPage /></SimGate>} />
+      <Route path="/simulator"      element={<SimGate><SimulationPage /></SimGate>} />
+      <Route path="/results"        element={<SimGate><ResultsDashboard /></SimGate>} />
+
+      {/* ── Simulator 2 — Meridian Retail QBR (access-gated) ────────────
           Fully separate route tree; Simulation 1's routes above are untouched. */}
-      <Route path="/sim2"                    element={<Sim2ContextPage />} />
-      <Route path="/sim2/join"               element={<Sim2JoinPage />} />
-      <Route path="/sim2/roles"              element={<Sim2RolePage />} />
-      <Route path="/sim2/context"            element={<Sim2ContextPage />} />
-      <Route path="/sim2/waiting"            element={<Sim2WaitingPage />} />
-      <Route path="/sim2/round/:roundNumber" element={<Sim2RoundPage />} />
-      <Route path="/sim2/results/:roundNumber" element={<Sim2ResultsPage />} />
+      <Route path="/sim2"                      element={<SimGate><Sim2ContextPage /></SimGate>} />
+      <Route path="/sim2/join"                 element={<SimGate><Sim2JoinPage /></SimGate>} />
+      <Route path="/sim2/roles"                element={<SimGate><Sim2RolePage /></SimGate>} />
+      <Route path="/sim2/context"              element={<SimGate><Sim2ContextPage /></SimGate>} />
+      <Route path="/sim2/waiting"              element={<SimGate><Sim2WaitingPage /></SimGate>} />
+      <Route path="/sim2/round/:roundNumber"   element={<SimGate><Sim2RoundPage /></SimGate>} />
+      <Route path="/sim2/results/:roundNumber" element={<SimGate><Sim2ResultsPage /></SimGate>} />
 
-      {/* ── Faculty console — shared by every simulation ────────────── */}
+      {/* ── Faculty console — its own facilitator-token login, not the sim gate ── */}
       <Route path="/faculty" element={<FacultyConsole />} />
     </Routes>
   );
