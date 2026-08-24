@@ -221,6 +221,7 @@ export default function HomePage() {
           <a href="#voices">Voices</a>
           <a href="#gallery">Gallery</a>
           <a href="#faq">FAQ</a>
+          <a href="/demo" className="nav-cta">Try a round →</a>
         </div>
         <button className="nav-cta" onClick={() => goTo("simulators")}>
           Browse Simulations
@@ -245,6 +246,7 @@ export default function HomePage() {
           <a onClick={() => goTo("voices")}>Voices</a>
           <a onClick={() => goTo("gallery")}>Gallery</a>
           <a onClick={() => goTo("faq")}>FAQ</a>
+          <a onClick={() => navigate("/demo")}>Try a round</a>
           <button className="btn-primary btn-lg" onClick={() => goTo("simulators")}>
             Browse Simulations
           </button>

@@ -108,6 +108,19 @@ section {
 .nav-links a:hover {
   color: #f0ece4;
 }
+.nav-links a.nav-cta {
+  color: #0d1120;
+  background: #c9a84c;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-weight: 600;
+  transition: background 0.2s, transform 0.15s;
+}
+.nav-links a.nav-cta:hover {
+  color: #0d1120;
+  background: #d8b95e;
+  transform: translateY(-1px);
+}
 
 .nav-actions {
   display: flex;
