@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import * as api from "./api";
 import FacultyDebrief from "./FacultyDebrief";
-import FacultySim1Debrief from "./FacultySim1Debrief";
+import FacultySim1SetB from "./FacultySim1SetB";
 import FacultyWiki from "./FacultyWiki";
 import "./faculty.css";
 
@@ -285,7 +285,7 @@ export default function FacultyConsole() {
             {debriefSim === "sim2" ? (
               <FacultyDebrief simulationId={focusSimId} />
             ) : (
-              <FacultySim1Debrief simulationId={api.ANP_PHOENIX_SIMULATION_ID} />
+              <FacultySim1SetB simulationId={api.ANP_PHOENIX_SIMULATION_ID} />
             )}
           </div>
         )}

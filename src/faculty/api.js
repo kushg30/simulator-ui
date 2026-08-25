@@ -102,6 +102,25 @@ export const broadcastBreakingNews = (simulationId, message, actor) =>
 export const getSim1Debrief = (simulationId) =>
   call(`/sim1/simulations/${simulationId}/debrief`);
 
+// ── Simulator 1 Set-B constructs (the five leadership-judgment constructs) ──
+export const getSim1Constructs = (simulationId) =>
+  call(`/sim1/simulations/${simulationId}/constructs`);
+
+export const SIM1_SETB_LABELS = {
+  EARLY_SIGNAL_LEGITIMIZATION: "Early Signal Legit.",
+  SILENCE_ACCUMULATION: "Silence",
+  FRAMING_COMMITMENT: "Framing Commit.",
+  AUTHORITY_CENTRALIZATION: "Authority Central.",
+  OPTION_SPACE_CONTRACTION: "Option Space",
+};
+// Only Early Signal Legitimization is "good when high"; the other four are adverse when high.
+export const SIM1_SETB_ADVERSE = new Set([
+  "SILENCE_ACCUMULATION",
+  "FRAMING_COMMITMENT",
+  "AUTHORITY_CENTRALIZATION",
+  "OPTION_SPACE_CONTRACTION",
+]);
+
 export const SIM1_CONSTRUCT_LABELS = {
   stakeholder_trust: "Stakeholder Trust",
   organizational_risk: "Organizational Risk",
