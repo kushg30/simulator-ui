@@ -45,6 +45,7 @@ const simulators = [
     desc: "A fast-growing retailer, days from a Board meeting, with a revenue number Finance and Strategy can't reconcile. Five analytics roles must turn a raw, unchecked data feed into numbers the Board can trust — where an early miss quietly follows the team to the end.",
     icon: "📊",
     active: true,
+    demo: "/demo",
     duration: "90 minutes",
     players: "5 players per team",
     rounds: "5 rounds",
@@ -221,7 +222,6 @@ export default function HomePage() {
           <a href="#voices">Voices</a>
           <a href="#gallery">Gallery</a>
           <a href="#faq">FAQ</a>
-          <a href="/demo" className="nav-cta">Try a round →</a>
         </div>
         <button className="nav-cta" onClick={() => goTo("simulators")}>
           Browse Simulations
@@ -246,7 +246,6 @@ export default function HomePage() {
           <a onClick={() => goTo("voices")}>Voices</a>
           <a onClick={() => goTo("gallery")}>Gallery</a>
           <a onClick={() => goTo("faq")}>FAQ</a>
-          <a onClick={() => navigate("/demo")}>Try a round</a>
           <button className="btn-primary btn-lg" onClick={() => goTo("simulators")}>
             Browse Simulations
           </button>
@@ -408,6 +407,10 @@ export default function HomePage() {
     <span style={{ fontSize: "13px", color: "#c9a84c" }}>🔄 {sim.rounds}</span>
   </div>
 )}
+
+              {sim.demo && (
+                <a href={sim.demo} className="sim-demo-link">Try a 2-minute sample round →</a>
+              )}
               </div>
             ))}
           </div>

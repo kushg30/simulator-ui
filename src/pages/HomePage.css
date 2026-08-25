@@ -962,6 +962,26 @@ section {
   align-self: flex-start;
 }
 
+.sim-demo-link {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  margin-top: 16px;
+  padding: 9px 16px;
+  border: 1px solid rgba(201, 168, 76, 0.4);
+  border-radius: 999px;
+  color: #c9a84c;
+  font-size: 13.5px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s;
+}
+.sim-demo-link:hover {
+  background: rgba(201, 168, 76, 0.1);
+  border-color: #c9a84c;
+  transform: translateY(-1px);
+}
+
 /* ================= STUDENT VOICES ================= */
 .voices {
   background: #0a0e1a;
