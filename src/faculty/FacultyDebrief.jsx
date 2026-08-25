@@ -6,6 +6,7 @@ import {
   overrideConstruct,
   revertConstruct,
 } from "./api";
+import Sim2TeamReport from "./Sim2TeamReport";
 
 /**
  * Small step-line of Data Trust across the rounds, reconstructed from the final value and the rounds
@@ -49,6 +50,7 @@ export default function FacultyDebrief({ simulationId }) {
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
   const [msg, setMsg] = useState("");
+  const [reportTeam, setReportTeam] = useState(null); // team whose report is open
 
   // inline override editor state
   const [editTeam, setEditTeam] = useState(null); // {runId, teamName}
@@ -400,7 +402,12 @@ export default function FacultyDebrief({ simulationId }) {
             key={t.runId}
             style={{ padding: "10px 0", borderBottom: "1px solid var(--f-border)" }}
           >
-            <strong>{t.teamName}</strong>
+            <div className="f-spread">
+              <strong>{t.teamName}</strong>
+              <button className="f-mini" onClick={() => setReportTeam(t)}>
+                Generate report
+              </button>
+            </div>
             <div className="f-note" style={{ marginTop: 4 }}>
               {t.dataTrustFirstDropRound ? (
                 <>
@@ -447,6 +454,15 @@ export default function FacultyDebrief({ simulationId }) {
           </div>
         );
       })}
+
+      {reportTeam && (
+        <Sim2TeamReport
+          team={reportTeam}
+          leaderboard={data.leaderboard}
+          simulationName={data.simulationName}
+          onClose={() => setReportTeam(null)}
+        />
+      )}
     </div>
   );
 }
