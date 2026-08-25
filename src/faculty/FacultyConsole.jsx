@@ -37,6 +37,7 @@ function formatDuration(totalSeconds) {
 export default function FacultyConsole() {
   const [token, setTokenState] = useState(api.getToken());
   const [authed, setAuthed] = useState(false);
+  const [signingIn, setSigningIn] = useState(false);
   const [actor, setActor] = useState(() => localStorage.getItem(ACTOR_KEY) || "");
 
   const [overview, setOverview] = useState([]);
@@ -90,12 +91,20 @@ export default function FacultyConsole() {
     }
   }, [selected]);
 
+  // Validate a stored token once on mount (a fresh tab has none, so nothing fires).
+  // Only a single attempt — a bad/stale token fails once instead of 401-ing forever.
   useEffect(() => {
-    if (!api.getToken()) return;
-    refresh();
+    if (api.getToken() && !authed) refresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Poll live data ONLY while authenticated. On a 401 refresh() flips authed false,
+  // which tears the interval down — so an invalid token never spams the console at 5s.
+  useEffect(() => {
+    if (!authed) return undefined;
     const id = setInterval(refresh, 5000);
     return () => clearInterval(id);
-  }, [refresh]);
+  }, [authed, refresh]);
 
   // When a team is selected via "Manage", bring its controls into view — the
   // panel renders below the table, so scroll to it instead of making the
@@ -138,6 +147,20 @@ export default function FacultyConsole() {
     localStorage.setItem(ACTOR_KEY, value);
   }
 
+  // Sign in with a loading state — the backend can be cold (Render free tier spins
+  // down when idle), so the first attempt may take ~a minute; show that, don't freeze.
+  async function unlock() {
+    if (!token.trim() || signingIn) return;
+    api.setToken(token);
+    setSigningIn(true);
+    setError("");
+    try {
+      await refresh();
+    } finally {
+      setSigningIn(false);
+    }
+  }
+
   // ── token gate ────────────────────────────────────────────────────────────
   if (!api.getToken() || !authed) {
     return (
@@ -152,21 +175,20 @@ export default function FacultyConsole() {
               type="password"
               value={token}
               onChange={(e) => setTokenState(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && (api.setToken(token), refresh())}
+              onKeyDown={(e) => e.key === "Enter" && unlock()}
             />
             <label htmlFor="f-actor">Your name (recorded in the action log)</label>
             <input id="f-actor" type="text" value={actor} onChange={(e) => saveActor(e.target.value)} />
             <div className="f-row" style={{ marginTop: 14 }}>
-              <button
-                onClick={() => {
-                  api.setToken(token);
-                  refresh();
-                }}
-                disabled={!token.trim()}
-              >
-                Unlock
+              <button onClick={unlock} disabled={!token.trim() || signingIn}>
+                {signingIn ? "Signing in…" : "Unlock"}
               </button>
             </div>
+            {signingIn && (
+              <p className="f-sub" style={{ marginTop: 10 }}>
+                Waking the server — the first login after a quiet spell can take up to a minute.
+              </p>
+            )}
             {error && <p className="f-error">{error}</p>}
           </div>
         </div>

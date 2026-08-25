@@ -280,7 +280,8 @@ export default function FacultyDebrief({ simulationId }) {
       {/* ── per-round answers grid ──────────────────────────────────── */}
       <h2 style={{ marginTop: 22 }}>Answers by round</h2>
       <p className="f-note" style={{ marginBottom: 8 }}>
-        Correct / incorrect per round. Round 5 is a free-text reflection, so it is not graded.
+        Per-round Outcome (partial credit — green 100%, amber partial, red 0). Hover a cell to see which
+        fields were missed. Round 5 is a free-text reflection, so it is not graded.
       </p>
       <div style={{ overflowX: "auto" }}>
         <table className="f-ans-table">
@@ -309,18 +310,18 @@ export default function FacultyDebrief({ simulationId }) {
                     let cls = "na";
                     let title = "not submitted";
                     if (s) {
-                      if (s.correct === true) {
-                        mark = "✓";
-                        cls = "ok";
-                        title = `correct · ${s.confidence}`;
-                      } else if (s.correct === false) {
-                        mark = "✗";
-                        cls = "bad";
-                        title = `incorrect · ${s.confidence}`;
-                      } else {
+                      const pct = s.outcomePct;
+                      const fb = (s.feedback || [])
+                        .map((f) => `${f.ok ? "✓" : "✗"} ${f.label}: ${f.detail}`)
+                        .join("\n");
+                      if (pct == null) {
                         mark = "—";
                         cls = "na";
                         title = "free text (not graded)";
+                      } else {
+                        mark = `${pct}%`;
+                        cls = pct >= 100 ? "ok" : pct > 0 ? "partial" : "bad";
+                        title = `${pct}% outcome · ${s.confidence} confidence${fb ? "\n\n" + fb : ""}`;
                       }
                     }
                     return (
@@ -419,6 +420,30 @@ export default function FacultyDebrief({ simulationId }) {
                 <>Confidence tracked correctness; no overconfident misses.</>
               )}
             </div>
+            {/* Per-field "what they missed" — the feedback layer for the report/debrief. */}
+            {(() => {
+              const partial = (t.submissions || []).filter(
+                (s) => s.outcomePct != null && s.outcomePct < 100
+              );
+              if (partial.length === 0) {
+                return (
+                  <div className="f-note" style={{ marginTop: 2 }}>
+                    Every graded round was fully correct.
+                  </div>
+                );
+              }
+              return partial.map((s) => {
+                const missed = (s.feedback || [])
+                  .filter((f) => !f.ok)
+                  .map((f) => `${f.label} (${f.detail})`)
+                  .join("; ");
+                return (
+                  <div className="f-note" style={{ marginTop: 2 }} key={s.roundNumber}>
+                    Round {s.roundNumber}: {s.outcomePct}% — missed {missed || "some fields"}.
+                  </div>
+                );
+              });
+            })()}
           </div>
         );
       })}

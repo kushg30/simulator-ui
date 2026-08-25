@@ -241,6 +241,8 @@
 .fac .f-ans-table th.f-ans-col { text-align: center; width: 64px; }
 .fac .f-ans-table td.f-ans { text-align: center; width: 64px; }
 .fac .f-ans { font-weight: 700; font-size: 1rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.fac .f-ans { font-size: 0.82rem; }
 .fac .f-ans-ok { color: var(--f-good); }
+.fac .f-ans-partial { color: #d6a419; }
 .fac .f-ans-bad { color: var(--f-bad); }
 .fac .f-ans-na { color: var(--f-muted); }
