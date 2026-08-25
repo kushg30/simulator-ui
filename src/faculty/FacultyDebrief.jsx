@@ -7,6 +7,7 @@ import {
   revertConstruct,
 } from "./api";
 import Sim2TeamReport from "./Sim2TeamReport";
+import Collapsible from "./Collapsible";
 
 /**
  * Small step-line of Data Trust across the rounds, reconstructed from the final value and the rounds
@@ -230,7 +231,7 @@ export default function FacultyDebrief({ simulationId }) {
       </div>
 
       {/* ── cohort ranking (ranked bars, not a flat table) ─────────────── */}
-      <h2 style={{ marginTop: 22 }}>Cohort ranking</h2>
+      <Collapsible title="Cohort ranking" subtitle="ranked bars per construct">
       <div className="f-rank-grid">
         {CONSTRUCT_ORDER.map((c) => {
           const rows = data.leaderboard?.constructs?.[c] || [];
@@ -252,10 +253,11 @@ export default function FacultyDebrief({ simulationId }) {
         })}
       </div>
 
+      </Collapsible>
+
       {/* ── Data Trust trajectory for flagged teams ────────────────────── */}
       {teams.some((t) => t.dataTrustFirstDropRound) && (
-        <>
-          <h2 style={{ marginTop: 22 }}>Data Trust trajectory — flagged teams</h2>
+        <Collapsible title="Data Trust trajectory — flagged teams" subtitle="when trust broke, by round">
           <p className="f-note" style={{ marginBottom: 10 }}>
             When each flagged team's Data Trust dropped across the rounds (red = the round it broke),
             not just that it did.
@@ -276,11 +278,11 @@ export default function FacultyDebrief({ simulationId }) {
                 </div>
               ))}
           </div>
-        </>
+        </Collapsible>
       )}
 
       {/* ── per-round answers grid ──────────────────────────────────── */}
-      <h2 style={{ marginTop: 22 }}>Answers by round</h2>
+      <Collapsible title="Answers by round" subtitle="per-round outcome + what was missed">
       <p className="f-note" style={{ marginBottom: 8 }}>
         Per-round Outcome (partial credit — green 100%, amber partial, red 0). Hover a cell to see which
         fields were missed. Round 5 is a free-text reflection, so it is not graded.
@@ -338,6 +340,7 @@ export default function FacultyDebrief({ simulationId }) {
           </tbody>
         </table>
       </div>
+      </Collapsible>
 
       {/* ── inline override editor ──────────────────────────────────── */}
       {editTeam && (
@@ -394,7 +397,7 @@ export default function FacultyDebrief({ simulationId }) {
       {msg && <p className="f-ok">{msg}</p>}
 
       {/* ── per-team narrative ──────────────────────────────────────── */}
-      <h2 style={{ marginTop: 22 }}>What to raise in the debrief</h2>
+      <Collapsible title="What to raise in the debrief" subtitle="per-team talking points">
       {teams.map((t) => {
         const hcw = t.highConfidenceWrongRounds || [];
         return (
@@ -454,6 +457,7 @@ export default function FacultyDebrief({ simulationId }) {
           </div>
         );
       })}
+      </Collapsible>
 
       {reportTeam && (
         <Sim2TeamReport

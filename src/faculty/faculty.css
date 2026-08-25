@@ -294,3 +294,14 @@
   .rpt-toolbar { display: none !important; }
   .rpt-sheet { max-width: none; margin: 0; box-shadow: none; border-radius: 0; }
 }
+
+/* ── collapsible section panels ─────────────────────────────────────────────── */
+.fac .f-collapse { border: 1px solid var(--f-border); border-radius: 10px; margin-bottom: 12px; background: var(--f-panel); overflow: hidden; }
+.fac .f-collapse-head { width: 100%; display: flex; align-items: center; gap: 10px; background: transparent; border: none; color: var(--f-text); padding: 13px 16px; cursor: pointer; text-align: left; font: inherit; }
+.fac .f-collapse-head:hover { background: #101826; }
+.fac .f-collapse.open .f-collapse-head { border-bottom: 1px solid var(--f-border); }
+.fac .f-collapse-caret { color: var(--f-muted); font-size: 0.85rem; width: 12px; flex-shrink: 0; }
+.fac .f-collapse-title { font-size: 0.98rem; font-weight: 600; }
+.fac .f-collapse-sub { margin-left: 2px; font-weight: 400; }
+.fac .f-collapse-right { margin-left: auto; }
+.fac .f-collapse-body { padding: 14px 16px 16px; }

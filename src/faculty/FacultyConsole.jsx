@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import * as api from "./api";
+import Collapsible from "./Collapsible";
 import FacultyDebrief from "./FacultyDebrief";
 import FacultySim1SetB from "./FacultySim1SetB";
 import FacultyWiki from "./FacultyWiki";
@@ -90,6 +91,16 @@ export default function FacultyConsole() {
       else setError(e.message);
     }
   }, [selected]);
+
+  // Keep a vertical scrollbar visible on the console — the debrief and live views run
+  // long, and a persistent gutter avoids layout shift as sections collapse/expand.
+  useEffect(() => {
+    const prev = document.documentElement.style.overflowY;
+    document.documentElement.style.overflowY = "scroll";
+    return () => {
+      document.documentElement.style.overflowY = prev;
+    };
+  }, []);
 
   // Validate a stored token once on mount (a fresh tab has none, so nothing fires).
   // Only a single attempt — a bad/stale token fails once instead of 401-ing forever.
@@ -220,6 +231,103 @@ export default function FacultyConsole() {
     const d = new Date(s);
     return isNaN(d.getTime()) ? String(ts) : d.toLocaleString();
   };
+
+  // Split live teams from ones that have finished all rounds, so the in-play list stays short.
+  const isFinished = (r) => r.roundsComplete >= r.totalRounds;
+  const activeTeams = overview.filter((r) => !isFinished(r));
+  const finishedTeams = overview.filter(isFinished);
+
+  const teamRow = (r) => {
+    const isSel = selected?.runId === r.runId;
+    const live = r.roundStatus === "ACTIVE" && !r.bypassed;
+    const finished = isFinished(r);
+    return (
+      <tr key={r.runId} className={isSel ? "f-selected" : ""}>
+        <td>{r.teamName}</td>
+        <td className="f-note">{r.simulationName}</td>
+        <td>
+          Round {r.roundNumber}
+          <span className="f-note"> of {r.totalRounds}</span>
+          <div className="f-note">{r.roundsComplete} complete</div>
+        </td>
+        <td>
+          {r.bypassed ? (
+            <span className="f-pill bypass">Bypassed</span>
+          ) : r.paused ? (
+            <span className="f-pill paused">Paused</span>
+          ) : live ? (
+            <span className="f-pill live">Live</span>
+          ) : finished ? (
+            <span className="f-pill done">Finished</span>
+          ) : (
+            <span className="f-pill done">Between rounds</span>
+          )}
+        </td>
+        <td className="f-note">{formatDuration(r.pausedSecondsTotal)}</td>
+        <td>
+          <div className="f-row">
+            {live && !r.paused && (
+              <button
+                className="f-warn"
+                onClick={() =>
+                  act(() => api.pause(r.runId, r.roundNumber, note, actor), `Paused ${r.teamName}`)
+                }
+              >
+                Pause
+              </button>
+            )}
+            {r.paused && (
+              <button
+                onClick={() =>
+                  act(() => api.resume(r.runId, r.roundNumber, note, actor), `Resumed ${r.teamName}`)
+                }
+              >
+                Resume
+              </button>
+            )}
+            <button className="f-ghost" onClick={() => selectRun(r)}>
+              Manage
+            </button>
+            <button
+              className="f-ghost"
+              disabled={!(r.roundsComplete > 0)}
+              title="Re-open the team's last submitted round so they can submit it again"
+              onClick={() =>
+                act(() => api.restartLastRound(r.runId, note, actor), `Round restarted for ${r.teamName}`)
+              }
+            >
+              Restart round
+            </button>
+            <button
+              className="f-danger"
+              onClick={() => {
+                setTerminateRow(r);
+                setTerminateText("");
+              }}
+            >
+              Terminate
+            </button>
+          </div>
+        </td>
+      </tr>
+    );
+  };
+
+  const teamsTable = (rows) => (
+    <table>
+      <thead>
+        <tr>
+          <th>Team</th>
+          <th>Simulation</th>
+          <th>Progress</th>
+          <th>State</th>
+          <th>Paused</th>
+          <th>Controls</th>
+        </tr>
+      </thead>
+      <tbody>{rows.map(teamRow)}</tbody>
+    </table>
+  );
 
   return (
     <div className="fac">
@@ -371,113 +479,26 @@ export default function FacultyConsole() {
           </div>
         </div>
 
-        {/* ── session overview ─────────────────────────────────────────── */}
+        {/* ── session overview: teams in play vs finished ──────────────── */}
         <div className="f-card">
-          <h2>Teams in play</h2>
+          <h2>Teams in play{activeTeams.length ? ` · ${activeTeams.length}` : ""}</h2>
           {overview.length === 0 ? (
             <p className="f-note">No rounds have been started yet.</p>
+          ) : activeTeams.length === 0 ? (
+            <p className="f-note">No teams are currently in play — see finished teams below.</p>
           ) : (
-            <table>
-              <thead>
-                <tr>
-                  <th>Team</th>
-                  <th>Simulation</th>
-                  <th>Progress</th>
-                  <th>State</th>
-                  <th>Paused</th>
-                  <th>Controls</th>
-                </tr>
-              </thead>
-              <tbody>
-                {overview.map((r) => {
-                  const isSel = selected?.runId === r.runId;
-                  const live = r.roundStatus === "ACTIVE" && !r.bypassed;
-                  const finished = r.roundsComplete >= r.totalRounds;
-                  return (
-                    <tr key={r.runId} className={isSel ? "f-selected" : ""}>
-                      <td>{r.teamName}</td>
-                      <td className="f-note">{r.simulationName}</td>
-                      <td>
-                        Round {r.roundNumber}
-                        <span className="f-note"> of {r.totalRounds}</span>
-                        <div className="f-note">{r.roundsComplete} complete</div>
-                      </td>
-                      <td>
-                        {r.bypassed ? (
-                          <span className="f-pill bypass">Bypassed</span>
-                        ) : r.paused ? (
-                          <span className="f-pill paused">Paused</span>
-                        ) : live ? (
-                          <span className="f-pill live">Live</span>
-                        ) : finished ? (
-                          <span className="f-pill done">Finished</span>
-                        ) : (
-                          <span className="f-pill done">Between rounds</span>
-                        )}
-                      </td>
-                      <td className="f-note">{formatDuration(r.pausedSecondsTotal)}</td>
-                      <td>
-                        <div className="f-row">
-                          {/* Pause only means something while a round is actually running. */}
-                          {live && !r.paused && (
-                            <button
-                              className="f-warn"
-                              onClick={() =>
-                                act(
-                                  () => api.pause(r.runId, r.roundNumber, note, actor),
-                                  `Paused ${r.teamName}`
-                                )
-                              }
-                            >
-                              Pause
-                            </button>
-                          )}
-                          {r.paused && (
-                            <button
-                              onClick={() =>
-                                act(
-                                  () => api.resume(r.runId, r.roundNumber, note, actor),
-                                  `Resumed ${r.teamName}`
-                                )
-                              }
-                            >
-                              Resume
-                            </button>
-                          )}
-                          <button className="f-ghost" onClick={() => selectRun(r)}>
-                            Manage
-                          </button>
-                          <button
-                            className="f-ghost"
-                            disabled={!(r.roundsComplete > 0)}
-                            title="Re-open the team's last submitted round so they can submit it again"
-                            onClick={() =>
-                              act(
-                                () => api.restartLastRound(r.runId, note, actor),
-                                `Round restarted for ${r.teamName}`
-                              )
-                            }
-                          >
-                            Restart round
-                          </button>
-                          <button
-                            className="f-danger"
-                            onClick={() => {
-                              setTerminateRow(r);
-                              setTerminateText("");
-                            }}
-                          >
-                            Terminate
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+            <div style={{ overflowX: "auto" }}>{teamsTable(activeTeams)}</div>
           )}
         </div>
+
+        {finishedTeams.length > 0 && (
+          <Collapsible
+            title={`Finished teams · ${finishedTeams.length}`}
+            subtitle="completed all rounds"
+          >
+            <div style={{ overflowX: "auto" }}>{teamsTable(finishedTeams)}</div>
+          </Collapsible>
+        )}
 
         {/* ── per-team controls ────────────────────────────────────────── */}
         {selectedRow && (
