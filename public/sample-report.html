@@ -1,169 +1,254 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Northstar Analytics — Team Report</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sample Team Report — CaseRun</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
-:root{--ink:#12172a;--muted:#5c6478;--line:#e7e9ef;--gold:#b98a1e;--goldbg:#faf5e6;--hi:#1f9d55;--mid:#c98a1e;--lo:#c2410c;--na:#9aa2b1;--paper:#fff;}
-*{box-sizing:border-box}
-html,body{margin:0;background:#edeff3;color:var(--ink);font-family:"DM Sans",-apple-system,Segoe UI,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-.page{max-width:820px;margin:24px auto;background:var(--paper);box-shadow:0 10px 40px -20px rgba(0,0,0,.4);border-radius:6px;overflow:hidden}
-.hd{padding:34px 44px 26px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#fbfbfd,#fff)}
-.brand{display:flex;justify-content:space-between;align-items:center;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
-.brand b{color:var(--gold);letter-spacing:.18em}
-.eyebrow{margin-top:22px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);font-weight:600}
-h1{font-family:"Playfair Display",Georgia,serif;font-size:34px;margin:6px 0 4px;line-height:1.1}
-.sub{color:var(--muted);font-size:14px}
-.session{margin-top:10px;font-size:12.5px;color:var(--muted)}
-.body{padding:28px 44px 8px}
-.overall{display:flex;gap:22px;align-items:center;background:var(--goldbg);border:1px solid #efe4c4;border-radius:12px;padding:18px 22px;margin-bottom:26px}
-.oi{font-family:"Playfair Display",serif;font-size:44px;color:var(--gold);line-height:1}
-.oi small{font-size:15px;color:var(--muted)}
-.overall .txt{font-size:13.5px;color:#4a4326}
-.overall .txt b{color:var(--ink)}
-.roster{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px}
-.rmem{border:1px solid var(--line);border-radius:999px;padding:6px 13px;font-size:12.5px}
-.rmem b{color:var(--ink)} .rmem span{color:var(--muted)}
-h2{font-family:"Playfair Display",serif;font-size:20px;margin:26px 0 4px}
-.h2note{color:var(--muted);font-size:12.5px;margin-bottom:14px}
-.sc-row{padding:14px 0;border-bottom:1px solid var(--line)}
-.sc-head{display:flex;justify-content:space-between;align-items:baseline}
-.sc-name{font-weight:600;font-size:15px}
-.sc-val{font-family:"Playfair Display",serif;font-size:24px}
-.sc-val small{font-size:12px;color:var(--muted)}
-.sc-desc{color:var(--muted);font-size:12.5px;margin:3px 0 9px;max-width:64ch}
-.bar{position:relative;height:9px;background:#eef0f4;border-radius:6px;overflow:visible}
-.bar-fill{height:100%;border-radius:6px}
-.bar-avg{position:absolute;top:-3px;width:2px;height:15px;background:#2b3350;opacity:.5}
-.sc-meta{display:flex;gap:10px;align-items:center;margin-top:8px}
-.pill{font-size:10.5px;font-weight:600;padding:2px 9px;border-radius:999px;text-transform:uppercase;letter-spacing:.05em}
-.sc-note{font-size:11.5px;color:var(--muted)}
-.hi{color:var(--hi)} .mid{color:var(--mid)} .lo{color:var(--lo)} .na{color:var(--na)}
-.bar-fill.hi{background:var(--hi)} .bar-fill.mid{background:var(--mid)} .bar-fill.lo{background:var(--lo)} .bar-fill.na{background:var(--na)}
-.pill.hi{background:#e6f5ec;color:var(--hi)} .pill.mid{background:#faf1dc;color:var(--mid)} .pill.lo{background:#fbeadf;color:var(--lo)} .pill.na{background:#eef0f4;color:var(--na)}
-.rnd{border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:12px;break-inside:avoid}
-.rnd-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
-.rnd-n{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);font-weight:600}
-.rnd-title{font-family:"Playfair Display",serif;font-size:17px}
-.rnd-owner{font-size:12px;color:var(--muted);margin-top:2px}
-.rnd-outcome{font-size:12px;font-weight:600;white-space:nowrap;padding:5px 11px;border-radius:999px;background:#eef0f4}
-.rnd-outcome.hi{background:#e6f5ec;color:var(--hi)} .rnd-outcome.mid{background:#faf1dc;color:var(--mid)} .rnd-outcome.lo{background:#fbeadf;color:var(--lo)} .rnd-outcome.na{background:#eef0f4;color:var(--muted)}
-.rnd-tests{font-size:12.5px;color:var(--muted);margin:9px 0 10px}
-.rnd-ans-l{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-.rnd-ans pre{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;line-height:1.55;background:#f7f8fa;border:1px solid var(--line);border-radius:8px;padding:11px 13px;margin:5px 0 0;color:#2b3350}
-.tks{list-style:none;padding:0;margin:0}
-.tks li{background:#f7f8fa;border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:12px 15px;margin-bottom:9px;font-size:13px;line-height:1.6}
-.ft{padding:20px 44px 30px;border-top:1px solid var(--line);color:var(--muted);font-size:11.5px;line-height:1.6}
-.ft b{color:var(--gold)}
-@media print{body{background:#fff}.page{box-shadow:none;margin:0;max-width:none;border-radius:0}.rnd,.sc-row{break-inside:avoid}}
-</style></head><body>
-<div class="page">
-  <div class="hd">
-    <div class="brand"><b>CaseRun</b><span>Team Performance Report</span></div>
-    <div class="eyebrow">Meridian Retail QBR — Data Analytics Simulation</div>
-    <h1>Northstar Analytics</h1>
-    <div class="sub">A five-round analytics engagement — building a Quarterly Business Review the Board can trust.</div>
-    <div class="session">Symbiosis Institute of Business &amp; Management, Hyderabad · MBA 2026–28 · Played 22 Aug 2026</div>
-  </div>
-  <div class="body">
-    <div class="overall">
-      <div class="oi">64<small>/100</small></div>
-      <div class="txt"><b>Overall performance index</b> — the mean of your five leadership-analytics constructs.
-        Your team placed <b>7th of 25</b> in the cohort. The scorecard below shows where that strength came from, and where the next gain is.</div>
+  :root {
+    --ink: #1c2230; --muted: #5b6577; --faint: #8b93a3;
+    --gold: #b3902f; --gold-soft: #f4ecd6; --line: #e7e3d8;
+    --paper: #ffffff; --panel: #faf8f2; --good: #3d8a63; --warn: #c1762a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: #ecebe6; color: var(--ink);
+    font-family: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    line-height: 1.6; -webkit-font-smoothing: antialiased;
+  }
+  .sheet {
+    max-width: 820px; margin: 28px auto; background: var(--paper);
+    box-shadow: 0 20px 60px -30px rgba(0,0,0,0.35); border-radius: 6px; overflow: hidden;
+  }
+  .pad { padding: 44px 52px; }
+  .serif { font-family: "Playfair Display", Georgia, serif; }
+
+  /* masthead */
+  .mast { padding: 30px 52px; border-bottom: 2px solid var(--ink); display: flex; justify-content: space-between; align-items: flex-end; }
+  .brand { font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; font-size: 15px; }
+  .brand small { display: block; letter-spacing: 0.14em; font-size: 10px; color: var(--muted); font-weight: 600; margin-top: 4px; }
+  .sample-chip { font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: var(--gold); border: 1px solid var(--gold); border-radius: 999px; padding: 5px 12px; }
+
+  h1.title { font-size: 30px; margin: 0 0 6px; line-height: 1.12; }
+  .subtitle { color: var(--muted); font-size: 14.5px; }
+  .meta-row { display: flex; gap: 26px; flex-wrap: wrap; margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--line); }
+  .meta { font-size: 12.5px; }
+  .meta b { display: block; font-size: 10px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--faint); font-weight: 700; margin-bottom: 3px; }
+
+  .lead { font-size: 16px; line-height: 1.65; color: #333c4d; border-left: 3px solid var(--gold); padding-left: 18px; margin: 4px 0 0; }
+
+  .sec-label { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700; color: var(--gold); margin: 0 0 16px; }
+  .divide { border: none; border-top: 1px solid var(--line); margin: 0; }
+
+  /* headline scores */
+  .headline { display: flex; gap: 30px; align-items: center; }
+  .big { text-align: center; }
+  .big .num { font-family: "Playfair Display", serif; font-size: 54px; line-height: 1; color: var(--ink); }
+  .big .num small { font-size: 20px; color: var(--faint); }
+  .big .cap { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin-top: 6px; }
+  .headline .vr { width: 1px; align-self: stretch; background: var(--line); }
+  .headline p { margin: 0; font-size: 13.5px; color: var(--muted); }
+
+  /* construct bars */
+  .bar-row { display: grid; grid-template-columns: 190px 1fr 44px; gap: 14px; align-items: center; padding: 13px 0; border-bottom: 1px solid var(--line); }
+  .bar-row:last-child { border-bottom: none; }
+  .bar-name { font-weight: 600; font-size: 13.5px; }
+  .bar-name span { display: block; font-weight: 400; font-size: 11.5px; color: var(--faint); margin-top: 1px; }
+  .track { height: 9px; background: #eeece4; border-radius: 999px; overflow: hidden; }
+  .fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #d9be6e, var(--gold)); }
+  .bar-val { text-align: right; font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; }
+
+  /* rounds table */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--faint); font-weight: 700; padding: 0 10px 9px; }
+  td { padding: 11px 10px; border-top: 1px solid var(--line); vertical-align: top; }
+  td.r { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
+  .round-name { font-weight: 600; }
+  .pill { display: inline-block; font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+  .pill.good { background: #e5f1ea; color: var(--good); }
+  .pill.mid { background: #f6ecdd; color: var(--warn); }
+
+  /* narrative + two-col */
+  .narr p { font-size: 14px; color: #333c4d; margin: 0 0 12px; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; }
+  .cols h4 { margin: 0 0 10px; font-size: 13px; }
+  .cols ul { margin: 0; padding-left: 18px; }
+  .cols li { font-size: 13px; color: #3a4353; margin-bottom: 7px; }
+
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 22px 24px; }
+
+  footer { padding: 22px 52px 34px; border-top: 1px solid var(--line); color: var(--faint); font-size: 11.5px; }
+  footer b { color: var(--muted); }
+
+  @media (max-width: 620px) {
+    .pad, .mast, footer { padding-left: 24px; padding-right: 24px; }
+    .headline { flex-direction: column; align-items: flex-start; gap: 16px; }
+    .headline .vr { display: none; }
+    .bar-row { grid-template-columns: 130px 1fr 40px; }
+    .cols { grid-template-columns: 1fr; }
+  }
+  @media print {
+    body { background: #fff; }
+    .sheet { box-shadow: none; margin: 0; max-width: none; border-radius: 0; }
+  }
+</style>
+</head>
+<body>
+  <div class="sheet">
+    <div class="mast">
+      <div class="brand">CaseRun<small>Leadership Analytics Report</small></div>
+      <div class="sample-chip">Sample</div>
     </div>
 
-    <h2>Your team</h2>
-    <div class="roster"><div class="rmem"><b>Priya Menon</b> <span>· Data Quality Analyst</span></div><div class="rmem"><b>Arjun Rao</b> <span>· Diagnostics Analyst</span></div><div class="rmem"><b>Neha Gupta</b> <span>· Automation Analyst</span></div><div class="rmem"><b>Karan Shah</b> <span>· Visualization Analyst</span></div><div class="rmem"><b>Ananya Iyer</b> <span>· Team Lead</span></div></div>
-
-    <h2>Construct scorecard</h2>
-    <div class="h2note">Each construct is scored 0–100. The bar is your score; the vertical tick is the cohort average across 25 teams.</div>
-    <div class="sc-row">
-      <div class="sc-head"><span class="sc-name">Data Trust</span>
-        <span class="sc-val hi">86<small>/100</small></span></div>
-      <div class="sc-desc">How trustworthy the numbers you put in front of the Board were — did you catch the broken data before it reached the QBR?</div>
-      <div class="bar"><div class="bar-fill hi" style="width:86%"></div><div class="bar-avg" style="left:64%" title="Cohort average 64"></div></div>
-      <div class="sc-meta"><span class="pill hi">Strong</span>
-        <span class="sc-note">2nd of 25 teams · cohort avg 64</span></div>
-    </div><div class="sc-row">
-      <div class="sc-head"><span class="sc-name">Insight Communication</span>
-        <span class="sc-val hi">69<small>/100</small></span></div>
-      <div class="sc-desc">How clearly your final board-ready synthesis turned analysis into a decision leaders could act on.</div>
-      <div class="bar"><div class="bar-fill hi" style="width:69%"></div><div class="bar-avg" style="left:64%" title="Cohort average 64"></div></div>
-      <div class="sc-meta"><span class="pill hi">Strong</span>
-        <span class="sc-note">7th of 25 teams · cohort avg 64</span></div>
-    </div><div class="sc-row">
-      <div class="sc-head"><span class="sc-name">Analytical Rigor</span>
-        <span class="sc-val mid">50<small>/100</small></span></div>
-      <div class="sc-desc">The soundness of your method across the five rounds — cleaning, reconciling and reasoning from the data.</div>
-      <div class="bar"><div class="bar-fill mid" style="width:50%"></div><div class="bar-avg" style="left:46%" title="Cohort average 46"></div></div>
-      <div class="sc-meta"><span class="pill mid">Solid</span>
-        <span class="sc-note">8th of 25 teams · cohort avg 46</span></div>
-    </div><div class="sc-row">
-      <div class="sc-head"><span class="sc-name">Judgment Calibration</span>
-        <span class="sc-val mid">45<small>/100</small></span></div>
-      <div class="sc-desc">How well your stated confidence matched how correct you actually turned out to be.</div>
-      <div class="bar"><div class="bar-fill mid" style="width:45%"></div><div class="bar-avg" style="left:53%" title="Cohort average 53"></div></div>
-      <div class="sc-meta"><span class="pill mid">Solid</span>
-        <span class="sc-note">17th of 25 teams · cohort avg 53</span></div>
-    </div><div class="sc-row">
-      <div class="sc-head"><span class="sc-name">Turnaround Discipline</span>
-        <span class="sc-val hi">72<small>/100</small></span></div>
-      <div class="sc-desc">Consistency and timeliness of delivery under the round clock.</div>
-      <div class="bar"><div class="bar-fill hi" style="width:72%"></div><div class="bar-avg" style="left:58%" title="Cohort average 58"></div></div>
-      <div class="sc-meta"><span class="pill hi">Strong</span>
-        <span class="sc-note">6th of 25 teams · cohort avg 58</span></div>
+    <div class="pad">
+      <h1 class="title serif">Team Vanguard</h1>
+      <div class="subtitle">Meridian Retail — Quarterly Business Review · Data Analytics Simulation</div>
+      <div class="meta-row">
+        <div class="meta"><b>Cohort</b>MBA — sample cohort</div>
+        <div class="meta"><b>Team size</b>5 analysts</div>
+        <div class="meta"><b>Format</b>5 rounds · 90 minutes</div>
+        <div class="meta"><b>Cohort rank</b>6th of 24 teams</div>
+      </div>
     </div>
 
-    <h2 style="margin-top:30px">Round by round</h2>
-    <div class="h2note">What each round tested, and exactly what your team submitted.</div>
-    <div class="rnd">
-      <div class="rnd-top">
-        <div><span class="rnd-n">Round 1</span> <span class="rnd-title">Trust the Feed</span>
-          <div class="rnd-owner">Data Quality Analyst · Priya Menon</div></div>
-        <div class="rnd-outcome hi">85% outcome · MEDIUM confidence</div>
-      </div>
-      <div class="rnd-tests">Audit a raw, unchecked data feed and decide which revenue number the Board can trust.</div>
-      <div class="rnd-ans"><span class="rnd-ans-l">Your submission</span><pre>62667 | issues: Improper Formatting, Duplicated | note: Ran text-to-columns, removed 3 duplicate order rows before totalling.</pre></div>
-    </div><div class="rnd">
-      <div class="rnd-top">
-        <div><span class="rnd-n">Round 2</span> <span class="rnd-title">Diagnose the Gap</span>
-          <div class="rnd-owner">Diagnostics Analyst · Arjun Rao</div></div>
-        <div class="rnd-outcome hi">100% outcome · HIGH confidence</div>
-      </div>
-      <div class="rnd-tests">Find what is really driving the regional performance gap — and defend the number.</div>
-      <div class="rnd-ans"><span class="rnd-ans-l">Your submission</span><pre>People (Training &amp; Skill Gap); 25.5 | note: West stores show far lower manager training hours; strong positive link to revenue attainment.</pre></div>
-    </div><div class="rnd">
-      <div class="rnd-top">
-        <div><span class="rnd-n">Round 3</span> <span class="rnd-title">Combine &amp; Automate</span>
-          <div class="rnd-owner">Automation Analyst · Neha Gupta</div></div>
-        <div class="rnd-outcome hi">100% outcome · MEDIUM confidence</div>
-      </div>
-      <div class="rnd-tests">Merge two months of data and reconcile the totals without breaking them.</div>
-      <div class="rnd-ans"><span class="rnd-ans-l">Your submission</span><pre>270; 1381546 | macro: Yes | note: Recorded a macro to append the new month below Round 1 and reconcile the totals.</pre></div>
-    </div><div class="rnd">
-      <div class="rnd-top">
-        <div><span class="rnd-n">Round 4</span> <span class="rnd-title">Tell the Visual Story</span>
-          <div class="rnd-owner">Visualization Analyst · Karan Shah</div></div>
-        <div class="rnd-outcome mid">75% outcome · MEDIUM confidence</div>
-      </div>
-      <div class="rnd-tests">Turn the analysis into a single visual a non-technical Board can read at a glance.</div>
-      <div class="rnd-ans"><span class="rnd-ans-l">Your submission</span><pre>Notebook Set; 35; April; 90 | tool: Power BI | chart: Line Chart</pre></div>
-    </div><div class="rnd">
-      <div class="rnd-top">
-        <div><span class="rnd-n">Round 5</span> <span class="rnd-title">The Board Synthesis</span>
-          <div class="rnd-owner">Team Lead · Ananya Iyer</div></div>
-        <div class="rnd-outcome na">Reflection (not graded) · HIGH confidence</div>
-      </div>
-      <div class="rnd-tests">Assemble the Situation–Complication–Question–Answer the Board actually sees.</div>
-      <div class="rnd-ans"><span class="rnd-ans-l">Your submission</span><pre>| situation: 270 orders Jan–Apr, ~₹13.8L revenue, demand rising into April. | complication: Volume uneven across months and products; an early data error nearly overstated revenue. | question: Where should Meridian focus inventory and sales to capture April demand? | answer: Prioritise the strongest-demand products (Notebook Set), plan capacity around the April surge, and lock the cleaned pipeline so the Board's numbers stay defensible.</pre></div>
+    <hr class="divide" />
+    <div class="pad">
+      <p class="lead">Vanguard ran a rigorous quarter and defended a sound recommendation to the Board — but a
+      formatting miss in the opening round quietly capped the trust in their numbers, and they moved slower than
+      the cohort when the clock mattered.</p>
     </div>
 
-    <h2 style="margin-top:26px">What to take away</h2>
-    <div class="h2note">Three things from your team's pattern, for the next time the numbers have to be defended.</div>
-    <ul class="tks"><li><b>Your standout was Data Trust (86).</b> You caught the broken data before it reached the Board — the foundation everything else rests on.</li><li><b>Your clearest opportunity is Judgment Calibration (45).</b> Match your confidence to your evidence — say HIGH only when the number can be defended.</li><li><b>Mind the calibration gap.</b> Your analysis (86) ran ahead of your Judgment Calibration (45) — the work was there, but your stated confidence did not track how correct you actually were. Calibrating confidence to evidence is the leadership habit this round rewards.</li></ul>
+    <hr class="divide" />
+    <div class="pad">
+      <div class="sec-label">Overall</div>
+      <div class="headline">
+        <div class="big"><div class="num">74<small>th</small></div><div class="cap">Cohort percentile</div></div>
+        <div class="vr"></div>
+        <div class="big"><div class="num">76<small>%</small></div><div class="cap">Mean round outcome</div></div>
+        <div class="vr"></div>
+        <p>Above the cohort median on four of five constructs. The team's ceiling was set less by analysis —
+        which was strong — than by an early data-trust slip and turnaround pace under time pressure.</p>
+      </div>
+    </div>
+
+    <hr class="divide" />
+    <div class="pad">
+      <div class="sec-label">Leadership construct profile</div>
+
+      <div class="bar-row">
+        <div class="bar-name">Analytical Rigor<span>Depth and correctness of the analysis</span></div>
+        <div class="track"><div class="fill" style="width:82%"></div></div>
+        <div class="bar-val">82</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-name">Insight Communication<span>Clarity of the Round-5 board synthesis</span></div>
+        <div class="track"><div class="fill" style="width:75%"></div></div>
+        <div class="bar-val">75</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-name">Judgment Calibration<span>Confidence matched to correctness</span></div>
+        <div class="track"><div class="fill" style="width:71%"></div></div>
+        <div class="bar-val">71</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-name">Data Trust<span>How defensible their numbers were</span></div>
+        <div class="track"><div class="fill" style="width:68%"></div></div>
+        <div class="bar-val">68</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-name">Turnaround Discipline<span>Decisiveness against the clock</span></div>
+        <div class="track"><div class="fill" style="width:60%"></div></div>
+        <div class="bar-val">60</div>
+      </div>
+    </div>
+
+    <hr class="divide" />
+    <div class="pad">
+      <div class="sec-label">How the quarter unfolded</div>
+      <table>
+        <thead><tr><th>Round</th><th>Focus</th><th>Key moment</th><th style="text-align:right">Outcome</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="round-name">R1</td>
+            <td>Trust the Feed</td>
+            <td>Caught the duplicated order, but missed a text-formatted figure — the number went out slightly high. <span class="pill mid">early slip</span></td>
+            <td class="r">70%</td>
+          </tr>
+          <tr>
+            <td class="round-name">R2</td>
+            <td>Breaking News</td>
+            <td>Revised their figure the moment new information landed — a well-calibrated correction. <span class="pill good">strong</span></td>
+            <td class="r">85%</td>
+          </tr>
+          <tr>
+            <td class="round-name">R3</td>
+            <td>Reconcile &amp; Automate</td>
+            <td>Recorded a macro to combine both months cleanly; reconciliation held.</td>
+            <td class="r">78%</td>
+          </tr>
+          <tr>
+            <td class="round-name">R4</td>
+            <td>Visualize</td>
+            <td>Right chart, right tool — a clear, honest view of the trend.</td>
+            <td class="r">80%</td>
+          </tr>
+          <tr>
+            <td class="round-name">R5</td>
+            <td>Board Synthesis</td>
+            <td>A defensible recommendation, though the headline was slightly buried in the detail.</td>
+            <td class="r">75%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <hr class="divide" />
+    <div class="pad narr">
+      <div class="sec-label">What the data says</div>
+      <p>Vanguard's analysis was among the sharpest in the room — Analytical Rigor of 82 sat comfortably above the
+      cohort median. The story of their quarter is not <em>whether</em> they could do the work, but two habits that
+      quietly cost them.</p>
+      <p>First, an <b>early data-trust slip</b>. The Round-1 formatting miss meant the opening revenue figure was
+      never fully clean, and because later rounds build on that number, Data Trust never fully recovered — it
+      finished at 68 despite strong reconciliation in Round 3. In this simulation, an early miss follows the team
+      all the way to the Board.</p>
+      <p>Second, <b>pace under pressure</b>. Turnaround Discipline (60) was the team's clear growth area — they
+      reached good answers, but slower than the cohort when the clock was shortest. Their redeeming moment was
+      Round 2: when new information broke, they revised quickly and confidently — exactly the calibration a Board
+      wants to see.</p>
+    </div>
+
+    <hr class="divide" />
+    <div class="pad">
+      <div class="cols">
+        <div class="panel">
+          <h4 class="serif">Strengths</h4>
+          <ul>
+            <li>High analytical rigor — the underlying work was consistently correct.</li>
+            <li>Excellent recovery under new information (Round 2 revision).</li>
+            <li>Clear, well-chosen data visualization.</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h4 class="serif">Development pointers</h4>
+          <ul>
+            <li>Validate formatting <em>before</em> publishing a headline number — early trust compounds.</li>
+            <li>Move decisively when the clock is short; a defensible answer on time beats a perfect one late.</li>
+            <li>Lead the Board synthesis with the recommendation, then the evidence.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <b>About this report.</b> CaseRun scores five leadership constructs from every decision a team makes across
+      the simulation, benchmarked against the full cohort. This is a <b>sample report built on fictional data</b>
+      (“Team Vanguard”) to illustrate what each team receives after a live session — no real student information
+      is shown. © CaseRun.
+    </footer>
   </div>
-  <div class="ft">
-    <b>How to read this.</b> Data Trust and Insight Communication are run-level outcomes; Analytical Rigor, Judgment Calibration and Turnaround Discipline are averaged across the five rounds. Scores are relative to your own cohort, not an absolute grade — they show how your team's judgment held up against your peers on the same case.<br><br>
-    Generated by <b>CaseRun</b> · caserun.in · 24 August 2026
-  </div>
-</div>
-</body></html>
+</body>
+</html>
