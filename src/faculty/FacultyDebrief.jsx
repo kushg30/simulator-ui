@@ -153,7 +153,8 @@ export default function FacultyDebrief({ simulationId }) {
       </div>
 
       {/* ── leaderboard: teams × constructs (cells are clickable to override) ── */}
-      <div style={{ overflowX: "auto", marginTop: 12 }}>
+      <Collapsible title="Team leaderboard — scores by construct" subtitle="click a score to adjust" defaultOpen>
+      <div style={{ overflowX: "auto" }}>
         <table>
           <thead>
             <tr>
@@ -229,6 +230,7 @@ export default function FacultyDebrief({ simulationId }) {
           </tbody>
         </table>
       </div>
+      </Collapsible>
 
       {/* ── cohort ranking (ranked bars, not a flat table) ─────────────── */}
       <Collapsible title="Cohort ranking" subtitle="ranked bars per construct">

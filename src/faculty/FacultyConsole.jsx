@@ -407,8 +407,7 @@ export default function FacultyConsole() {
         {tab === "live" && (
         <>
         {/* ── whole-class controls ─────────────────────────────────────── */}
-        <div className="f-card">
-          <h2>Whole class</h2>
+        <Collapsible title="Whole class" subtitle="pause / resume everyone">
           <p className="f-note">
             Pauses every active round of a simulation at once — a projector failure, a fire drill, or
             a misunderstanding worth stopping everyone for. Paused time never counts against
@@ -453,11 +452,10 @@ export default function FacultyConsole() {
             placeholder="e.g. projector failure in room 2"
             onChange={(e) => setNote(e.target.value)}
           />
-        </div>
+        </Collapsible>
 
         {/* ── Sim 2 Breaking News broadcast ───────────────────────────── */}
-        <div className="f-card">
-          <h2>Breaking News — Simulator 2 (Round 3)</h2>
+        <Collapsible title="Breaking News — Simulator 2 (Round 3)" subtitle="fire the R3 interrupt">
           <p className="f-note">
             Fires the Round 3 interrupt to every Meridian team at once, <strong>personalised to each
             team's Round 2 root-cause answer</strong>: a team that landed on the People / training
@@ -477,7 +475,7 @@ export default function FacultyConsole() {
               Send Breaking News
             </button>
           </div>
-        </div>
+        </Collapsible>
 
         {/* ── session overview: teams in play vs finished ──────────────── */}
         <div className="f-card">

@@ -1,5 +1,6 @@
 import { Fragment, useCallback, useEffect, useState } from "react";
 import { getSim1Constructs, SIM1_SETB_ADVERSE, SIM1_SETB_LABELS } from "./api";
+import Collapsible from "./Collapsible";
 
 /**
  * Faculty debrief for Simulator 1 (Leadership Judgment — ANP Phoenix), Set-B.
@@ -70,18 +71,18 @@ export default function FacultySim1SetB({ simulationId }) {
       </p>
 
       {(data.classInsights || []).length > 0 && (
-        <div className="f-card" style={{ marginBottom: 14 }}>
-          <strong>Class-level insights</strong>
-          <ul style={{ margin: "8px 0 0", paddingLeft: 18 }}>
+        <Collapsible title="Class-level insights" defaultOpen>
+          <ul style={{ margin: 0, paddingLeft: 18 }}>
             {data.classInsights.map((s, i) => (
               <li key={i} className="f-note" style={{ marginBottom: 4 }}>
                 {s}
               </li>
             ))}
           </ul>
-        </div>
+        </Collapsible>
       )}
 
+      <Collapsible title="Teams" subtitle={`${teams.length} played`} defaultOpen>
       <div style={{ overflowX: "auto" }}>
         <table>
           <thead>
@@ -147,6 +148,7 @@ export default function FacultySim1SetB({ simulationId }) {
           </tbody>
         </table>
       </div>
+      </Collapsible>
     </div>
   );
 }
