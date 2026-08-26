@@ -209,8 +209,6 @@ export default function FacultyConsole() {
 
   const selectedRow = selected ? overview.find((r) => r.runId === selected.runId) : null;
   const simulationIds = [...new Set(overview.map((r) => r.simulationId))];
-  // The debrief/wiki need a simulation even before any team is live.
-  const focusSimId = simulationIds[0] || api.MERIDIAN_SIMULATION_ID;
 
   // Whole-class pause state per simulation, read off the live overview so one of
   // Pause-All / Resume-All can be greyed out to show the current status.
@@ -391,7 +389,7 @@ export default function FacultyConsole() {
               </button>
             </div>
             {debriefSim === "sim2" ? (
-              <FacultyDebrief simulationId={focusSimId} />
+              <FacultyDebrief simulationId={api.MERIDIAN_SIMULATION_ID} />
             ) : (
               <FacultySim1SetB simulationId={api.ANP_PHOENIX_SIMULATION_ID} />
             )}
@@ -400,7 +398,7 @@ export default function FacultyConsole() {
 
         {tab === "wiki" && (
           <div className="f-card">
-            <FacultyWiki simulationId={focusSimId} />
+            <FacultyWiki simulationId={api.MERIDIAN_SIMULATION_ID} />
           </div>
         )}
 
