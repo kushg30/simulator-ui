@@ -98,14 +98,12 @@ export default function FacultyConsole() {
     }
   }, [selected]);
 
-  // Keep a vertical scrollbar visible on the console — the debrief and live views run
-  // long, and a persistent gutter avoids layout shift as sections collapse/expand.
+  // Keep a clearly-visible vertical scrollbar on the console — the debrief and live
+  // views run long. A class on <html> forces overflow and a prominent scrollbar
+  // (the site's default track is transparent, so it disappears on the dark console).
   useEffect(() => {
-    const prev = document.documentElement.style.overflowY;
-    document.documentElement.style.overflowY = "scroll";
-    return () => {
-      document.documentElement.style.overflowY = prev;
-    };
+    document.documentElement.classList.add("faculty-scroll");
+    return () => document.documentElement.classList.remove("faculty-scroll");
   }, []);
 
   // Validate a stored token once on mount (a fresh tab has none, so nothing fires).

@@ -305,3 +305,17 @@
 .fac .f-collapse-sub { margin-left: 2px; font-weight: 400; }
 .fac .f-collapse-right { margin-left: auto; }
 .fac .f-collapse-body { padding: 14px 16px 16px; }
+
+/* ── prominent, always-present page scrollbar while the faculty console is open ── */
+/* (top-level selectors on purpose — activated only by the .faculty-scroll class the
+   console adds to <html>, so it never affects the marketing/sim pages.) */
+html.faculty-scroll { overflow-y: scroll; scrollbar-width: auto; scrollbar-color: #4d5b78 #10141c; }
+html.faculty-scroll::-webkit-scrollbar { width: 14px; }
+html.faculty-scroll::-webkit-scrollbar-track { background: #10141c; }
+html.faculty-scroll::-webkit-scrollbar-thumb {
+  background: #4d5b78;
+  border-radius: 7px;
+  border: 3px solid #10141c;
+  background-clip: content-box;
+}
+html.faculty-scroll::-webkit-scrollbar-thumb:hover { background: #64749a; background-clip: content-box; }
