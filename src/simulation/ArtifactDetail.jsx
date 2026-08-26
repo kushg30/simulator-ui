@@ -599,7 +599,7 @@ const ARTIFACT_COMPONENTS = {
 };
 
 // ─── Main export ─────────────────────────────────────────────────────────────
-export default function ArtifactDetail({ artifact, runId, participantId, refetch }) {
+export default function ArtifactDetail({ artifact, runId, participantId, refetch, onAction }) {
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState(null);
 
@@ -626,6 +626,12 @@ export default function ArtifactDetail({ artifact, runId, participantId, refetch
     : artifact.decisionOptions;
 
   const handleDecision = async (action) => {
+    // Demo mode: the parent handles the decision locally (no backend call).
+    if (onAction) {
+      onAction(artifact, action);
+      if (artifact.updateStatus) artifact.updateStatus(artifact.artifactId, "ACTED");
+      return;
+    }
     try {
       setLoading(true);
       setError(null);

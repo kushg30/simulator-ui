@@ -30,6 +30,7 @@ const simulators = [
     desc: "A firm detects early anomalies in its own systems before anyone has formally reported a problem. Six organizational roles – each with different information and different incentives – must decide what deserves attention before the moment passes.",
     icon: "🏛️",
     active: true,
+    demo: "/demo/sim1",
     duration: "2 hours",
     players: "6 players per team",
     rounds: "4 rounds",
@@ -409,7 +410,7 @@ export default function HomePage() {
 )}
 
               {sim.demo && (
-                <a href={sim.demo} className="sim-demo-link">Try a 2-minute sample round →</a>
+                <a href={sim.demo} className="sim-demo-link">Try a sample round →</a>
               )}
               </div>
             ))}

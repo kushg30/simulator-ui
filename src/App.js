@@ -22,8 +22,9 @@ import FacultyConsole from "./faculty/FacultyConsole";
 // Access gate — students must enter the facilitator's access code to reach a sim
 import SimGate from "./components/SimGate";
 
-// Public sample-round demo (no sign-in, no real backend) — a marketing tour
+// Public sample-round demos (no sign-in, no real backend) — marketing tours
 import DemoPage from "./demo/DemoPage";
+import DemoSim1Page from "./demo/DemoSim1Page";
 
 // ─────────────────────────────────────────────────────────────
 // Neural canvas — runs ONCE for the entire app lifetime.
@@ -138,6 +139,7 @@ export default function App() {
       {/* Public marketing homepage + sample-round demo — open to everyone. */}
       <Route path="/"               element={<HomePage />} />
       <Route path="/demo"           element={<DemoPage />} />
+      <Route path="/demo/sim1"      element={<DemoSim1Page />} />
 
       {/* ── Simulator 1 — ANP Phoenix (access-gated) ─────────────────── */}
       <Route path="/sim1"           element={<SimGate><ContextPage /></SimGate>} />
