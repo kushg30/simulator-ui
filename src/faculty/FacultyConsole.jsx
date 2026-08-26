@@ -87,8 +87,14 @@ export default function FacultyConsole() {
       setAuthed(true);
       setLog(await api.getActions(selected?.runId));
     } catch (e) {
-      if (e.status === 401) setAuthed(false);
-      else setError(e.message);
+      if (e.status === 401) {
+        // A rejected token must not persist, or it re-401s on every reload of the tab.
+        setAuthed(false);
+        api.clearToken();
+        setError("That token was rejected. Check the FACULTY_ACCESS_TOKEN value and try again.");
+      } else {
+        setError(e.message);
+      }
     }
   }, [selected]);
 

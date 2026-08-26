@@ -11,11 +11,13 @@ export const ANP_PHOENIX_SIMULATION_ID = "475db739-0708-48d4-b4db-5a23f1da50d9";
 const TOKEN_KEY = "facultyToken";
 
 export function getToken() {
-  return sessionStorage.getItem(TOKEN_KEY) || "";
+  return (sessionStorage.getItem(TOKEN_KEY) || "").trim();
 }
 
 export function setToken(token) {
-  sessionStorage.setItem(TOKEN_KEY, token);
+  // Trim: a pasted token often carries a trailing space/newline that would 401 an
+  // otherwise-correct token. Whitespace is never meaningful here.
+  sessionStorage.setItem(TOKEN_KEY, (token || "").trim());
 }
 
 export function clearToken() {
