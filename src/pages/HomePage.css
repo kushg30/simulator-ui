@@ -1307,3 +1307,16 @@ section {
   .voice-arrow.prev { left: 10px; }
   .voice-arrow.next { right: 10px; }
 }
+/* ── prominent, always-present page scrollbar on the homepage ───────────────── */
+/* (activated only by the .home-scroll class HomePage adds to <html>, so it never
+   affects the immersive simulation screens.) */
+html.home-scroll { overflow-y: scroll; scrollbar-width: auto; scrollbar-color: #6b7280 #12172a; }
+html.home-scroll::-webkit-scrollbar { width: 14px; }
+html.home-scroll::-webkit-scrollbar-track { background: #12172a; }
+html.home-scroll::-webkit-scrollbar-thumb {
+  background: #6b7280;
+  border-radius: 7px;
+  border: 3px solid #12172a;
+  background-clip: content-box;
+}
+html.home-scroll::-webkit-scrollbar-thumb:hover { background: #8b93a8; background-clip: content-box; }

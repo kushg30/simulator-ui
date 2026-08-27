@@ -163,6 +163,13 @@ export default function HomePage() {
     return () => clearInterval(id);
   }, [paused]);
 
+  // Keep a clearly-visible page scrollbar on the homepage — the site's default
+  // scrollbar has a transparent track that disappears on the dark background.
+  useEffect(() => {
+    document.documentElement.classList.add("home-scroll");
+    return () => document.documentElement.classList.remove("home-scroll");
+  }, []);
+
   // Warm the backend as soon as anyone lands on the site, so the first
   // create/join later in the flow doesn't pay the cold-start cost.
   useEffect(() => {
