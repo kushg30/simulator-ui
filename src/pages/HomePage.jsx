@@ -25,19 +25,19 @@ const steps = [
 
 const simulators = [
   {
-    title: "Judgement in a Crisis: The ANP Phoenix Case",
+    title: "When Can You Trust Your AI? The ANP Phoenix Case",
     status: "LIVE",
-    desc: "A firm detects early anomalies in its own systems before anyone has formally reported a problem. Six organizational roles – each with different information and different incentives – must decide what deserves attention before the moment passes.",
-    icon: "🏛️",
+    desc: "A regulated fintech has staked its reputation on a GenAI system embedded in fraud detection and client reporting. When its outputs start drifting in ways no one can fully explain, six executives — each with different information and incentives — must decide what deserves attention, and who has the authority to say an AI's output can't yet be trusted, before failure becomes visible.",
+    icon: "🤖",
     active: true,
     demo: "/demo/sim1",
     duration: "2 hours",
     players: "6 players per team",
     rounds: "4 rounds",
     tags: [
-      "Organizational Behavior",
-      "Corporate Governance",
-      "Leadership"
+      "Responsible AI",
+      "AI Governance",
+      "Leadership Judgment"
     ]
   },
   {

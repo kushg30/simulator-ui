@@ -34,7 +34,7 @@ const SCENARIO = [
     payload: {
       from: "Priya Nair, Chief Risk Officer",
       title: "Preliminary Risk Note — for awareness",
-      body: "Routine monitoring has surfaced small, unexplained discrepancies in the reconciliation logs of our new analytics feature. The differences are statistically minor, have caused no customer impact, and breach no policy threshold. Engineering reads it as edge-case behaviour; Operations notes similar alerts have resolved on their own before. No one is asking for a fix — only for a view on whether this deserves the leadership team's attention. Two enterprise onboardings are in their final week, and a routine regulatory review is six weeks out.",
+      body: "Routine monitoring has surfaced a small number of cases where Lumen — our GenAI system embedded in fraud screening and client reporting — produced anomaly classifications and explanations that can't be fully traced back to the underlying data. The pattern is statistically minor, has caused no customer impact, and breaches no policy threshold. Engineering reads it as edge-case model behaviour; Operations notes similar model-confidence flags have resolved on their own before. Teams don't even share a definition of when an \"AI inaccuracy\" becomes a \"hallucination.\" No one is asking for a model rollback — only for a view on whether this deserves the leadership team's attention. Two enterprise onboardings that cite Lumen by name are in their final week, and a routine AI-governance review is six weeks out.",
       inner_voice: "Nothing here forces a decision. That's exactly what makes it one.",
     },
   },
@@ -42,17 +42,17 @@ const SCENARIO = [
     id: "slack", artifactType: "EXCERPT", tab: "excerpts", revealAt: 8, actionState: "OPEN",
     decisionId: "d-slack",
     decisionOptions: [
-      { id: "flag", label: "Flag for deeper investigation", lean: 1 },
+      { id: "flag", label: "Flag for deeper model investigation", lean: 1 },
       { id: "monitor", label: "Tag as known issue (monitor)", lean: -1 },
       { id: "untagged", label: "Leave untagged", lean: -1 },
     ],
     payload: {
-      channel: "#data-integrity", department: "Engineering",
+      channel: "#lumen-integrity", department: "ML Engineering",
       messages: [
-        { author: "Sam Okafor", time: "09:14", text: "The patterns aren't random. Still small, but I can't explain them cleanly." },
-        { author: "Lena Fischer", time: "09:16", text: "If we dig deeper we might not like what we find — and we're a week from launch." },
+        { author: "Sam Okafor", time: "09:14", text: "Lumen's confidence scores aren't matching its explanations. Still small, but I can't explain it cleanly." },
+        { author: "Lena Fischer", time: "09:16", text: "If we dig into why the model is doing this, we might not like what we find — and we're a week from launch." },
       ],
-      inner_voice: "Push for a deeper look and I risk being the alarmist with no proof.",
+      inner_voice: "Push for a deeper look and I risk being the alarmist who says the model shipped too fast, with no proof.",
     },
   },
   {
@@ -63,10 +63,10 @@ const SCENARIO = [
       { id: "continue", label: "Continue the rollout", lean: -1 },
     ],
     payload: {
-      from: "Operations", title: "Rollout status — analytics feature",
-      dashboard: { rollout: "ON TRACK", manual_checks: "UP 12%", red_indicators: false },
-      body: "Rollout is proceeding on schedule. Manual reconciliation checks are up slightly this week. No red indicators have tripped.",
-      inner_voice: "Pausing mid-rollout creates operational debt someone will remember.",
+      from: "Operations", title: "Lumen — rollout status",
+      dashboard: { rollout: "GREEN", manual_checks: "AMBER", red_indicators: false },
+      body: "Lumen uptime is green. The manual override queue is amber — up slightly this week. No client-facing incidents logged.",
+      inner_voice: "Pausing a Lumen-dependent workflow mid-rollout creates operational debt someone will remember.",
     },
   },
   {
@@ -79,20 +79,20 @@ const SCENARIO = [
     ],
     payload: {
       title: "A reporter just emailed",
-      body: "A technology reporter has asked your comms lead whether Vantage is “aware of reconciliation issues” in its analytics product, and wants a response by end of day.",
+      body: "A technology reporter has asked your comms lead whether Vantage is “aware of reliability issues” in its Lumen AI product, and wants a response by end of day.",
     },
   },
   {
     id: "meeting", artifactType: "MEETING_INVITE", tab: "meetings", revealAt: 44, actionState: "OPEN",
     decisionId: "d-meeting",
     decisionOptions: [
-      { id: "review", label: "Attend the Anomaly Review", lean: 1 },
-      { id: "client", label: "Attend the Client call", lean: -1 },
+      { id: "review", label: "Attend the Lumen anomaly review", lean: 1 },
+      { id: "client", label: "Attend the client go-live call", lean: -1 },
     ],
     payload: {
       title: "Two meetings just collided",
-      meeting_a: "Anomaly Review — Risk & Engineering",
-      meeting_b: "Enterprise client — final onboarding call",
+      meeting_a: "Lumen anomaly review — Risk & ML Engineering",
+      meeting_b: "Enterprise client — Lumen go-live call",
     },
   },
   {
@@ -106,7 +106,7 @@ const SCENARIO = [
     payload: {
       is_final_round_decision: true,
       title: "The room turns to you",
-      body: "Discussion has run its course. As CEO, how do you frame this for the organisation — the one signal everyone takes their cue from?",
+      body: "Discussion has run its course. As CEO, how do you frame Lumen's behaviour for the organisation — the one signal everyone takes their cue from?",
     },
   },
 ];
@@ -116,8 +116,8 @@ const DIAGNOSTIC = {
   id: "diag", artifactType: "DIAGNOSTIC_NOTE", tab: "inbox", actionState: "READ_ONLY",
   payload: {
     from: "Internal Systems", title: "Diagnostic summary — extended logging", conditional: true,
-    body: "Deeper logging is enabled. Early results suggest the anomalies cluster around a specific class of edge-case transactions. No evidence of systemic failure yet, but the pattern is real and worth understanding before launch.",
-    inner_voice: "The more we look, the more real it becomes.",
+    body: "Deeper logging is enabled. Early results suggest Lumen's anomalies cluster around a specific class of edge-case transactions where its explanation doesn't match its own classification. No evidence of systemic model failure yet, but the pattern is real and worth understanding before launch.",
+    inner_voice: "The more we look at the model, the more real it becomes.",
   },
 };
 
@@ -212,15 +212,16 @@ export default function DemoSim1Page() {
           </div>
           <div className="demo-card demo-intro">
             <div className="demo-eyebrow">Leadership Judgment Simulation · a 1-minute taste</div>
-            <h1>What deserves attention — before failure is visible?</h1>
+            <h1>When can you trust what your AI just told you?</h1>
             <p>
-              In the full simulation, six executives read the same ambiguous signal and, over 30 minutes,
-              decide together what to escalate, what to frame, and what to let pass. Here's <b>one round</b>,
-              on a sample company, sped up so you can feel how it plays.
+              In the full simulation, six executives read the same ambiguous signal about a production
+              GenAI system and, over 30 minutes, decide together what to escalate, what to frame, and what
+              to let pass. Here's <b>one round</b>, on a sample company, sped up so you can feel how it plays.
             </p>
             <p className="demo-role">
-              You are the <b>CEO</b> of <b>Vantage Labs</b>. A quiet anomaly has surfaced days before a major
-              client launch. Artifacts will arrive on their own — read them, and make the calls.
+              You are the <b>CEO</b> of <b>Vantage Labs</b>. Your GenAI system, <b>Lumen</b>, has started
+              producing outputs no one can fully explain — days before a major client launch. Artifacts will
+              arrive on their own — read them, and make the calls.
             </p>
             <button
               className="demo-btn"
