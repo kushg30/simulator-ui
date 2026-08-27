@@ -156,9 +156,14 @@ function MessageArtifact({ artifact, payload, options, onDecide, loading, error 
 // ─────────────────────────────────────────────────────────────────────────────
 function EmailArtifact({ artifact, payload }) {
   const bodyText = payload?.body || "";
-  const formattedBody = `Hi Team,\n\n${bodyText}\n\nRegards,\n${payload?.from || ""}`;
+  // Only formal emails (those with a sender address) get the greeting/sign-off wrapper;
+  // policy excerpts and internal notes render their body as-is.
+  const isEmail = Boolean(payload?.from_email);
+  const formattedBody = isEmail
+    ? `Hi Team,\n\n${bodyText}\n\nRegards,\n${payload?.from || ""}`
+    : bodyText;
   const paragraphs = formattedBody.split("\n\n").filter((p) => p.trim());
-  const initials = (payload?.from || "CR").split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2);
+  const initials = (payload?.from || "AP").split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2);
 
   return (
     <div className="mail-viewer">
@@ -183,14 +188,16 @@ function EmailArtifact({ artifact, payload }) {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
               <div>
                 <span className="email-from-name">{payload?.from}</span>
-                <span className="email-from-addr">&lt;{payload?.from_email}&gt;</span>
+                {payload?.from_email && <span className="email-from-addr">&lt;{payload.from_email}&gt;</span>}
               </div>
-              <span className="email-sent-time">{payload?.sent_at}</span>
+              {payload?.sent_at && <span className="email-sent-time">{payload.sent_at}</span>}
             </div>
-            <div className="email-to-line">To: {payload?.to}</div>
+            {payload?.to && <div className="email-to-line">To: {payload.to}</div>}
           </div>
         </div>
-        <span className="email-prelim-tag">Preliminary — Not for Circulation</span>
+        {payload?.classification && (
+          <span className="email-prelim-tag">{payload.classification}</span>
+        )}
       </div>
 
       {/* Body */}
@@ -214,8 +221,8 @@ function EmailArtifact({ artifact, payload }) {
       {/* Signature */}
       <div className="email-signature">
         <div style={{ fontWeight: 600, color: "var(--text-secondary)" }}>{payload?.from}</div>
-        <div>Chief Risk Officer · ANP Phoenix</div>
-        <div>{payload?.from_email}</div>
+        <div>{payload?.org || "ANP Phoenix"}</div>
+        {payload?.from_email && <div>{payload.from_email}</div>}
       </div>
     </div>
   );
