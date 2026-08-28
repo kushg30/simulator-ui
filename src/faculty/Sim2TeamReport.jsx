@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom";
 import { CONSTRUCT_LABELS, CONSTRUCT_ORDER } from "./api";
 
 // Fixed Meridian round titles (not carried in the debrief payload).
@@ -109,7 +110,7 @@ export default function Sim2TeamReport({ team, leaderboard, simulationName, onCl
     window.print();
   };
 
-  return (
+  return createPortal(
     <div className="rpt-scrim" onClick={onClose}>
       <div className="rpt-toolbar" onClick={(e) => e.stopPropagation()}>
         <span>Report · {team.teamName}</span>
@@ -249,6 +250,7 @@ export default function Sim2TeamReport({ team, leaderboard, simulationName, onCl
           This report shows <b>what to revisit</b>; your facilitator walks through the correct answers in the live debrief. © CaseRun.
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

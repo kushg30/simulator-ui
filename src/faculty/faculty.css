@@ -291,11 +291,15 @@
   /* margin: 0 removes the browser's own header/footer (date, page title "React App",
      the caserun.in/faculty URL, page numbers); the report's own padding keeps content off the edge. */
   @page { margin: 0; }
-  body * { visibility: hidden !important; }
-  .rpt-scrim, .rpt-scrim * { visibility: visible !important; }
-  .rpt-scrim { position: absolute; inset: 0; background: #fff; padding: 0; overflow: visible; }
+  /* The report is portaled to <body>. Hide the rest of the app entirely (not just
+     visibility:hidden, which keeps the tall console's height and prints blank pages)
+     and put the report in normal flow so page count follows the report alone. */
+  body > *:not(.rpt-scrim) { display: none !important; }
+  .rpt-scrim { position: static !important; inset: auto; background: #fff; padding: 0; overflow: visible !important; }
   .rpt-toolbar { display: none !important; }
-  .rpt-sheet { max-width: none; margin: 0; box-shadow: none; border-radius: 0; }
+  .rpt-sheet { max-width: none; margin: 0; box-shadow: none; border-radius: 0; overflow: visible; }
+  /* keep small units intact across page breaks */
+  .rpt-bar-row, .rpt-gloss, .rpt-roster-item, .rpt-panel, .rpt-table tr { break-inside: avoid; }
 }
 
 /* ── collapsible section panels ─────────────────────────────────────────────── */
