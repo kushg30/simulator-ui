@@ -97,12 +97,24 @@ export default function Sim2TeamReport({ team, leaderboard, simulationName, onCl
   const when = (ts) =>
     ts ? new Date(ts).toLocaleDateString([], { day: "numeric", month: "short", year: "numeric" }) : "—";
 
+  // Print/Save-as-PDF: rename the document so the saved file is meaningful (and the
+  // browser's print header shows this instead of "React App"); restore it afterwards.
+  const printReport = () => {
+    const safe = (s) => (s || "").trim().replace(/[^\w]+/g, "_").replace(/^_+|_+$/g, "");
+    const simLabel = /meridian/i.test(simulationName || "") ? "Meridian_QBR" : safe(simulationName) || "Simulation";
+    const prev = document.title;
+    document.title = `${safe(team.teamName) || "Team"}_${simLabel}_Report`;
+    const restore = () => { document.title = prev; };
+    window.addEventListener("afterprint", restore, { once: true });
+    window.print();
+  };
+
   return (
     <div className="rpt-scrim" onClick={onClose}>
       <div className="rpt-toolbar" onClick={(e) => e.stopPropagation()}>
         <span>Report · {team.teamName}</span>
         <div>
-          <button onClick={() => window.print()}>Print / Save as PDF</button>
+          <button onClick={printReport}>Print / Save as PDF</button>
           <button className="f-ghost" onClick={onClose}>Close</button>
         </div>
       </div>

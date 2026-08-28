@@ -288,6 +288,9 @@
 .rpt-foot { padding: 20px 44px 30px; border-top: 1px solid #e7e3d8; color: #8b93a3; font-size: 11px; line-height: 1.6; }
 .rpt-foot b { color: #5b6577; }
 @media print {
+  /* margin: 0 removes the browser's own header/footer (date, page title "React App",
+     the caserun.in/faculty URL, page numbers); the report's own padding keeps content off the edge. */
+  @page { margin: 0; }
   body * { visibility: hidden !important; }
   .rpt-scrim, .rpt-scrim * { visibility: visible !important; }
   .rpt-scrim { position: absolute; inset: 0; background: #fff; padding: 0; overflow: visible; }
