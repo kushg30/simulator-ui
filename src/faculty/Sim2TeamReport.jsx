@@ -9,6 +9,42 @@ const ROUND_TITLES = {
   5: "Board Synthesis",
 };
 
+const ROLE_LABELS = {
+  TEAM_LEAD: "Team Lead",
+  DATA_QUALITY_ANALYST: "Data Quality Analyst",
+  CATEGORY_REGIONAL_ANALYST: "Diagnostics Analyst",
+  REPORTING_DASHBOARD_ANALYST: "Automation Analyst",
+  PEOPLE_ANALYTICS_ASSOCIATE: "Visualization Analyst",
+};
+const ROLE_ORDER = [
+  "TEAM_LEAD", "DATA_QUALITY_ANALYST", "CATEGORY_REGIONAL_ANALYST",
+  "REPORTING_DASHBOARD_ANALYST", "PEOPLE_ANALYTICS_ASSOCIATE",
+];
+
+// Plain-language explanation of each construct + why it matters — no scoring logic disclosed.
+const CONSTRUCT_GLOSSARY = {
+  DATA_TRUST_SCORE: {
+    what: "How defensible your numbers were end to end — whether the figures you put in front of the Board could be traced back and relied on.",
+    why: "An early data-quality miss compounds: later rounds build on those numbers, so trust lost in Round 1 quietly follows the team to the Board.",
+  },
+  ANALYTICAL_RIGOR: {
+    what: "The depth and correctness of your analysis across the rounds — whether you reached the right answer and could show the working behind it.",
+    why: "This is the engine of the exercise. Weak rigor undermines every downstream claim, however well it is presented.",
+  },
+  INSIGHT_COMMUNICATION: {
+    what: "How clearly your Round-5 synthesis turned analysis into a recommendation a non-technical Board could actually act on.",
+    why: "Strong analysis still fails if it can't be communicated. This is where insight becomes a decision.",
+  },
+  JUDGMENT_CALIBRATION: {
+    what: "How well your stated confidence matched your actual correctness — being sure when right, and appropriately cautious when uncertain.",
+    why: "Confidence when wrong erodes credibility; hesitation when right wastes it. Boards trust leaders whose confidence tracks the evidence.",
+  },
+  TURNAROUND_DISCIPLINE: {
+    what: "Your decisiveness against the clock — reaching defensible answers within each round's time rather than perfect answers too late.",
+    why: "In a real QBR, a sound answer delivered on time beats a flawless one produced after the meeting.",
+  },
+};
+
 // Student-facing coaching per graded field — names the dimension to revisit WITHOUT
 // revealing the canonical answer (the facilitator reveals exact answers in the debrief).
 const COACHING = {
@@ -87,6 +123,22 @@ export default function Sim2TeamReport({ team, leaderboard, simulationName, onCl
           </div>
         </div>
 
+        {team.participants && team.participants.length > 0 && (
+          <div className="rpt-pad rpt-block">
+            <div className="rpt-label">Team roster</div>
+            <div className="rpt-roster">
+              {[...team.participants]
+                .sort((a, b) => ROLE_ORDER.indexOf(a.role) - ROLE_ORDER.indexOf(b.role))
+                .map((p, i) => (
+                  <div className="rpt-roster-item" key={i}>
+                    <span className="rpt-roster-name">{p.name || "—"}</span>
+                    <span className="rpt-roster-role">{ROLE_LABELS[p.role] || p.role}</span>
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
+
         <div className="rpt-pad rpt-block">
           <div className="rpt-label">Leadership construct profile</div>
           {CONSTRUCT_ORDER.map((c) => {
@@ -105,6 +157,17 @@ export default function Sim2TeamReport({ team, leaderboard, simulationName, onCl
               </div>
             );
           })}
+        </div>
+
+        <div className="rpt-pad rpt-block">
+          <div className="rpt-label">What the five constructs mean</div>
+          {CONSTRUCT_ORDER.map((c) => (
+            <div className="rpt-gloss" key={c}>
+              <div className="rpt-gloss-name">{CONSTRUCT_LABELS[c]}</div>
+              <div className="rpt-gloss-what">{CONSTRUCT_GLOSSARY[c].what}</div>
+              <div className="rpt-gloss-why"><b>Why it matters:</b> {CONSTRUCT_GLOSSARY[c].why}</div>
+            </div>
+          ))}
         </div>
 
         <div className="rpt-pad rpt-block">
