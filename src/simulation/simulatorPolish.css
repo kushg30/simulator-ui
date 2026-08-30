@@ -178,6 +178,66 @@
   margin-top: 14px; font-size: 14px; color: #9aa4bd; letter-spacing: 0.02em;
 }
 
+/* ---- post-round debrief interstitial (1.10) ------------------------------- */
+.round-transition-inner.interstitial {
+  max-width: 640px; padding: 0 28px; text-align: center;
+}
+.interstitial-framing-label,
+.interstitial-prompt-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; letter-spacing: 0.24em; text-transform: uppercase;
+  color: #6b7494; margin: 22px 0 8px;
+}
+.interstitial-framing {
+  font-size: clamp(22px, 3.4vw, 34px); font-weight: 700; letter-spacing: 0.01em;
+  color: #eef1f8; line-height: 1.25;
+}
+.interstitial-framing.missed { color: #f2a04c; font-style: italic; font-weight: 600; }
+.interstitial-prompt {
+  font-size: 15px; line-height: 1.6; color: #c3cbe0;
+  border-left: 2px solid rgba(99, 102, 241, 0.6);
+  padding-left: 16px; text-align: left; margin: 0 auto; max-width: 560px;
+}
+.interstitial-continue {
+  margin-top: 30px;
+  background: linear-gradient(120deg, #3b82f6, #6366f1);
+  color: #fff; border: none; border-radius: 999px;
+  padding: 12px 28px; font-size: 14px; font-weight: 600; letter-spacing: 0.02em;
+  cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 8px 30px rgba(59, 130, 246, 0.35);
+}
+.interstitial-continue:hover { transform: translateY(-1px); box-shadow: 0 10px 36px rgba(59, 130, 246, 0.5); }
+
+/* ---- News interrupt overlay (1.2) ----------------------------------------- */
+.news-overlay {
+  position: fixed; inset: 0; z-index: 80;
+  display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(120% 100% at 50% 40%, rgba(30, 6, 8, 0.9), rgba(6, 3, 4, 0.97));
+  backdrop-filter: blur(12px);
+  animation: rt-fade 0.35s ease both;
+}
+.news-inner {
+  max-width: 680px; padding: 0 32px; text-align: center;
+  animation: rt-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.news-kicker {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px; letter-spacing: 0.3em; text-transform: uppercase;
+  color: #ff5a5f; margin-bottom: 18px; animation: news-pulse 1.4s ease-in-out infinite;
+}
+@keyframes news-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+.news-headline {
+  font-size: clamp(26px, 4vw, 44px); font-weight: 800; letter-spacing: 0.01em;
+  color: #fff; line-height: 1.2;
+}
+.news-body {
+  margin-top: 18px; font-size: 16px; line-height: 1.6; color: #e4d3d4;
+}
+.news-foot {
+  margin-top: 26px; font-size: 13px; color: #b98a8c; letter-spacing: 0.04em;
+  font-family: "IBM Plex Mono", monospace;
+}
+
 /* ---- selection colour ------------------------------------------------------*/
 ::selection { background: rgba(59, 130, 246, 0.3); color: #fff; }
 

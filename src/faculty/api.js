@@ -100,6 +100,12 @@ export const revertConstruct = (runId, construct, actor) =>
 export const broadcastBreakingNews = (simulationId, message, actor) =>
   post(`/sim2/simulations/${simulationId}/broadcast`, { message, actor });
 
+// ── Simulator 1 News interrupt (1.2) — full-screen to the class, brief timer pause ──
+export const postSim1News = (runId, headline, body, pauseSeconds, actor) =>
+  post(`/runs/${runId}/news`, { headline, body, pauseSeconds, actor });
+export const postSim1NewsAll = (simulationId, headline, body, pauseSeconds, actor) =>
+  post(`/simulations/${simulationId}/news-all`, { headline, body, pauseSeconds, actor });
+
 // ── Simulator 1 debrief (Set-A hidden variables, faculty-only) ──────────────
 export const getSim1Debrief = (simulationId) =>
   call(`/sim1/simulations/${simulationId}/debrief`);

@@ -648,7 +648,7 @@ export default function ArtifactDetail({ artifact, runId, participantId, refetch
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ participantId, decisionId: artifact.decisionId, action }),
       });
-      if (!res.ok) throw new Error("Decision failed");
+      if (!res.ok) throw new Error("Couldn't record that — please try again.");
       await refetch();
       if (artifact.updateStatus) artifact.updateStatus(artifact.artifactId, "ACTED");
     } catch (err) {

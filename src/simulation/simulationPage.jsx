@@ -66,6 +66,31 @@ const ROLE_DISPLAY = {
   PRODUCT: "Head of Product",
 };
 
+// Post-round interstitial content (script 1.10 + Section 8): each round's title and one open
+// discussion prompt tagged to it. Shown after that round's final decision, before the next unlocks.
+const ROUND_META = {
+  1: {
+    title: "Weak Signal, Strong Incentives",
+    prompt:
+      "Compare CEO framings across teams. What made “operational noise” feel defensible to some teams and not others, given the same GenAI risk information?",
+  },
+  2: {
+    title: "When Ambiguity Becomes Discussable",
+    prompt:
+      "Did the team converge on a framing because the evidence supported it, or because disagreement felt costly? Who spoke first, and did that shape the outcome?",
+  },
+  3: {
+    title: "When Alignment Meets Exposure",
+    prompt:
+      "Whose interests were you protecting on the board agenda — the board’s, the regulator’s, or your own credibility? Name the trade-off explicitly.",
+  },
+  4: {
+    title: "Institutional Memory",
+    prompt:
+      "Was the whistle-channel inquiry treated as a data point or a threat? What does that reveal about the AI culture your team built over three prior rounds?",
+  },
+};
+
 // ─────────────────────────────────────────────────────────────
 // Main Component
 // ─────────────────────────────────────────────────────────────
@@ -90,8 +115,10 @@ export default function SimulationPage() {
   const firedThresholds = useRef(new Set());
 
   // ── round state: number, per-round start time, total, completion ──────────
-  const [round,       setRound]       = useState(null); // { roundNumber, startedAt, totalRounds }
-  const [transition,  setTransition]  = useState(null); // shows "Round N begins" briefly
+  const [round,        setRound]        = useState(null); // { roundNumber, startedAt, totalRounds }
+  const [pausedSeconds, setPausedSeconds] = useState(0);  // faculty pause + News slide (1.2)
+  const [news,         setNews]         = useState(null); // active News interrupt (1.2)
+  const [interstitial, setInterstitial] = useState(null); // post-round debrief screen (1.10)
 
   useEffect(() => {
     if (!runId) return;
@@ -102,13 +129,38 @@ export default function SimulationPage() {
         if (!res.ok) return;
         const s = await res.json();
         if (s.completed) {
+          // If the last round was still on screen, show its interstitial before the reveal.
           navigate(`/results?runId=${runId}`);
           return;
         }
         setRound(s);
+        setPausedSeconds(s.pausedSeconds || 0);
+        setNews(s.news || null);
+        // Round advanced: show the just-completed round's debrief interstitial (1.10).
         if (prev !== null && s.roundNumber > prev) {
-          setTransition(s.roundNumber);
-          setTimeout(() => setTransition(null), 2600);
+          const completed = prev;
+          try {
+            const sumRes = await fetch(
+              `${API_BASE}/api/runs/${runId}/rounds/${completed}/summary`
+            );
+            const summary = sumRes.ok ? await sumRes.json() : {};
+            setInterstitial({
+              roundNumber: completed,
+              nextRound: s.roundNumber,
+              title: ROUND_META[completed]?.title,
+              prompt: ROUND_META[completed]?.prompt,
+              framing: summary.framing,
+              submitted: summary.submitted !== false,
+            });
+          } catch {
+            setInterstitial({
+              roundNumber: completed,
+              nextRound: s.roundNumber,
+              title: ROUND_META[completed]?.title,
+              prompt: ROUND_META[completed]?.prompt,
+              submitted: true,
+            });
+          }
         }
         prev = s.roundNumber;
       } catch {
@@ -228,7 +280,7 @@ export default function SimulationPage() {
           action,
         }),
       });
-      if (!res.ok) throw new Error("failed");
+      if (!res.ok) throw new Error("Couldn't record that — please try again.");
       await refetch();
       updateStatus(activeFlash.artifactId, "ACTED");
       setTimeout(() => {
@@ -249,8 +301,10 @@ export default function SimulationPage() {
   };
 
   // The timer COUNTS DOWN from the round's duration. Amber under 5 min, red under 1 min.
+  // Pause-aware: faculty pause and a News interrupt (1.2) add pausedSeconds, so the clock freezes
+  // while the schedule is held rather than ticking through the pause.
   const durationSeconds = (round?.durationMinutes || 30) * 60;
-  const remaining = Math.max(0, durationSeconds - simSeconds);
+  const remaining = Math.max(0, durationSeconds - simSeconds + pausedSeconds);
   const timerClass = remaining <= 60 ? "critical" : remaining <= 300 ? "warn" : "";
 
   // Fire a brief on-screen flash as the round nears its end (5 min, then 1 min left).
@@ -298,12 +352,45 @@ export default function SimulationPage() {
 
       {timeFlash && <div className="round-time-flash">⏳ {timeFlash}</div>}
 
-      {transition && (
+      {news && (
+        <div className="news-overlay" role="alertdialog" aria-label="Breaking news">
+          <div className="news-inner">
+            <div className="news-kicker">● BREAKING NEWS</div>
+            <div className="news-headline">{news.headline}</div>
+            {news.body && <div className="news-body">{news.body}</div>}
+            <div className="news-foot">
+              The round timer is paused
+              {news.secondsLeft > 0 ? ` — resuming in ${news.secondsLeft}s` : ""}.
+            </div>
+          </div>
+        </div>
+      )}
+
+      {interstitial && (
         <div className="round-transition">
-          <div className="round-transition-inner">
-            <div className="round-transition-eyebrow">Previous round locked</div>
-            <div className="round-transition-title">Round {transition}</div>
-            <div className="round-transition-sub">A new timeline begins. The clock resets.</div>
+          <div className="round-transition-inner interstitial">
+            <div className="round-transition-eyebrow">
+              Round {interstitial.roundNumber} complete
+              {interstitial.title ? ` · ${interstitial.title}` : ""}
+            </div>
+            <div className="interstitial-framing-label">The CEO’s framing</div>
+            <div
+              className={`interstitial-framing${interstitial.submitted ? "" : " missed"}`}
+            >
+              {interstitial.framing || "—"}
+            </div>
+            {interstitial.prompt && (
+              <>
+                <div className="interstitial-prompt-label">To discuss</div>
+                <div className="interstitial-prompt">{interstitial.prompt}</div>
+              </>
+            )}
+            <button
+              className="interstitial-continue"
+              onClick={() => setInterstitial(null)}
+            >
+              Continue to Round {interstitial.nextRound} →
+            </button>
           </div>
         </div>
       )}

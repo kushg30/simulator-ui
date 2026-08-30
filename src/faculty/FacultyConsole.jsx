@@ -70,6 +70,10 @@ export default function FacultyConsole() {
   const [injScored, setInjScored] = useState(false);
   const [injAnswer, setInjAnswer] = useState("");
 
+  // Sim 1 News interrupt (1.2)
+  const [newsHeadline, setNewsHeadline] = useState("");
+  const [newsBody, setNewsBody] = useState("");
+
   const report = (message, isError) => {
     if (isError) {
       setError(message);
@@ -475,6 +479,56 @@ export default function FacultyConsole() {
               }
             >
               Send Breaking News
+            </button>
+          </div>
+        </Collapsible>
+
+        {/* ── Sim 1 News interrupt (1.2) ──────────────────────────────── */}
+        <Collapsible title="News interrupt — Simulator 1 (ANP Phoenix)" subtitle="full-screen to the class, brief timer pause">
+          <p className="f-note">
+            Pushes a full-screen external-news modal to every role, and <strong>pauses the round
+            timer ~25 seconds</strong> while it's up. It leaves no Inbox entry — it's an ambient
+            interrupt, not an artifact. Use it any round, any time, to inject external pressure.
+          </p>
+          <label htmlFor="f-news-head">Headline</label>
+          <input
+            id="f-news-head"
+            type="text"
+            value={newsHeadline}
+            placeholder="e.g. Regulator opens inquiry into AI-driven fraud tools"
+            onChange={(e) => setNewsHeadline(e.target.value)}
+          />
+          <label htmlFor="f-news-body">Detail (optional)</label>
+          <input
+            id="f-news-body"
+            type="text"
+            value={newsBody}
+            placeholder="one or two lines of context"
+            onChange={(e) => setNewsBody(e.target.value)}
+          />
+          <div className="f-row" style={{ marginTop: 12 }}>
+            <button
+              className="f-warn"
+              onClick={() =>
+                act(
+                  () => api.postSim1NewsAll(api.ANP_PHOENIX_SIMULATION_ID, newsHeadline, newsBody, 25, actor),
+                  "News interrupt sent to all Simulator 1 teams"
+                )
+              }
+            >
+              Send to all Sim 1 teams
+            </button>
+            <button
+              className="f-ghost"
+              disabled={!selected || selected.simulationId !== api.ANP_PHOENIX_SIMULATION_ID}
+              onClick={() =>
+                act(
+                  () => api.postSim1News(selected.runId, newsHeadline, newsBody, 25, actor),
+                  `News interrupt sent to ${selected?.teamName || "the selected team"}`
+                )
+              }
+            >
+              Send to selected team
             </button>
           </div>
         </Collapsible>
