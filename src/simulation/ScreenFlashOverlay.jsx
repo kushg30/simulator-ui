@@ -44,7 +44,7 @@ export default function ScreenFlashOverlay({
     if (isInfoOnly) {
       return (
         <button className="flash-dismiss" onClick={onDismiss}>
-          Acknowledged →
+          Acknowledge →
         </button>
       );
     }
@@ -109,7 +109,7 @@ export default function ScreenFlashOverlay({
     // Fallback dismiss
     return (
       <button className="flash-dismiss" onClick={onDismiss}>
-        Acknowledged →
+        Acknowledge →
       </button>
     );
   };

@@ -31,8 +31,8 @@ The question confronting leadership is not technical. It is interpretive: how mu
 
   roleDescriptions: {
     CEO: "Your credibility is still forming, and this Board increasingly asks about AI, not just revenue.",
-    CFO: "Missing guidance would materially affect market confidence in the AI growth story you've been telling investors.",
-    CHRO: "Repeated non-escalation teaches people what “responsible AI” really means in practice, not on a slide.",
+    CFO: "If you stay quiet now and this becomes a problem later, it will look like you saw it coming and said nothing to investors.",
+    CHRO: "Every time a concern about Sentinel goes unescalated, people learn that “responsible AI” is something the company says, not something it does.",
     "Head of Engineering": "Technically, this is not yet a confirmed model defect — but narratives about Sentinel's reliability harden quickly.",
     "Head of Operations": "Pausing Sentinel-dependent workflows mid-rollout creates operational debt.",
     "Head of Product": "The GenAI growth story depends on uninterrupted adoption signals."

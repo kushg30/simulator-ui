@@ -25,9 +25,10 @@ function DocHeaderStrip({ type, actionState }) {
     actionState === "ACTED" ? "acted"   :
     expired                 ? "expired" : "open";
 
+  // Per script 1.3: the category tab already communicates the artifact type, so we no
+  // longer show a per-item sub-type tag ("Memo", "Internal Note", …) — only the status.
   return (
     <div className="doc-header-strip">
-      <span className="doc-type-tag">{type}</span>
       <span className={`doc-status-tag ${statusClass}`}>{statusLabel}</span>
     </div>
   );
@@ -169,9 +170,9 @@ function EmailArtifact({ artifact, payload }) {
     <div className="mail-viewer">
       <DocHeaderStrip type="Internal Note" actionState={artifact.actionState} />
 
-      {/* Email chrome */}
+      {/* Email chrome (no dev-mode "Read-only · Simulation" badge — script 5.3) */}
       <div className="email-topbar">
-        <span className="email-topbar-label">Read-only · Simulation artifact</span>
+        <span className="email-topbar-label" />
         <div className="email-topbar-actions">
           {["Reply", "Reply All", "Forward"].map((a) => (
             <button key={a}>{a}</button>

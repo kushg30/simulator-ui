@@ -56,6 +56,16 @@ const TABS = [
   { id: "decisions", icon: "⚖️", label: "Decisions" },
 ];
 
+// Canonical role display strings — never truncate "Head of Operations"/"Head of Product".
+const ROLE_DISPLAY = {
+  CEO: "CEO",
+  CFO: "CFO",
+  CHRO: "CHRO",
+  HEAD_OF_ENGINEERING: "Head of Engineering",
+  OPERATIONS: "Head of Operations",
+  PRODUCT: "Head of Product",
+};
+
 // ─────────────────────────────────────────────────────────────
 // Main Component
 // ─────────────────────────────────────────────────────────────
@@ -311,7 +321,7 @@ export default function SimulationPage() {
 
       <div className="top-bar">
         <div className="top-left role-label">
-          Role:&nbsp;<span className="role-value">{role}</span>
+          Role:&nbsp;<span className="role-value">{ROLE_DISPLAY[role] || role}</span>
         </div>
         <div className="top-center">
           <div className="app-title">Leadership Simulator</div>
