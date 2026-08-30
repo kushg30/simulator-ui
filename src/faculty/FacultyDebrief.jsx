@@ -20,7 +20,11 @@ function DataTrustSpark({ finalValue, dropRounds, rounds = 5 }) {
   const pad = 10;
   const drops = Array.isArray(dropRounds) ? dropRounds : [];
   const stepDown = drops.length ? (100 - (finalValue ?? 100)) / drops.length : 0;
-  const valAt = (r) => Math.max(0, 100 - stepDown * drops.filter((d) => d <= r).length);
+  // With no drop rounds, Data Trust simply held — draw a flat line at the team's actual value.
+  const valAt = (r) =>
+    drops.length
+      ? Math.max(0, 100 - stepDown * drops.filter((d) => d <= r).length)
+      : (finalValue ?? 100);
   const x = (r) => pad + ((r - 1) / (rounds - 1)) * (W - 2 * pad);
   const y = (v) => pad + (1 - v / 100) * (H - 2 * pad);
   const pts = [];
@@ -257,28 +261,26 @@ export default function FacultyDebrief({ simulationId }) {
 
       </Collapsible>
 
-      {/* ── Data Trust trajectory for flagged teams ────────────────────── */}
-      {teams.some((t) => t.dataTrustFirstDropRound) && (
-        <Collapsible title="Data Trust trajectory — flagged teams" subtitle="when trust broke, by round">
+      {/* ── Data Trust trajectory for every team ───────────────────────── */}
+      {teams.length > 0 && (
+        <Collapsible title="Data Trust trajectory — all teams" subtitle="each team's trust across the rounds">
           <p className="f-note" style={{ marginBottom: 10 }}>
-            When each flagged team's Data Trust dropped across the rounds (red = the round it broke),
-            not just that it did.
+            Each team's Data Trust across the five rounds (red marks a round where it dropped). A flat
+            line means trust held throughout.
           </p>
           <div className="f-rank-grid">
-            {teams
-              .filter((t) => t.dataTrustFirstDropRound)
-              .map((t) => (
-                <div className="f-rank-card" key={t.runId}>
-                  <div className="f-rank-title">
-                    {t.teamName}{" "}
-                    <span className="f-note">· {t.dataTrustPattern}</span>
-                  </div>
-                  <DataTrustSpark
-                    finalValue={t.scores?.DATA_TRUST_SCORE}
-                    dropRounds={t.dataTrustDropRounds}
-                  />
+            {teams.map((t) => (
+              <div className="f-rank-card" key={t.runId}>
+                <div className="f-rank-title">
+                  {t.teamName}{" "}
+                  <span className="f-note">· {t.dataTrustPattern || "held"}</span>
                 </div>
-              ))}
+                <DataTrustSpark
+                  finalValue={t.scores?.DATA_TRUST_SCORE}
+                  dropRounds={t.dataTrustDropRounds}
+                />
+              </div>
+            ))}
           </div>
         </Collapsible>
       )}
