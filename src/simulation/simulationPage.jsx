@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useArtifacts, parseServerTime } from "./useartifacts";
 import ArtifactDetail from "./ArtifactDetail";
@@ -76,6 +76,8 @@ export default function SimulationPage() {
   const [activeFlash,      setActiveFlash]      = useState(null);
   const [flashLoading,     setFlashLoading]     = useState(false);
   const [dismissed,        setDismissed]        = useState(new Set());
+  const [timeFlash,        setTimeFlash]        = useState(null);   // "5 minutes remaining" toast
+  const firedThresholds = useRef(new Set());
 
   // ── round state: number, per-round start time, total, completion ──────────
   const [round,       setRound]       = useState(null); // { roundNumber, startedAt, totalRounds }
@@ -236,12 +238,27 @@ export default function SimulationPage() {
     setActiveFlash(null);
   };
 
-  // Round runs ~30 min; ease into amber near the end and red only in the final
-  // stretch, so the timer is calm for most of the round instead of alarming early.
-  const timerClass =
-    simSeconds > 1620 ? "critical" : // > 27 min
-    simSeconds > 1200 ? "warn" :     // > 20 min
-    "";
+  // The timer COUNTS DOWN from the round's duration. Amber under 5 min, red under 1 min.
+  const durationSeconds = (round?.durationMinutes || 30) * 60;
+  const remaining = Math.max(0, durationSeconds - simSeconds);
+  const timerClass = remaining <= 60 ? "critical" : remaining <= 300 ? "warn" : "";
+
+  // Fire a brief on-screen flash as the round nears its end (5 min, then 1 min left).
+  useEffect(() => {
+    if (!startTime) return;
+    const marks = [
+      { at: 300, label: "5 minutes remaining" },
+      { at: 60, label: "1 minute remaining" },
+    ];
+    for (const m of marks) {
+      const key = `${round?.roundNumber}-${m.at}`;
+      if (remaining > 0 && remaining <= m.at && !firedThresholds.current.has(key)) {
+        firedThresholds.current.add(key);
+        setTimeFlash(m.label);
+        setTimeout(() => setTimeFlash(null), 3800);
+      }
+    }
+  }, [remaining, startTime, round]);
 
   if (!runId || !participantId)
     return <div className="sim-error">Invalid session.</div>;
@@ -268,6 +285,8 @@ export default function SimulationPage() {
 
   return (
     <div className="round-screen">
+
+      {timeFlash && <div className="round-time-flash">⏳ {timeFlash}</div>}
 
       {transition && (
         <div className="round-transition">
@@ -302,9 +321,9 @@ export default function SimulationPage() {
           </div>
         </div>
         <div className="top-right time-block">
-          <span className="time-label">Round Time</span>
+          <span className="time-label">Time Left</span>
           <div className={`time-value ${timerClass}`}>
-            {startTime ? formatTime(simSeconds) : "--:--"}
+            {startTime ? formatTime(remaining) : "--:--"}
           </div>
         </div>
       </div>

@@ -25,6 +25,7 @@ export default function WaitingPage() {
   const participantId = searchParams.get("participantId");
   const role = searchParams.get("role");
 
+  const [joinCode, setJoinCode] = useState(searchParams.get("joinCode") || "");
   const [participants, setParticipants] = useState([]);
   const [roles, setRoles] = useState({}); // { ROLE_CODE: occupantId | null }
   const [botsBusy, setBotsBusy] = useState(false);
@@ -70,6 +71,15 @@ export default function WaitingPage() {
     const id = setInterval(poll, 2000);
     return () => clearInterval(id);
   }, [teamId, fetchParticipants, fetchRoles, fetchRun]);
+
+  // Joiners arrive without the code in the URL — fetch the team's short code so everyone sees it.
+  useEffect(() => {
+    if (joinCode || !teamId) return;
+    fetch(`${API_BASE}/api/teams/${teamId}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d?.joinCode && setJoinCode(d.joinCode))
+      .catch(() => {});
+  }, [teamId, joinCode]);
 
   if (!teamId || !participantId) {
     return (
@@ -133,25 +143,27 @@ export default function WaitingPage() {
       <div className="s2-shell">
         <h1>Waiting room</h1>
         <p className="s2-sub">
-          Share the Team ID so the rest of the leadership team can join. The CEO starts once all six
-          seats are filled.
+          Share the 4-digit team code so the rest of the leadership team can join. The CEO starts once
+          all six seats are filled.
         </p>
 
         <div className="s2-card">
-          <h2>Team ID</h2>
-          <p className="s2-sub" style={{ wordBreak: "break-all", fontFamily: "monospace" }}>
-            {teamId}
+          <h2>Team code</h2>
+          <p style={{ fontSize: 40, fontWeight: 700, letterSpacing: "0.18em", margin: "4px 0 0", fontFamily: "monospace" }}>
+            {joinCode || "…"}
           </p>
           <div className="s2-row" style={{ justifyContent: "space-between", marginTop: 8 }}>
             <span className="s2-sub">
               {filledSeats} / {totalSeats} seats filled
             </span>
-            <button
-              className="s2-secondary"
-              onClick={() => navigator.clipboard?.writeText(teamId)}
-            >
-              Copy ID
-            </button>
+            {joinCode && (
+              <button
+                className="s2-secondary"
+                onClick={() => navigator.clipboard?.writeText(joinCode)}
+              >
+                Copy code
+              </button>
+            )}
           </div>
         </div>
 

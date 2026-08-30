@@ -19,6 +19,7 @@ export default function RoleSelectionPage() {
   const participantId = searchParams.get("participantId");
 
   const [roles, setRoles] = useState({});
+  const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -39,13 +40,17 @@ export default function RoleSelectionPage() {
 
   const handleSelect = async (role) => {
     if (roles[role] || busy) return;
+    if (!name.trim()) {
+      setError("Enter your name first.");
+      return;
+    }
     setBusy(true);
     setError("");
     try {
       const res = await fetch(`${API_BASE}/api/teams/${teamId}/assign-role`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ participantId, role }),
+        body: JSON.stringify({ participantId, role, name: name.trim() }),
       });
       if (!res.ok) throw new Error("That role was just taken — pick another.");
       navigate(`/waiting?teamId=${teamId}&participantId=${participantId}&role=${role}`);
@@ -69,6 +74,16 @@ export default function RoleSelectionPage() {
           Each role interprets the same information through different incentives. Taken roles are
           locked.
         </p>
+
+        <div className="s2-card">
+          <h2>Your name</h2>
+          <input
+            type="text"
+            value={name}
+            placeholder="e.g. Priya Sharma"
+            onChange={(e) => setName(e.target.value)}
+          />
+        </div>
 
         <div className="s2-card">
           {roleCodes.map((role) => {

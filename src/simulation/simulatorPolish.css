@@ -185,3 +185,25 @@
 @media (prefers-reduced-motion: reduce) {
   .nav-badge, .role-label::before, .time-value.critical { animation: none !important; }
 }
+
+/* ── round countdown warning flash (5 min / 1 min remaining) ─────────────────── */
+.round-time-flash {
+  position: fixed;
+  top: 72px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2000;
+  background: rgba(210, 153, 34, 0.16);
+  color: #f2c94c;
+  border: 1px solid rgba(210, 153, 34, 0.45);
+  padding: 10px 22px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 8px 24px -10px rgba(0, 0, 0, 0.6);
+  animation: rtf-in 0.3s ease, rtf-out 0.5s ease 3.3s forwards;
+}
+@keyframes rtf-in { from { opacity: 0; transform: translate(-50%, -8px); } to { opacity: 1; transform: translate(-50%, 0); } }
+@keyframes rtf-out { to { opacity: 0; transform: translate(-50%, -8px); } }

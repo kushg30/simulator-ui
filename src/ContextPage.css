@@ -247,6 +247,9 @@
   flex-wrap: wrap;
 }
 
+/* Always keep the Continue button on the right, even if the note wraps. */
+.context-footer .btn-enter { margin-left: auto; }
+
 .context-footer-note {
   display: flex;
   align-items: center;
