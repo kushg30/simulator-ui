@@ -3,7 +3,7 @@ export const simulator1 = {
   title: "When Can You Trust What Your AI Just Told You?",
 
   companyBrief: `
-ANP Phoenix, a fast-growing, publicly listed digital payments and analytics firm operating across North America, Europe and Asia-Pacific.
+ANP Phoenix is a fast-growing, publicly listed digital payments and analytics firm operating across North America, Europe and Asia-Pacific.
 
 Over the last two years, ANP Phoenix has repositioned itself around Generative AI, embedding a proprietary GenAI capability — internally called Phoenix Sentinel — into fraud detection, anti-money-laundering screening, and client-facing reporting. The company markets Sentinel publicly as proof that a regulated fintech can deploy GenAI safely and at scale.
 
