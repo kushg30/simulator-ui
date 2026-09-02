@@ -101,7 +101,12 @@ function MemoArtifact({ artifact, payload, options, onDecide, loading, error }) 
         <div className="doc-meta-row">
           <div className="doc-meta-item">
             <span className="doc-meta-label">From</span>
-            <span className="doc-meta-value">{payload?.from}</span>
+            <span className="doc-meta-value">
+              {payload?.from}
+              {payload?.from_email && (
+                <span className="doc-meta-addr"> &lt;{payload.from_email}&gt;</span>
+              )}
+            </span>
           </div>
         </div>
         <div className="doc-title">{payload?.title}</div>
@@ -130,7 +135,12 @@ function MessageArtifact({ artifact, payload, options, onDecide, loading, error 
         <div className="doc-meta-row">
           <div className="doc-meta-item">
             <span className="doc-meta-label">From</span>
-            <span className="doc-meta-value">{payload?.from}</span>
+            <span className="doc-meta-value">
+              {payload?.from}
+              {payload?.from_email && (
+                <span className="doc-meta-addr"> &lt;{payload.from_email}&gt;</span>
+              )}
+            </span>
           </div>
           {payload?.title && (
             <div className="doc-meta-item">
@@ -356,7 +366,12 @@ function OpsArtifact({ artifact, payload, options, onDecide, loading, error }) {
         <div className="doc-meta-row">
           <div className="doc-meta-item">
             <span className="doc-meta-label">From</span>
-            <span className="doc-meta-value">{payload?.from}</span>
+            <span className="doc-meta-value">
+              {payload?.from}
+              {payload?.from_email && (
+                <span className="doc-meta-addr"> &lt;{payload.from_email}&gt;</span>
+              )}
+            </span>
           </div>
         </div>
         <div className="doc-title">{payload?.title}</div>
@@ -400,7 +415,12 @@ function PeopleSignalArtifact({ artifact, payload, options, onDecide, loading, e
         <div className="doc-meta-row">
           <div className="doc-meta-item">
             <span className="doc-meta-label">From</span>
-            <span className="doc-meta-value">{payload?.from}</span>
+            <span className="doc-meta-value">
+              {payload?.from}
+              {payload?.from_email && (
+                <span className="doc-meta-addr"> &lt;{payload.from_email}&gt;</span>
+              )}
+            </span>
           </div>
         </div>
         <div className="doc-title">{payload?.title}</div>
@@ -456,7 +476,12 @@ function InvestorDraftArtifact({ artifact, payload, options, onDecide, loading, 
         <div className="doc-meta-row">
           <div className="doc-meta-item">
             <span className="doc-meta-label">From</span>
-            <span className="doc-meta-value">{payload?.from}</span>
+            <span className="doc-meta-value">
+              {payload?.from}
+              {payload?.from_email && (
+                <span className="doc-meta-addr"> &lt;{payload.from_email}&gt;</span>
+              )}
+            </span>
           </div>
         </div>
 
@@ -548,7 +573,12 @@ function TaggingCheckArtifact({ artifact, payload, options, onDecide, loading, e
         <div className="doc-meta-row">
           <div className="doc-meta-item">
             <span className="doc-meta-label">From</span>
-            <span className="doc-meta-value">{payload?.from}</span>
+            <span className="doc-meta-value">
+              {payload?.from}
+              {payload?.from_email && (
+                <span className="doc-meta-addr"> &lt;{payload.from_email}&gt;</span>
+              )}
+            </span>
           </div>
         </div>
         <div className="doc-title">{payload?.title}</div>
