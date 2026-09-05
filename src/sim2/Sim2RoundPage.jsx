@@ -360,6 +360,10 @@ function Sim2RoundView() {
 
   // Only a genuine time-out (clock watched down to 0 on the active round) blocks submission.
   const timedOut = remaining === 0 && sawTimeRef.current && roundIsActiveHere;
+  // Rounds are time-boxed: the next round can't be started until THIS round's clock ends,
+  // even after an early submission. The backend enforces this too.
+  const roundTimerEnded = remaining !== null && remaining <= 0;
+  const fmtRemaining = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
   async function chooseOption(artifact, optionId) {
     setError("");
@@ -668,12 +672,16 @@ function Sim2RoundView() {
               <p className="s2-sub" style={{ margin: 0 }}>
                 {roundNumber >= TOTAL_ROUNDS
                   ? "Final round complete — heading to the debrief…"
+                  : !roundTimerEnded
+                  ? `Round ${roundNumber + 1} unlocks when this round's timer ends${
+                      remaining !== null ? ` — ${fmtRemaining(remaining)}` : ""
+                    }. Teams move together; you can't skip ahead.`
                   : isLead
-                  ? "Start the next round when your team is ready."
+                  ? "The round timer has ended — start the next round when your team is ready."
                   : "Waiting for the Team Lead to start the next round — you'll move on automatically."}
               </p>
 
-              {isLead && roundNumber < TOTAL_ROUNDS && (
+              {isLead && roundNumber < TOTAL_ROUNDS && roundTimerEnded && (
                 <div className="s2-row" style={{ marginTop: 14 }}>
                   <button onClick={startNextRound} disabled={startingNext}>
                     {startingNext ? "Starting…" : `Start Round ${roundNumber + 1} →`}

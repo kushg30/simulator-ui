@@ -141,24 +141,24 @@ export default function App() {
       <Route path="/demo"           element={<DemoPage />} />
       <Route path="/demo/sim1"      element={<DemoSim1Page />} />
 
-      {/* ── Simulator 1 — ANP Phoenix (access-gated) ─────────────────── */}
-      <Route path="/sim1"           element={<SimGate><ContextPage /></SimGate>} />
-      <Route path="/teamjoin"       element={<SimGate><TeamJoinPage /></SimGate>} />
-      <Route path="/context"        element={<SimGate><ContextPage /></SimGate>} />
-      <Route path="/role-selection" element={<SimGate><RoleSelectionPage /></SimGate>} />
-      <Route path="/waiting"        element={<SimGate><WaitingPage /></SimGate>} />
-      <Route path="/simulator"      element={<SimGate><SimulationPage /></SimGate>} />
-      <Route path="/results"        element={<SimGate><ResultsDashboard /></SimGate>} />
+      {/* ── Simulator 1 — ANP Phoenix (access-gated: SIBM) ───────────── */}
+      <Route path="/sim1"           element={<SimGate sim="sim1"><ContextPage /></SimGate>} />
+      <Route path="/teamjoin"       element={<SimGate sim="sim1"><TeamJoinPage /></SimGate>} />
+      <Route path="/context"        element={<SimGate sim="sim1"><ContextPage /></SimGate>} />
+      <Route path="/role-selection" element={<SimGate sim="sim1"><RoleSelectionPage /></SimGate>} />
+      <Route path="/waiting"        element={<SimGate sim="sim1"><WaitingPage /></SimGate>} />
+      <Route path="/simulator"      element={<SimGate sim="sim1"><SimulationPage /></SimGate>} />
+      <Route path="/results"        element={<SimGate sim="sim1"><ResultsDashboard /></SimGate>} />
 
       {/* ── Simulator 2 — Meridian Retail QBR (access-gated) ────────────
           Fully separate route tree; Simulation 1's routes above are untouched. */}
-      <Route path="/sim2"                      element={<SimGate><Sim2ContextPage /></SimGate>} />
-      <Route path="/sim2/join"                 element={<SimGate><Sim2JoinPage /></SimGate>} />
-      <Route path="/sim2/roles"                element={<SimGate><Sim2RolePage /></SimGate>} />
-      <Route path="/sim2/context"              element={<SimGate><Sim2ContextPage /></SimGate>} />
-      <Route path="/sim2/waiting"              element={<SimGate><Sim2WaitingPage /></SimGate>} />
-      <Route path="/sim2/round/:roundNumber"   element={<SimGate><Sim2RoundPage /></SimGate>} />
-      <Route path="/sim2/results/:roundNumber" element={<SimGate><Sim2ResultsPage /></SimGate>} />
+      <Route path="/sim2"                      element={<SimGate sim="sim2"><Sim2ContextPage /></SimGate>} />
+      <Route path="/sim2/join"                 element={<SimGate sim="sim2"><Sim2JoinPage /></SimGate>} />
+      <Route path="/sim2/roles"                element={<SimGate sim="sim2"><Sim2RolePage /></SimGate>} />
+      <Route path="/sim2/context"              element={<SimGate sim="sim2"><Sim2ContextPage /></SimGate>} />
+      <Route path="/sim2/waiting"              element={<SimGate sim="sim2"><Sim2WaitingPage /></SimGate>} />
+      <Route path="/sim2/round/:roundNumber"   element={<SimGate sim="sim2"><Sim2RoundPage /></SimGate>} />
+      <Route path="/sim2/results/:roundNumber" element={<SimGate sim="sim2"><Sim2ResultsPage /></SimGate>} />
 
       {/* ── Faculty console — its own facilitator-token login, not the sim gate ── */}
       <Route path="/faculty" element={<FacultyConsole />} />

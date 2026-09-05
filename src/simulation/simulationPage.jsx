@@ -338,6 +338,16 @@ export default function SimulationPage() {
         : activeFlash.decisionOptions)
     : null;
 
+  // The CEO's round-ending decision is the one decision-bearing screen flash. It opens at the
+  // Deliberation-Phase start so the CEO can submit any time before the timer ends; the round then
+  // advances strictly on the clock (no early advance). A persistent banner gives reliable access.
+  const isCEO = role === "CEO";
+  const finalFlash = artifactsState.find(
+    a => a.artifactType === "SCREEN_FLASH" && a.decisionId
+  );
+  const finalSubmitted =
+    finalFlash?.status === "ACTED" || finalFlash?.actionState === "ACTED";
+
   // Opened directly without a live session — send the user back to the start.
   if (!runId || !participantId) {
     return (
@@ -424,6 +434,28 @@ export default function SimulationPage() {
           </div>
         </div>
       </div>
+
+      {isCEO && finalFlash && (
+        <div className={`ceo-final-bar${finalSubmitted ? " done" : ""}`}>
+          {finalSubmitted ? (
+            <span>
+              ✓ Round {round?.roundNumber} framing submitted — the round advances when the timer ends.
+            </span>
+          ) : (
+            <>
+              <span>
+                ⚖ Decision time: submit your Round {round?.roundNumber} framing before the timer ends.
+              </span>
+              <button
+                className="ceo-final-btn"
+                onClick={() => setActiveFlash(finalFlash)}
+              >
+                Submit Round {round?.roundNumber} decision →
+              </button>
+            </>
+          )}
+        </div>
+      )}
 
       <div className="main">
         <div className="primary-nav">

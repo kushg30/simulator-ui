@@ -6,10 +6,21 @@ import "./SimGate.css";
 // a lightweight barrier to keep the public from wandering into a live sim — it is
 // NOT a security boundary (the check runs in the browser). Real per-session
 // enforcement, if needed later, belongs on the backend.
-const ACCESS_CODE = process.env.REACT_APP_SIM_ACCESS_CODE || "SPARTA";
-const FLAG_KEY = "simAccessGranted";
+// Per-simulation access codes. Sim 1 uses SIBM, Sim 2 uses SPARTA. Each keeps its
+// own grant flag so unlocking one does not unlock the other. Codes are overridable
+// per-environment via env vars; the legacy REACT_APP_SIM_ACCESS_CODE still backs Sim 2.
+const CODES = {
+  sim1: process.env.REACT_APP_SIM1_ACCESS_CODE || "SIBM",
+  sim2:
+    process.env.REACT_APP_SIM2_ACCESS_CODE ||
+    process.env.REACT_APP_SIM_ACCESS_CODE ||
+    "SPARTA",
+};
 
-export default function SimGate({ children }) {
+export default function SimGate({ children, sim = "sim2" }) {
+  const ACCESS_CODE = CODES[sim] || CODES.sim2;
+  const FLAG_KEY = `simAccessGranted:${sim}`;
+
   const [granted, setGranted] = useState(
     () => sessionStorage.getItem(FLAG_KEY) === "1"
   );

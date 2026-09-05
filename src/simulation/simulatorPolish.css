@@ -209,6 +209,30 @@
 }
 .interstitial-continue:hover { transform: translateY(-1px); box-shadow: 0 10px 36px rgba(59, 130, 246, 0.5); }
 
+/* ---- CEO round-ending decision banner (time-boxed rounds) ----------------- */
+.ceo-final-bar {
+  display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap;
+  padding: 10px 18px;
+  background: linear-gradient(90deg, rgba(99,102,241,0.16), rgba(59,130,246,0.16));
+  border-bottom: 1px solid rgba(99,102,241,0.4);
+  color: #dfe4f2; font-size: 14px; letter-spacing: 0.01em;
+}
+.ceo-final-bar.done {
+  background: rgba(34,197,94,0.12);
+  border-bottom-color: rgba(34,197,94,0.4);
+  color: #a7e8bd;
+}
+.ceo-final-btn {
+  background: linear-gradient(120deg, #3b82f6, #6366f1);
+  color: #fff; border: none; border-radius: 999px;
+  padding: 8px 20px; font-size: 13px; font-weight: 600; letter-spacing: 0.02em;
+  cursor: pointer; white-space: nowrap;
+  box-shadow: 0 4px 18px rgba(59,130,246,0.4);
+  animation: ceo-pulse 1.8s ease-in-out infinite;
+}
+.ceo-final-btn:hover { transform: translateY(-1px); }
+@keyframes ceo-pulse { 0%,100% { box-shadow: 0 4px 18px rgba(59,130,246,0.35);} 50% { box-shadow: 0 4px 26px rgba(99,102,241,0.7);} }
+
 /* ---- News interrupt overlay (1.2) ----------------------------------------- */
 .news-overlay {
   position: fixed; inset: 0; z-index: 80;

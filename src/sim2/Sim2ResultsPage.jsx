@@ -26,13 +26,19 @@ export default function Sim2ResultsPage() {
   const [error, setError] = useState("");
   const [starting, setStarting] = useState(false);
   const [teamName, setTeamName] = useState("");
+  // Seconds left on THIS round's clock. The next round cannot start until it hits 0
+  // (rounds are time-boxed — a team may not skip ahead by submitting early).
+  const [remaining, setRemaining] = useState(null);
 
   useEffect(() => {
     if (!teamId) return;
     getTeam(teamId).then((t) => setTeamName(t.teamName || "")).catch(() => {});
   }, [teamId]);
 
+  const timerEnded = remaining !== null && remaining <= 0;
+
   async function beginNextRound() {
+    if (!timerEnded) return; // guard: no skipping ahead before the round timer ends
     setStarting(true);
     setError("");
     try {
@@ -63,6 +69,11 @@ export default function Sim2ResultsPage() {
       try {
         const states = await getRoundState(runId);
         if (stop) return;
+        // Track this round's remaining time so the next round can't start early.
+        const cur = (states || []).find((s) => s.roundNumber === roundNumber);
+        if (cur && typeof cur.remainingSeconds === "number") {
+          setRemaining(cur.remainingSeconds);
+        }
         // Follow the team into any round that is now active — a later round the Lead
         // started, OR this same round if a facilitator restarted it (undo a mis-submit).
         const active = (states || [])
@@ -85,6 +96,18 @@ export default function Sim2ResultsPage() {
       clearInterval(id);
     };
   }, [runId, roundNumber, navigate, participantId, role, teamId]);
+
+  // Tick the displayed countdown down between server polls so it reads smoothly.
+  useEffect(() => {
+    if (remaining === null) return;
+    const id = setInterval(
+      () => setRemaining((r) => (r === null ? r : Math.max(0, r - 1))),
+      1000
+    );
+    return () => clearInterval(id);
+  }, [remaining === null]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const fmt = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
   if (!runId) {
     return (
@@ -120,7 +143,13 @@ export default function Sim2ResultsPage() {
             {data.nextRound ? (
               <>
                 <h2>Round {data.nextRound} is next</h2>
-                {isLead ? (
+                {!timerEnded ? (
+                  <p className="s2-sub" style={{ margin: 0 }}>
+                    Round {data.nextRound} unlocks when the Round {roundNumber} timer ends
+                    {remaining !== null ? ` — ${fmt(remaining)}` : ""}. Teams move together; you
+                    can’t skip ahead.
+                  </p>
+                ) : isLead ? (
                   <>
                     <p className="s2-sub">The clock starts as soon as you begin the round.</p>
                     <button onClick={beginNextRound} disabled={starting}>
