@@ -136,8 +136,18 @@ export default function SimulationPage() {
         setRound(s);
         setPausedSeconds(s.pausedSeconds || 0);
         setNews(s.news || null);
-        // Round advanced: show the just-completed round's debrief interstitial (1.10).
+        // Round advanced: hard-reset all per-round UI state so nothing from the previous round
+        // leaks across (stale artifacts, a dismissed-flash set, a fired-threshold, an old "framing
+        // submitted" banner), and pull the new round's artifacts immediately instead of waiting for
+        // the next poll — this is what removes the need to refresh the tab by hand.
         if (prev !== null && s.roundNumber > prev) {
+          setArtifactsState([]);
+          setSelectedArtifact(null);
+          setActiveFlash(null);
+          setDismissed(new Set());
+          firedThresholds.current = new Set();
+          setTimeFlash(null);
+          refetch();
           const completed = prev;
           try {
             const sumRes = await fetch(
@@ -170,7 +180,22 @@ export default function SimulationPage() {
     poll();
     const id = setInterval(poll, 3000);
     return () => clearInterval(id);
-  }, [runId, navigate]);
+  }, [runId, navigate]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // The post-round debrief interstitial auto-advances: it shows the framing + prompt briefly, then
+  // clears itself so the team drops into the next round without anyone clicking through.
+  useEffect(() => {
+    if (!interstitial) return;
+    const t = setTimeout(() => setInterstitial(null), 9000);
+    return () => clearTimeout(t);
+  }, [interstitial]);
+
+  // Meaningful browser-tab title instead of "React App".
+  useEffect(() => {
+    document.title = round?.roundNumber
+      ? `Round ${round.roundNumber} · ANP Phoenix — CaseRun`
+      : "ANP Phoenix — CaseRun";
+  }, [round?.roundNumber]);
 
   // Timer counts from the CURRENT round's start, so it resets each round.
   const startTime = round?.startedAt || null;
@@ -209,6 +234,8 @@ export default function SimulationPage() {
     const flash = artifactsState.find(
       a =>
         a.artifactType === "SCREEN_FLASH" &&
+        !a.decisionId && // the CEO's round-ending decision is NOT auto-popped — it's opened from the
+                         // info bar button, so it never covers the screen (or the countdown alerts)
         (a.actionState === "OPEN" || a.actionState === "READ_ONLY") &&
         !dismissed.has(a.artifactId)
     );
@@ -222,9 +249,15 @@ export default function SimulationPage() {
 
   const getTab = a => safeParse(a.payload)?.tab || "inbox";
 
-  const visibleArtifacts = artifactsState.filter(
-    a => getTab(a) === activeTab && a.artifactType !== "SCREEN_FLASH"
-  );
+  // The Decisions tab is this participant's decision history: every artifact addressed to them that
+  // carries a decision, so they can see what they answered (or still owe) in one place. Other tabs
+  // list their own artifacts as authored (by payload tab).
+  const visibleArtifacts =
+    activeTab === "decisions"
+      ? artifactsState.filter(a => a.decisionId && a.artifactType !== "SCREEN_FLASH")
+      : artifactsState.filter(
+          a => getTab(a) === activeTab && a.artifactType !== "SCREEN_FLASH"
+        );
 
   const handleSelect = artifact => {
     setArtifactsState(prev =>
@@ -258,12 +291,23 @@ export default function SimulationPage() {
   }, [activeTab, artifactsState]); // eslint-disable-line
 
   const tabCounts = TABS.reduce((acc, tab) => {
-    acc[tab.id] = artifactsState.filter(
-      a =>
-        getTab(a) === tab.id &&
-        a.status === "UNREAD" &&
-        a.artifactType !== "SCREEN_FLASH"
-    ).length;
+    if (tab.id === "decisions") {
+      // Badge = decisions still open for this participant (addressed to them, not yet acted).
+      acc[tab.id] = artifactsState.filter(
+        a =>
+          a.decisionId &&
+          a.artifactType !== "SCREEN_FLASH" &&
+          a.actionState !== "ACTED" &&
+          a.actionState !== "LOCKED"
+      ).length;
+    } else {
+      acc[tab.id] = artifactsState.filter(
+        a =>
+          getTab(a) === tab.id &&
+          a.status === "UNREAD" &&
+          a.artifactType !== "SCREEN_FLASH"
+      ).length;
+    }
     return acc;
   }, {});
 
@@ -303,13 +347,15 @@ export default function SimulationPage() {
   // The timer COUNTS DOWN from the round's duration. Amber under 5 min, red under 1 min.
   // Pause-aware: faculty pause and a News interrupt (1.2) add pausedSeconds, so the clock freezes
   // while the schedule is held rather than ticking through the pause.
+  const paused = Boolean(round?.paused);
   const durationSeconds = (round?.durationMinutes || 30) * 60;
   const remaining = Math.max(0, durationSeconds - simSeconds + pausedSeconds);
-  const timerClass = remaining <= 60 ? "critical" : remaining <= 300 ? "warn" : "";
+  const timerClass = paused ? "warn" : remaining <= 60 ? "critical" : remaining <= 300 ? "warn" : "";
 
-  // Fire a brief on-screen flash as the round nears its end (5 min, then 1 min left).
+  // Fire a brief on-screen flash as the round nears its end (5 min, then 1 min left) — for EVERY
+  // role, and never while a facilitator has the round paused.
   useEffect(() => {
-    if (!startTime) return;
+    if (!startTime || paused) return;
     const marks = [
       { at: 300, label: "5 minutes remaining" },
       { at: 60, label: "1 minute remaining" },
@@ -322,7 +368,7 @@ export default function SimulationPage() {
         setTimeout(() => setTimeFlash(null), 3800);
       }
     }
-  }, [remaining, startTime, round]);
+  }, [remaining, startTime, round, paused]);
 
   if (!runId || !participantId)
     return <div className="sim-error">Invalid session.</div>;
@@ -428,34 +474,28 @@ export default function SimulationPage() {
           </div>
         </div>
         <div className="top-right time-block">
-          <span className="time-label">Time Left</span>
+          <span className="time-label">{paused ? "Paused" : "Time Left"}</span>
           <div className={`time-value ${timerClass}`}>
-            {startTime ? formatTime(remaining) : "--:--"}
+            {paused ? "⏸ Paused" : startTime ? formatTime(remaining) : "--:--"}
           </div>
         </div>
       </div>
 
-      {isCEO && finalFlash && (
-        <div className={`ceo-final-bar${finalSubmitted ? " done" : ""}`}>
-          {finalSubmitted ? (
-            <span>
-              ✓ Round {round?.roundNumber} framing submitted — the round advances when the timer ends.
-            </span>
-          ) : (
-            <>
-              <span>
-                ⚖ Decision time: submit your Round {round?.roundNumber} framing before the timer ends.
-              </span>
-              <button
-                className="ceo-final-btn"
-                onClick={() => setActiveFlash(finalFlash)}
-              >
-                Submit Round {round?.roundNumber} decision →
-              </button>
-            </>
-          )}
-        </div>
-      )}
+      {/* Visible to EVERYONE: the round is time-boxed and advances on its own. The CEO also gets the
+          round-ending decision control inline here once it opens. */}
+      <div className={`round-info-bar${isCEO && finalSubmitted ? " done" : ""}`}>
+        <span>
+          Round {round?.roundNumber} advances automatically when the timer ends — no skipping ahead.
+        </span>
+        {isCEO && finalFlash && !finalSubmitted && (
+          <button className="ceo-final-btn" onClick={() => setActiveFlash(finalFlash)}>
+            Submit Round {round?.roundNumber} decision →
+          </button>
+        )}
+        {isCEO && finalSubmitted && (
+          <span className="round-info-done">✓ Round {round?.roundNumber} framing submitted</span>
+        )}
+      </div>
 
       <div className="main">
         <div className="primary-nav">
