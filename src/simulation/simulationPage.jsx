@@ -32,6 +32,32 @@ function formatTime(s) {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 }
 
+// Server-authoritative countdown: seed from the round-state's remainingSeconds (same for every client)
+// and tick locally between polls. Frozen while the facilitator has the round paused. This is what makes
+// the timer — and the 5-min / 1-min alerts — agree across all six participants instead of each browser
+// deriving its own value from its own clock.
+function useServerCountdown(serverRemaining, paused) {
+  const [display, setDisplay] = useState(
+    serverRemaining == null ? null : serverRemaining
+  );
+  const baseRef = useRef({ s: serverRemaining, at: Date.now() });
+  useEffect(() => {
+    if (serverRemaining == null) return;
+    baseRef.current = { s: serverRemaining, at: Date.now() };
+    setDisplay(serverRemaining);
+  }, [serverRemaining]);
+  useEffect(() => {
+    if (paused || serverRemaining == null) return;
+    const id = setInterval(() => {
+      const { s, at } = baseRef.current;
+      const elapsed = Math.floor((Date.now() - at) / 1000);
+      setDisplay(Math.max(0, s - elapsed));
+    }, 1000);
+    return () => clearInterval(id);
+  }, [paused, serverRemaining]);
+  return display;
+}
+
 // ─────────────────────────────────────────────────────────────
 // Constants
 // ─────────────────────────────────────────────────────────────
@@ -149,28 +175,36 @@ export default function SimulationPage() {
           setTimeFlash(null);
           refetch();
           const completed = prev;
-          try {
-            const sumRes = await fetch(
-              `${API_BASE}/api/runs/${runId}/rounds/${completed}/summary`
-            );
-            const summary = sumRes.ok ? await sumRes.json() : {};
-            setInterstitial({
-              roundNumber: completed,
-              nextRound: s.roundNumber,
-              title: ROUND_META[completed]?.title,
-              prompt: ROUND_META[completed]?.prompt,
-              framing: summary.framing,
-              submitted: summary.submitted !== false,
-            });
-          } catch {
-            setInterstitial({
-              roundNumber: completed,
-              nextRound: s.roundNumber,
-              title: ROUND_META[completed]?.title,
-              prompt: ROUND_META[completed]?.prompt,
-              submitted: true,
-            });
+          // Only raise the debrief if the CEO has NOT already released it (handles a client that
+          // polled the advance late). The CEO advances the team; others wait for that release.
+          if (!s.prevInterstitialAcked) {
+            try {
+              const sumRes = await fetch(
+                `${API_BASE}/api/runs/${runId}/rounds/${completed}/summary`
+              );
+              const summary = sumRes.ok ? await sumRes.json() : {};
+              setInterstitial({
+                roundNumber: completed,
+                nextRound: s.roundNumber,
+                title: ROUND_META[completed]?.title,
+                prompt: ROUND_META[completed]?.prompt,
+                framing: summary.framing,
+                submitted: summary.submitted !== false,
+              });
+            } catch {
+              setInterstitial({
+                roundNumber: completed,
+                nextRound: s.roundNumber,
+                title: ROUND_META[completed]?.title,
+                prompt: ROUND_META[completed]?.prompt,
+                submitted: true,
+              });
+            }
           }
+        }
+        // Once the CEO releases the debrief, every other client leaves it and drops into the round.
+        if (s.prevInterstitialAcked) {
+          setInterstitial(cur => (cur && cur.nextRound === s.roundNumber ? null : cur));
         }
         prev = s.roundNumber;
       } catch {
@@ -182,24 +216,12 @@ export default function SimulationPage() {
     return () => clearInterval(id);
   }, [runId, navigate]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // The post-round debrief interstitial auto-advances: it shows the framing + prompt briefly, then
-  // clears itself so the team drops into the next round without anyone clicking through.
-  useEffect(() => {
-    if (!interstitial) return;
-    const t = setTimeout(() => setInterstitial(null), 9000);
-    return () => clearTimeout(t);
-  }, [interstitial]);
-
   // Meaningful browser-tab title instead of "React App".
   useEffect(() => {
     document.title = round?.roundNumber
       ? `Round ${round.roundNumber} · ANP Phoenix — CaseRun`
       : "ANP Phoenix — CaseRun";
   }, [round?.roundNumber]);
-
-  // Timer counts from the CURRENT round's start, so it resets each round.
-  const startTime = round?.startedAt || null;
-  const simSeconds = useSimulationTime(startTime);
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -348,14 +370,18 @@ export default function SimulationPage() {
   // Pause-aware: faculty pause and a News interrupt (1.2) add pausedSeconds, so the clock freezes
   // while the schedule is held rather than ticking through the pause.
   const paused = Boolean(round?.paused);
-  const durationSeconds = (round?.durationMinutes || 30) * 60;
-  const remaining = Math.max(0, durationSeconds - simSeconds + pausedSeconds);
-  const timerClass = paused ? "warn" : remaining <= 60 ? "critical" : remaining <= 300 ? "warn" : "";
+  const remaining = useServerCountdown(round?.remainingSeconds, paused);
+  const timerClass =
+    paused ? "warn"
+    : remaining == null ? ""
+    : remaining <= 60 ? "critical"
+    : remaining <= 300 ? "warn"
+    : "";
 
-  // Fire a brief on-screen flash as the round nears its end (5 min, then 1 min left) — for EVERY
-  // role, and never while a facilitator has the round paused.
+  // Fire a brief on-screen flash as the round nears its end (5 min, then 1 min left) — once per round,
+  // for EVERY role (all seeded from the same server clock), and never while paused.
   useEffect(() => {
-    if (!startTime || paused) return;
+    if (remaining == null || paused) return;
     const marks = [
       { at: 300, label: "5 minutes remaining" },
       { at: 60, label: "1 minute remaining" },
@@ -368,7 +394,7 @@ export default function SimulationPage() {
         setTimeout(() => setTimeFlash(null), 3800);
       }
     }
-  }, [remaining, startTime, round, paused]);
+  }, [remaining, round, paused]);
 
   if (!runId || !participantId)
     return <div className="sim-error">Invalid session.</div>;
@@ -393,6 +419,22 @@ export default function SimulationPage() {
   );
   const finalSubmitted =
     finalFlash?.status === "ACTED" || finalFlash?.actionState === "ACTED";
+
+  // CEO releases the post-round debrief; the rest of the team follows via the round-state poll.
+  const continueToNextRound = async () => {
+    const completed = interstitial?.roundNumber;
+    setInterstitial(null);
+    if (!completed) return;
+    try {
+      await fetch(`${API_BASE}/api/runs/${runId}/rounds/${completed}/ack-interstitial`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ participantId }),
+      });
+    } catch {
+      /* the poll will still release the team once the ack lands */
+    }
+  };
 
   // Opened directly without a live session — send the user back to the start.
   if (!runId || !participantId) {
@@ -441,12 +483,15 @@ export default function SimulationPage() {
                 <div className="interstitial-prompt">{interstitial.prompt}</div>
               </>
             )}
-            <button
-              className="interstitial-continue"
-              onClick={() => setInterstitial(null)}
-            >
-              Continue to Round {interstitial.nextRound} →
-            </button>
+            {isCEO ? (
+              <button className="interstitial-continue" onClick={continueToNextRound}>
+                Continue to Round {interstitial.nextRound} →
+              </button>
+            ) : (
+              <div className="interstitial-wait">
+                Waiting for your CEO to continue to Round {interstitial.nextRound}…
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -476,7 +521,7 @@ export default function SimulationPage() {
         <div className="top-right time-block">
           <span className="time-label">{paused ? "Paused" : "Time Left"}</span>
           <div className={`time-value ${timerClass}`}>
-            {paused ? "⏸ Paused" : startTime ? formatTime(remaining) : "--:--"}
+            {paused ? "⏸ Paused" : remaining == null ? "--:--" : formatTime(remaining)}
           </div>
         </div>
       </div>

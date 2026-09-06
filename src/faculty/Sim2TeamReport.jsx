@@ -95,8 +95,17 @@ export default function Sim2TeamReport({ team, leaderboard, simulationName, onCl
   const development = scored[scored.length - 1];
   const hcw = team.highConfidenceWrongRounds || [];
 
-  const when = (ts) =>
-    ts ? new Date(ts).toLocaleDateString([], { day: "numeric", month: "short", year: "numeric" }) : "—";
+  // Stored timestamps are naive UTC — parse as UTC and render in IST (see FacultyDebrief.when).
+  const when = (ts) => {
+    if (!ts) return "—";
+    const iso = /[zZ]|[+-]\d{2}:\d{2}$/.test(ts) ? ts : `${ts}Z`;
+    return new Date(iso).toLocaleDateString("en-IN", {
+      timeZone: "Asia/Kolkata",
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  };
 
   // Print/Save-as-PDF: rename the document so the saved file is meaningful (and the
   // browser's print header shows this instead of "React App"); restore it afterwards.

@@ -101,9 +101,14 @@ export default function FacultyDebrief({ simulationId }) {
 
   const bandOf = (v) => (v == null ? "na" : v >= 75 ? "high" : v >= 40 ? "med" : "low");
   const bandLabel = { high: "High", med: "Med", low: "Low", na: "—" };
+  // Timestamps are stored as naive UTC (Neon/Render run in UTC). Parse them AS UTC (append Z when the
+  // string carries no zone) and render in IST, so a session shows its real India time instead of the
+  // raw UTC wall-clock (which read ~5.5h early).
   const when = (ts) => {
     if (!ts) return "—";
-    return new Date(ts).toLocaleString([], {
+    const iso = /[zZ]|[+-]\d{2}:\d{2}$/.test(ts) ? ts : `${ts}Z`;
+    return new Date(iso).toLocaleString("en-IN", {
+      timeZone: "Asia/Kolkata",
       month: "short",
       day: "numeric",
       hour: "2-digit",

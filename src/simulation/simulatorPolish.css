@@ -208,6 +208,10 @@
   box-shadow: 0 8px 30px rgba(59, 130, 246, 0.35);
 }
 .interstitial-continue:hover { transform: translateY(-1px); box-shadow: 0 10px 36px rgba(59, 130, 246, 0.5); }
+.interstitial-wait {
+  margin-top: 30px; font-size: 14px; color: #9aa4bd; letter-spacing: 0.02em;
+  font-family: "IBM Plex Mono", monospace;
+}
 
 /* ---- round info bar (time-boxed rounds; all roles) + CEO decision control -- */
 .round-info-bar {

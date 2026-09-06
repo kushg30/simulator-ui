@@ -239,7 +239,10 @@ export default function FacultyConsole() {
   };
 
   // Split live teams from ones that have finished all rounds, so the in-play list stays short.
-  const isFinished = (r) => r.roundsComplete >= r.totalRounds;
+  // A run whose status is COMPLETED is finished even if a round-count lags (Sim 1 completes via the
+  // timer scanner) — this stops a just-finished team lingering under "Teams in play".
+  const isFinished = (r) =>
+    r.runStatus === "COMPLETED" || r.roundsComplete >= r.totalRounds;
   const activeTeams = overview.filter((r) => !isFinished(r));
   const finishedTeams = overview.filter(isFinished);
 
