@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sample Team Report — Phoenix AI Judgment — CaseRun</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --ink: #1c2230; --muted: #5b6577; --faint: #8b93a3;
+    --gold: #b3902f; --gold-soft: #f4ecd6; --line: #e7e3d8;
+    --paper: #ffffff; --panel: #faf8f2; --good: #3d8a63; --warn: #c1762a; --adverse: #a8452f;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: #ecebe6; color: var(--ink);
+    font-family: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    line-height: 1.6; -webkit-font-smoothing: antialiased;
+  }
+  .sheet { max-width: 820px; margin: 28px auto; background: var(--paper); box-shadow: 0 20px 60px -30px rgba(0,0,0,0.35); border-radius: 6px; overflow: hidden; }
+  .pad { padding: 40px 52px; }
+  .serif { font-family: "Playfair Display", Georgia, serif; }
+
+  .mast { padding: 30px 52px; border-bottom: 2px solid var(--ink); display: flex; justify-content: space-between; align-items: flex-end; }
+  .brand { font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; font-size: 15px; }
+  .brand small { display: block; letter-spacing: 0.14em; font-size: 10px; color: var(--muted); font-weight: 600; margin-top: 4px; }
+  .sample-chip { font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: var(--gold); border: 1px solid var(--gold); border-radius: 999px; padding: 5px 12px; }
+
+  h1.title { font-size: 30px; margin: 0 0 6px; line-height: 1.12; }
+  .subtitle { color: var(--muted); font-size: 14.5px; }
+  .meta-row { display: flex; gap: 26px; flex-wrap: wrap; margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--line); }
+  .meta { font-size: 12.5px; }
+  .meta b { display: block; font-size: 10px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--faint); font-weight: 700; margin-bottom: 3px; }
+
+  .lead { font-size: 15.5px; line-height: 1.65; color: #333c4d; border-left: 3px solid var(--gold); padding-left: 18px; margin: 4px 0 0; }
+  .sec-label { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700; color: var(--gold); margin: 0 0 16px; }
+  .divide { border: none; border-top: 1px solid var(--line); margin: 0; }
+  .note { font-size: 12.5px; color: var(--muted); }
+
+  /* qualitative band indicator — no numbers, per the no-scoreboard design */
+  .band-row { display: grid; grid-template-columns: 210px 132px 1fr; gap: 16px; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--line); }
+  .band-row:last-child { border-bottom: none; }
+  .band-name { font-weight: 600; font-size: 13.5px; }
+  .band-name span { display: block; font-weight: 400; font-size: 11px; color: var(--faint); margin-top: 2px; letter-spacing: 0.03em; }
+  .segs { display: flex; gap: 4px; }
+  .seg { height: 9px; flex: 1; border-radius: 999px; background: #eeece4; }
+  .seg.on { background: linear-gradient(90deg, #d9be6e, var(--gold)); }
+  .seg.on.bad { background: linear-gradient(90deg, #d79b86, var(--adverse)); }
+  .band-val { font-size: 12.5px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+  .band-val.bad { color: var(--adverse); }
+  .band-val.ok { color: var(--good); }
+  .band-meaning { font-size: 12.5px; color: var(--muted); }
+
+  /* round spine */
+  .round { padding: 18px 0; border-bottom: 1px solid var(--line); }
+  .round:last-child { border-bottom: none; }
+  .round-head { display: flex; align-items: baseline; gap: 10px; }
+  .round-no { font-family: "Playfair Display", serif; font-size: 21px; color: var(--gold); line-height: 1; }
+  .round-title { font-weight: 700; font-size: 14.5px; }
+  .framing { margin: 9px 0 0; padding: 11px 14px; background: var(--panel); border-left: 3px solid var(--gold); font-size: 13.5px; color: #2c3444; }
+  .framing b { display: block; font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--faint); margin-bottom: 4px; }
+  .consequence { font-size: 13px; color: var(--muted); margin: 9px 0 0; }
+
+  /* glossary */
+  .gloss { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 26px; }
+  .gloss div { font-size: 12.8px; }
+  .gloss h4 { margin: 0 0 3px; font-size: 13px; }
+  .gloss p { margin: 0; color: var(--muted); }
+  .gloss .dir { font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 700; color: var(--faint); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12.8px; }
+  th { text-align: left; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--faint); font-weight: 700; padding: 0 10px 9px; }
+  td { padding: 10px; border-top: 1px solid var(--line); vertical-align: top; }
+  .pill { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 999px; letter-spacing: 0.04em; }
+  .pill.none { background: #f7e9e5; color: var(--adverse); }
+  .pill.act { background: #eef1ea; color: var(--good); }
+
+  .narr p { font-size: 14px; color: #333c4d; margin: 0 0 12px; }
+  .narr p:last-child { margin-bottom: 0; }
+  .prompts { margin: 0; padding-left: 20px; }
+  .prompts li { font-size: 13.5px; color: #333c4d; margin-bottom: 10px; }
+  .prompts li b { display: block; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); font-weight: 700; margin-bottom: 2px; }
+
+  .foot { padding: 24px 52px 34px; background: var(--panel); border-top: 1px solid var(--line); font-size: 12px; color: var(--muted); }
+
+  @page { margin: 0; }
+  @media print {
+    body { background: #fff; }
+    .sheet { box-shadow: none; margin: 0; max-width: none; border-radius: 0; }
+    .round, .band-row, .gloss div, tr, .prompts li { break-inside: avoid; }
+    section { break-inside: avoid-page; }
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <div class="mast">
+    <div class="brand">CaseRun<small>Phoenix AI Judgment · ANP Phoenix</small></div>
+    <div class="sample-chip">Sample</div>
+  </div>
+
+  <div class="pad">
+    <h1 class="title serif">Team Aurora</h1>
+    <div class="subtitle">When Can You Trust What Your AI Just Told You? — a leadership judgment simulation in the AI era</div>
+    <div class="meta-row">
+      <div class="meta"><b>Cohort</b>SIBM · MBA 2026</div>
+      <div class="meta"><b>Session</b>7 September 2026</div>
+      <div class="meta"><b>Format</b>4 rounds · 60 minutes</div>
+      <div class="meta"><b>Team</b>6 roles, all seated</div>
+    </div>
+  </div>
+
+  <hr class="divide" />
+
+  <div class="pad">
+    <p class="lead">
+      This simulation has no winning answer and no score. The four framing decisions your CEO made are
+      all defensible readings of the same ambiguous evidence — leaders genuinely disagree about them.
+      What this report shows is not whether you were right, but <em>what your team's choices added up to</em>:
+      the posture you settled into, how early it set, and what it left you exposed to.
+    </p>
+  </div>
+
+  <hr class="divide" />
+
+  <!-- ROSTER -->
+  <section class="pad">
+    <div class="sec-label">Team roster</div>
+    <table>
+      <thead><tr><th style="width:34%">Participant</th><th>Role</th><th>Decisions taken</th></tr></thead>
+      <tbody>
+        <tr><td>Ananya Rao</td><td>CEO</td><td>7 of 8</td></tr>
+        <tr><td>Vikram Shetty</td><td>CFO</td><td>6 of 7</td></tr>
+        <tr><td>Meera Iyer</td><td>CHRO</td><td>7 of 7</td></tr>
+        <tr><td>Rohit Nambiar</td><td>Head of Engineering</td><td>5 of 7</td></tr>
+        <tr><td>Priya Deshmukh</td><td>Head of Operations</td><td>6 of 6</td></tr>
+        <tr><td>Karan Malhotra</td><td>Head of Product</td><td>6 of 7</td></tr>
+      </tbody>
+    </table>
+    <p class="note" style="margin-top:12px">
+      A decision not submitted before its artifact expired is recorded as <b>No Response</b> — its own
+      outcome, never folded into one of the options. Four went unanswered across the team.
+    </p>
+  </section>
+
+  <hr class="divide" />
+
+  <!-- HIDDEN VARIABLES -->
+  <section class="pad">
+    <div class="sec-label">Where your team ended</div>
+    <p class="note" style="margin:-6px 0 16px">
+      Four variables ran underneath the whole simulation. You never saw them during play. They are reported
+      as bands, not numbers — the band is the finding; a decimal would imply a precision this doesn't have.
+    </p>
+
+    <div class="band-row">
+      <div class="band-name">Stakeholder Trust<span>Higher is stronger</span></div>
+      <div class="segs"><div class="seg on"></div><div class="seg on"></div><div class="seg"></div></div>
+      <div><span class="band-val">Medium</span>
+        <div class="band-meaning">You held credibility internally, but the same reassurance repeated to investors twice cost you the benefit of the doubt.</div></div>
+    </div>
+
+    <div class="band-row">
+      <div class="band-name">Organizational Risk<span>Higher is more exposed</span></div>
+      <div class="segs"><div class="seg on bad"></div><div class="seg on bad"></div><div class="seg on bad"></div></div>
+      <div><span class="band-val bad">High</span>
+        <div class="band-meaning">The anomaly never worsened — but it never closed either, and no one formally owned it until Round 3.</div></div>
+    </div>
+
+    <div class="band-row">
+      <div class="band-name">Execution Quality<span>Higher is stronger</span></div>
+      <div class="segs"><div class="seg on"></div><div class="seg on"></div><div class="seg"></div></div>
+      <div><span class="band-val">Medium</span>
+        <div class="band-meaning">Operations kept the queue moving, but the override backlog was absorbed rather than resolved.</div></div>
+    </div>
+
+    <div class="band-row">
+      <div class="band-name">Ethical Exposure<span>Higher is more exposed</span></div>
+      <div class="segs"><div class="seg on bad"></div><div class="seg on bad"></div><div class="seg on bad"></div></div>
+      <div><span class="band-val bad">High</span>
+        <div class="band-meaning">The gap between what the company published about Sentinel and what the room knew widened across all four rounds.</div></div>
+    </div>
+  </section>
+
+  <hr class="divide" />
+
+  <!-- THE SPINE: framings round by round -->
+  <section class="pad">
+    <div class="sec-label">How your team framed it, round by round</div>
+    <p class="note" style="margin:-6px 0 4px">
+      Each round ended with one framing decision, submitted by the CEO on behalf of the team. Read down the
+      column: this is the story your team told itself about the same unchanged anomaly.
+    </p>
+
+    <div class="round">
+      <div class="round-head"><span class="round-no serif">01</span><span class="round-title">Weak Signal, Strong Incentives</span></div>
+      <div class="framing"><b>Your framing</b>“This is a technical monitoring matter — Engineering owns it, no broader leadership framing needed.”</div>
+      <p class="consequence">Chosen in the first 17 minutes, on the least evidence you would ever have. It located the problem inside one function and set the vocabulary every later round inherited.</p>
+    </div>
+
+    <div class="round">
+      <div class="round-head"><span class="round-no serif">02</span><span class="round-title">When Ambiguity Becomes Discussable</span></div>
+      <div class="framing"><b>Your framing</b>“Contained operational matter — hold the language. Nothing has technically changed since Round 1.”</div>
+      <p class="consequence">Nothing had technically changed — that was true. Interpretations had, though: the cross-team thread showed three different readings of “contained” inside your own organisation.</p>
+    </div>
+
+    <div class="round">
+      <div class="round-head"><span class="round-no serif">03</span><span class="round-title">When Alignment Meets Exposure</span></div>
+      <div class="framing"><b>Your framing</b>“Formalize reporting without escalation — give the process more rigour without declaring a finding we don't have.”</div>
+      <p class="consequence">The first move toward governance, made after the regulator's pre-read request rather than before it. The trigger was external attention, not new evidence.</p>
+    </div>
+
+    <div class="round">
+      <div class="round-head"><span class="round-no serif">04</span><span class="round-title">Institutional Memory</span></div>
+      <div class="framing"><b>Your framing</b>“Call it fragmented alignment — different functions read the same signals differently, and the team never fully reconciled that.”</div>
+      <p class="consequence">A candid self-assessment. Worth testing in the debrief: was alignment the problem, or was it the thing that was working exactly as the incentives designed it to?</p>
+    </div>
+  </section>
+
+  <hr class="divide" />
+
+  <!-- CONSTRUCTS -->
+  <section class="pad">
+    <div class="sec-label">Leadership construct profile</div>
+    <p class="note" style="margin:-6px 0 16px">
+      Five constructs describe <em>how</em> your team handled ambiguity, drawn from every decision the six of
+      you made — not only the CEO's four.
+    </p>
+
+    <div class="band-row">
+      <div class="band-name">Early Signal Legitimization<span>Higher is stronger</span></div>
+      <div class="segs"><div class="seg on"></div><div class="seg"></div><div class="seg"></div></div>
+      <div><span class="band-val bad">Low</span><div class="band-meaning">The CRO's note was absorbed without being made discussable outside Engineering.</div></div>
+    </div>
+    <div class="band-row">
+      <div class="band-name">Silence Accumulation<span>Higher is more concerning</span></div>
+      <div class="segs"><div class="seg on bad"></div><div class="seg on bad"></div><div class="seg on bad"></div></div>
+      <div><span class="band-val bad">High</span><div class="band-meaning">Concerns were held privately — including four decisions that expired unanswered.</div></div>
+    </div>
+    <div class="band-row">
+      <div class="band-name">Framing Commitment<span>Higher is more concerning</span></div>
+      <div class="segs"><div class="seg on bad"></div><div class="seg on bad"></div><div class="seg on bad"></div></div>
+      <div><span class="band-val bad">High</span><div class="band-meaning">Round 1's language survived three rounds and two external enquiries largely intact.</div></div>
+    </div>
+    <div class="band-row">
+      <div class="band-name">Authority Centralization<span>Higher is more concerning</span></div>
+      <div class="segs"><div class="seg on bad"></div><div class="seg on bad"></div><div class="seg"></div></div>
+      <div><span class="band-val">Medium</span><div class="band-meaning">Judgment drifted upward to the CEO, though Operations and CHRO kept raising independently.</div></div>
+    </div>
+    <div class="band-row">
+      <div class="band-name">Option Space Contraction<span>Higher is more concerning</span></div>
+      <div class="segs"><div class="seg on bad"></div><div class="seg on bad"></div><div class="seg on bad"></div></div>
+      <div><span class="band-val bad">High</span><div class="band-meaning">By Round 4, escalating would have meant admitting three rounds of under-reaction.</div></div>
+    </div>
+
+    <p class="note" style="margin-top:16px">
+      <b>Dominant pattern: Narrative lock-in.</b> Option Space Contraction is not measured directly — it
+      compounds from accumulated Silence and Framing Commitment. Your team crossed the Round-1 silence
+      threshold, the point after which escalation starts costing more than it saves.
+    </p>
+  </section>
+
+  <hr class="divide" />
+
+  <!-- GLOSSARY -->
+  <section class="pad">
+    <div class="sec-label">What the five constructs mean</div>
+    <div class="gloss">
+      <div><h4>Early Signal Legitimization</h4><div class="dir">Higher is stronger</div>
+        <p>Whether a weak, deniable signal was given standing — named, owned and made discussable — before anything forced the issue.</p></div>
+      <div><h4>Silence Accumulation</h4><div class="dir">Higher is more concerning</div>
+        <p>Concern that was felt but not voiced. Silence is rarely a single choice; it compounds, and each unspoken round makes the next one easier.</p></div>
+      <div><h4>Framing Commitment</h4><div class="dir">Higher is more concerning</div>
+        <p>How tightly the organisation held its first description of the problem once that description became public inside the company.</p></div>
+      <div><h4>Authority Centralization</h4><div class="dir">Higher is more concerning</div>
+        <p>How far judgment collapsed upward — functions deferring to the CEO rather than exercising the authority their role already carried.</p></div>
+      <div><h4>Option Space Contraction</h4><div class="dir">Higher is more concerning</div>
+        <p>How much room to act the team still had at the end. Early framing plus accumulated silence quietly removes choices long before anyone notices they're gone.</p></div>
+      <div><h4>Reading the bands</h4><div class="dir">Low · Medium · High</div>
+        <p>Bands, not scores. Only Early Signal Legitimization is favourable when high; the other four describe pressure that builds against you.</p></div>
+    </div>
+  </section>
+
+  <hr class="divide" />
+
+  <!-- DECISION TRAIL -->
+  <section class="pad">
+    <div class="sec-label">Your decision trail</div>
+    <p class="note" style="margin:-6px 0 14px">
+      A selection of the moments where the trajectory moved. Every role's choices are recorded — the CEO's
+      framing was never the only thing that mattered.
+    </p>
+    <table>
+      <thead><tr><th style="width:8%">Rd</th><th style="width:30%">Moment</th><th style="width:20%">Role</th><th>Decision</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Slack: #sentinel-model-integrity</td><td>Head of Engineering</td><td>Tag as “known issue (monitor)”</td></tr>
+        <tr><td>1</td><td>Board Message</td><td>CEO</td><td>Reassure</td></tr>
+        <tr><td>1</td><td>Pulse Survey + Exit Interview</td><td>CHRO</td><td>Issue guidance encouraging escalation</td></tr>
+        <tr><td>1</td><td>Internal Tagging</td><td>Engineering / Operations</td><td>Operational noise / <b>Under observation</b></td></tr>
+        <tr><td>1</td><td>Investor Draft</td><td>CFO / Product</td><td>Approve / <b>Soft-edit</b></td></tr>
+        <tr><td>2</td><td>Regulator Scheduling Note</td><td>CEO</td><td>Exclude as non-material</td></tr>
+        <tr><td>2</td><td>Model Monitoring Digest</td><td>Head of Engineering</td><td><span class="pill none">No Response</span></td></tr>
+        <tr><td>2</td><td>Informal Escalation Inquiry</td><td>CHRO</td><td>Encourage open discussion</td></tr>
+        <tr><td>3</td><td>Internal Audit Check-In</td><td>CEO (for the team)</td><td>Confirm monitoring adjustments only</td></tr>
+        <tr><td>3</td><td>Workflow Audit Outcome</td><td>Head of Operations</td><td>Provide the explanation now</td></tr>
+        <tr><td>3</td><td>Investor Pattern Question</td><td>CFO</td><td>Repeat the prior reassurance</td></tr>
+        <tr><td>4</td><td>Whistle Channel Check</td><td>CHRO</td><td>Initiate review</td></tr>
+        <tr><td>4</td><td>Audit Trail Confirmation</td><td>Head of Engineering</td><td>Confirm partially, with gaps</td></tr>
+        <tr><td>4</td><td>Regulator Onsite Clarification</td><td>CEO</td><td><span class="pill none">No Response</span></td></tr>
+      </tbody>
+    </table>
+    <p class="note" style="margin-top:12px">
+      Where two roles answered the same artifact independently and disagreed, both answers stand — the more
+      cautious of the two is what carried into the next round.
+    </p>
+  </section>
+
+  <hr class="divide" />
+
+  <!-- TURNING POINT -->
+  <section class="pad narr">
+    <div class="sec-label">Where your trajectory was set</div>
+    <p>
+      Round 1, at roughly the seven-minute mark. Engineering tagged the anomaly as a known issue to monitor
+      and Operations logged it as under observation — two reasonable calls that, together, produced an
+      organisational position nobody had actually decided to take.
+    </p>
+    <p>
+      From there the pattern is consistent rather than dramatic. Your CHRO issued escalation guidance in
+      Round 1 and kept raising the culture signal in Rounds 3 and 4; that voice existed and did not carry.
+      The CFO repeated the same investor reassurance twice, which is what prompted the investor to ask why
+      the answer never changed. By Round 3 the move to formalise reporting was real — but it arrived after
+      the regulator asked, which is a different thing from arriving because the team decided.
+    </p>
+    <p>
+      Nothing here required anyone to behave badly. The anomaly never worsened, no customer complained, and
+      every individual decision was defensible on its own. That is the finding worth taking away.
+    </p>
+  </section>
+
+  <hr class="divide" />
+
+  <!-- PROMPTS -->
+  <section class="pad">
+    <div class="sec-label">Questions to sit with</div>
+    <ul class="prompts">
+      <li><b>Round 1</b>Which specific cue in the CRO's note would you now treat as decision-relevant rather than noise — and what would it have cost you to say so at minute seven?</li>
+      <li><b>Round 2</b>Did your team converge on “contained” because the evidence supported it, or because disagreement felt expensive? Who spoke first, and did that decide it?</li>
+      <li><b>Round 3</b>Whose interests were you protecting on the board agenda — the board's, the regulator's, or your own credibility?</li>
+      <li><b>Round 4</b>Was the whistle-channel inquiry treated as a data point or as a threat? What does that say about the culture the four rounds actually built?</li>
+      <li><b>Across the simulation</b>Two of your decisions expired unanswered. In a real quarter, what would those two silences have looked like to the people waiting on them?</li>
+    </ul>
+  </section>
+
+  <hr class="divide" />
+
+  <!-- FRAMEWORKS -->
+  <section class="pad">
+    <div class="sec-label">The frameworks behind each round</div>
+    <p class="note" style="margin:-6px 0 12px">Held back during play, so the rounds tested judgment rather than recall.</p>
+    <table>
+      <thead><tr><th style="width:8%">Rd</th><th style="width:32%">Round</th><th>Frameworks in play</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Weak Signal, Strong Incentives</td><td>Weak Signal Management (Ansoff) · Normalization of Deviance (Vaughan) · Agency Theory · Psychological Safety (Edmondson) · Issue Selling &amp; Escalation Judgment (Dutton &amp; Ashford)</td></tr>
+        <tr><td>2</td><td>When Ambiguity Becomes Discussable</td><td>Organizational Sensemaking (Weick) · Groupthink (Janis) · Responsible AI Maturity Model</td></tr>
+        <tr><td>3</td><td>When Alignment Meets Exposure</td><td>Three Lines of Defense · Stakeholder Theory (Freeman) · Responsible AI Governance Maturity</td></tr>
+        <tr><td>4</td><td>Institutional Memory</td><td>Whistleblowing &amp; Voice (Near &amp; Miceli) · Rest's Four-Component Model · Four Pillars of Responsible AI</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <div class="foot">
+    There is no ranking in this report and no comparison against other teams — the simulation has no dominant
+    strategy, only trade-offs made under incentive pressure and incomplete evidence about a system nobody in
+    the room fully understood. Bands describe your team's own trajectory. Prepared by CaseRun for the
+    facilitated debrief.
+  </div>
+
+</div>
+</body>
+</html>
