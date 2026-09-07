@@ -1,10 +1,13 @@
-// Human-readable label for a recorded decision. Maps the internal "SILENCE" outcome to the
-// script's "No Response" wording (spec 1.7), and resolves an action code to its option label
-// (from the artifact's decisionOptions) instead of showing the raw code.
+// Human-readable label for a recorded decision.
+//
+// The timeout outcome is stored internally as "SILENCE" and displayed as the script's "No Response"
+// (spec 1.7). It is deliberately NOT the same as the Board Message's real option "Do not respond"
+// (action code NO_RESPONSE) — 1.7 requires the no-answer outcome to stay distinct from every real
+// option, so only SILENCE maps to "No Response"; NO_RESPONSE resolves to its own option label.
 export function decisionLabel(artifact) {
   const action = artifact?.chosenAction;
   if (!action) return "";
-  if (action === "SILENCE" || action === "NO_RESPONSE") return "No Response";
+  if (action === "SILENCE") return "No Response";
   try {
     const opts =
       typeof artifact.decisionOptions === "string"

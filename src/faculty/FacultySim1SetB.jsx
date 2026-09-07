@@ -52,7 +52,7 @@ export default function FacultySim1SetB({ simulationId }) {
   };
   const cell = (c, node) => (
     <span className={`f-band f-band-${colorClass(c, node?.band)}`}>
-      {node?.band ? `${node.value} · ${node.band}` : "—"}
+      {node?.band ? `${node.value}/100 · ${node.band}` : "—"}
     </span>
   );
 
@@ -69,6 +69,40 @@ export default function FacultySim1SetB({ simulationId }) {
         high; <strong>Silence, Framing, Authority Centralization</strong> and <strong>Option Space</strong>{" "}
         are adverse when high. Students never see these numbers — reveal them qualitatively.
       </p>
+
+      {/* Standing methodology reference (script 9) — replaces one-off inline annotations, and
+          cross-links each construct to its debrief prompt and framework so the facilitator does not
+          have to hold a second document open. */}
+      <Collapsible title="How to read this" subtitle="scale, bands, and what each construct maps to">
+        <p className="f-note" style={{ marginTop: 0 }}>
+          <strong>Scale.</strong> Every construct runs 0–100 from a 50 baseline. Bands:{" "}
+          <strong>High ≥ 67</strong>, <strong>Medium 34–66</strong>, <strong>Low &lt; 34</strong>. A team
+          that never moved a construct sits at 50.
+        </p>
+        <p className="f-note">
+          <strong>Direction.</strong> Early Signal Legitimization is the only construct where high is
+          good. Silence, Framing Commitment, Authority Centralization and Option Space Contraction are
+          adverse when high.
+        </p>
+        <p className="f-note">
+          <strong>Interaction effect.</strong> Option Space is not measured directly — it is a base value
+          plus an interaction term driven by accumulated Silence and Framing Commitment (shown per team as
+          “base → + interaction”). Crossing the Round-1 silence threshold forecloses escalation and is
+          flagged separately.
+        </p>
+        <p className="f-note">
+          <strong>Cohort size.</strong> Below 10 teams the class-level insights report raw counts
+          (“2 of 3 teams”), not percentages — a percentage would imply weight this sample cannot carry.
+        </p>
+        <p className="f-note" style={{ marginBottom: 0 }}>
+          <strong>Where each construct lands in the debrief (Section 8 / Framework Map 0.1).</strong>{" "}
+          Early Signal Legitimization → Round 1, Ansoff weak signals &amp; normalization of deviance.
+          Silence → Round 1 psychological safety (Edmondson) and the Round-4 whistle channel. Framing
+          Commitment → Round 2 sensemaking (Weick) and groupthink (Janis). Authority Centralization →
+          Round 3 Three Lines of Defense. Option Space Contraction → Cross-round synthesis: how early
+          framing compounds into governance exposure (Learning Objective 7).
+        </p>
+      </Collapsible>
 
       {(data.classInsights || []).length > 0 && (
         <Collapsible title="Class-level insights" defaultOpen>
