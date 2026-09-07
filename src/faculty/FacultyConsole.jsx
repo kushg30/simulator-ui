@@ -396,7 +396,7 @@ export default function FacultyConsole() {
                 className={debriefSim === "sim1" ? "" : "f-ghost"}
                 onClick={() => setDebriefSim("sim1")}
               >
-                Simulation 1 · Leadership Judgment
+                Simulation 1 · Phoenix AI Judgment
               </button>
             </div>
             {debriefSim === "sim2" ? (

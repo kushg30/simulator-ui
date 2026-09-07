@@ -74,7 +74,7 @@ export default function FacultySim1Debrief({ simulationId }) {
     <div>
       <div className="f-spread">
         <h2 style={{ margin: 0 }}>
-          Simulation 1 — Leadership Judgment · {teams.length} team
+          Simulation 1 — Phoenix AI Judgment · {teams.length} team
           {teams.length === 1 ? "" : "s"}
         </h2>
         <span className="f-note">click a team to see each role</span>

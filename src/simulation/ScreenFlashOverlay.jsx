@@ -1,6 +1,7 @@
 // src/simulation/ScreenFlashOverlay.jsx
 import { useState } from "react";
 import "./ScreenFlashOverlay.css";
+import { decisionLabel } from "./decisionLabel";
 
 export default function ScreenFlashOverlay({
   artifact,
@@ -28,7 +29,7 @@ export default function ScreenFlashOverlay({
       return (
         <div className="flash-acted">
           <span className="flash-acted-check">✓</span>
-          Decision recorded: <strong>{artifact.chosenAction}</strong>
+          Decision recorded: <strong>{decisionLabel(artifact)}</strong>
         </div>
       );
     }

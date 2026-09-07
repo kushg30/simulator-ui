@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import API_BASE from "../config";
+import { decisionLabel } from "./decisionLabel";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 function getInitials(name = "") {
@@ -52,7 +53,7 @@ function DecisionStrip({ artifact, options, onDecide, loading, error, className 
   if (artifact.actionState === "ACTED") {
     return (
       <div className="decision-confirmation">
-        Decision recorded: {artifact.chosenAction}
+        Decision recorded: {decisionLabel(artifact)}
       </div>
     );
   }

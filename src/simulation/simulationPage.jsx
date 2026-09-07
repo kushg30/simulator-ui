@@ -98,7 +98,7 @@ const ROUND_META = {
   1: {
     title: "Weak Signal, Strong Incentives",
     prompt:
-      "Compare CEO framings across teams. What made “operational noise” feel defensible to some teams and not others, given the same GenAI risk information?",
+      "Compare CEO framings across teams. What made the “technical monitoring matter” framing feel defensible to some teams and not others, given the same GenAI risk information?",
   },
   2: {
     title: "When Ambiguity Becomes Discussable",
@@ -512,7 +512,7 @@ export default function SimulationPage() {
           Role:&nbsp;<span className="role-value">{ROLE_DISPLAY[role] || role}</span>
         </div>
         <div className="top-center">
-          <div className="app-title">Leadership Simulator</div>
+          <div className="app-title">Phoenix AI Judgment</div>
           <div className="phase-label">
             Round {round?.roundNumber ?? 1}
             {round?.totalRounds ? ` of ${round.totalRounds}` : ""} · Interpretation Phase

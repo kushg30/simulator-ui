@@ -1,4 +1,5 @@
 // SlackArtifact.jsx
+import { decisionLabel } from "./decisionLabel";
 
 function getInitials(name) {
   return name
@@ -86,7 +87,7 @@ export default function SlackArtifact({ artifact, options, onDecide, loading }) 
 
       {artifact.actionState === "ACTED" && (
         <div className="decision-confirmation">
-          Decision submitted: {artifact.chosenAction}
+          Decision submitted: {decisionLabel(artifact)}
         </div>
       )}
 
