@@ -1,6 +1,15 @@
 import { Fragment, useCallback, useEffect, useState } from "react";
-import { getSim1Constructs, SIM1_SETB_ADVERSE, SIM1_SETB_LABELS } from "./api";
+import {
+  getSim1Constructs,
+  getSim1Leaderboard,
+  getSim1Report,
+  SIM1_SETB_ADVERSE,
+  SIM1_SETB_FULL,
+  SIM1_SETB_LABELS,
+} from "./api";
 import Collapsible from "./Collapsible";
+import Sim1TeamReport from "../report/Sim1TeamReport";
+import { BandDistribution, RankBars } from "../report/Sim1Charts";
 
 /**
  * Faculty debrief for Simulator 1 (Leadership Judgment — ANP Phoenix), Set-B.
@@ -12,15 +21,34 @@ import Collapsible from "./Collapsible";
  */
 export default function FacultySim1SetB({ simulationId }) {
   const [data, setData] = useState(null);
+  const [board, setBoard] = useState(null); // cohort ranking per construct
   const [error, setError] = useState("");
   const [expanded, setExpanded] = useState(null); // runId whose roles are shown
+
+  // Per-team report, generated on demand from the console.
+  const [report, setReport] = useState(null);
+  const [reportBusy, setReportBusy] = useState(null); // runId currently loading
 
   const refresh = useCallback(() => {
     if (!simulationId) return;
     getSim1Constructs(simulationId)
       .then(setData)
       .catch((e) => setError(e.message));
+    getSim1Leaderboard(simulationId)
+      .then(setBoard)
+      .catch(() => { /* the ranking is additive — never block the debrief on it */ });
   }, [simulationId]);
+
+  const openReport = async (runId) => {
+    setReportBusy(runId);
+    try {
+      setReport(await getSim1Report(runId));
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setReportBusy(null);
+    }
+  };
 
   useEffect(() => {
     refresh();
@@ -116,6 +144,37 @@ export default function FacultySim1SetB({ simulationId }) {
         </Collapsible>
       )}
 
+      {/* ── cohort ranking ──────────────────────────────────────────────
+          Ranked best-first, and "best" respects direction: for the four adverse constructs the
+          LOWEST score leads the board. Ranking all five by raw value would put the team that drifted
+          furthest at the top of four of the five cards. */}
+      {board && board.teamCount > 0 && (
+        <Collapsible
+          title="Cohort ranking"
+          subtitle={`${board.teamCount} team${board.teamCount === 1 ? "" : "s"} · ranked per construct`}
+          defaultOpen
+        >
+          <RankBars
+            leaderboard={board}
+            labels={SIM1_SETB_FULL}
+            adverse={SIM1_SETB_ADVERSE}
+            order={order}
+          />
+        </Collapsible>
+      )}
+
+      {/* ── class distribution — the chart to project in the debrief ───── */}
+      {board && board.teamCount > 0 && (
+        <Collapsible title="Class distribution" subtitle="how the cohort split across the bands">
+          <BandDistribution
+            leaderboard={board}
+            labels={SIM1_SETB_FULL}
+            adverse={SIM1_SETB_ADVERSE}
+            order={order}
+          />
+        </Collapsible>
+      )}
+
       <Collapsible title="Teams" subtitle={`${teams.length} played`} defaultOpen>
       <div style={{ overflowX: "auto" }}>
         <table>
@@ -126,6 +185,7 @@ export default function FacultySim1SetB({ simulationId }) {
                 <th key={c}>{SIM1_SETB_LABELS[c] || c}</th>
               ))}
               <th>Dominant pattern</th>
+              <th>Report</th>
             </tr>
           </thead>
           <tbody>
@@ -148,6 +208,15 @@ export default function FacultySim1SetB({ simulationId }) {
                       <td key={c}>{cell(c, cons[c])}</td>
                     ))}
                     <td className="f-note">{team.dominantPattern || "—"}</td>
+                    <td onClick={(e) => e.stopPropagation()}>
+                      <button
+                        className="f-ghost"
+                        onClick={() => openReport(t.runId)}
+                        disabled={reportBusy === t.runId}
+                      >
+                        {reportBusy === t.runId ? "Generating…" : "Generate"}
+                      </button>
+                    </td>
                   </tr>
                   {open &&
                     (t.participants || []).map((p, i) => (
@@ -160,11 +229,12 @@ export default function FacultySim1SetB({ simulationId }) {
                           <td key={c}>{cell(c, p.constructs?.[c])}</td>
                         ))}
                         <td />
+                        <td />
                       </tr>
                     ))}
                   {open && (
                     <tr>
-                      <td colSpan={order.length + 2} style={{ paddingLeft: 26 }}>
+                      <td colSpan={order.length + 3} style={{ paddingLeft: 26 }}>
                         <div className="f-note" style={{ padding: "4px 0 8px" }}>
                           Option Space: base {eff.optionSpaceBase} → +{eff.optionSpaceInteraction} interaction
                           {eff.escalationForeclosed ? " → +15 escalation foreclosed" : ""} ={" "}
@@ -183,6 +253,8 @@ export default function FacultySim1SetB({ simulationId }) {
         </table>
       </div>
       </Collapsible>
+
+      {report && <Sim1TeamReport data={report} onClose={() => setReport(null)} />}
     </div>
   );
 }

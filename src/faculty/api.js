@@ -114,6 +114,21 @@ export const getSim1Debrief = (simulationId) =>
 export const getSim1Constructs = (simulationId) =>
   call(`/sim1/simulations/${simulationId}/constructs`);
 
+// ── Simulator 1 cohort ranking + per-team report (faculty side) ─────────────
+export const getSim1Leaderboard = (simulationId) =>
+  call(`/sim1/simulations/${simulationId}/leaderboard`);
+export const getSim1Report = (runId) => call(`/sim1/runs/${runId}/report`);
+
+// Full construct names, for the report and the ranking cards. The short labels below are for
+// table headers, where the column width is the constraint.
+export const SIM1_SETB_FULL = {
+  EARLY_SIGNAL_LEGITIMIZATION: "Early Signal Legitimization",
+  SILENCE_ACCUMULATION: "Silence Accumulation",
+  FRAMING_COMMITMENT: "Framing Commitment",
+  AUTHORITY_CENTRALIZATION: "Authority Centralization",
+  OPTION_SPACE_CONTRACTION: "Option Space Contraction",
+};
+
 export const SIM1_SETB_LABELS = {
   EARLY_SIGNAL_LEGITIMIZATION: "Early Signal Legit.",
   SILENCE_ACCUMULATION: "Silence",

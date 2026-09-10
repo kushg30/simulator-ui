@@ -5,9 +5,13 @@
 // numbers and never a ranking against other teams (1.9). Immediately after that reveal the screen shows
 // "Simulation complete." and nothing else: no explanation, no framing. The facilitator delivers the
 // rest live in the debrief.
+//
+// The team's own report sits below that, as a deliberate second beat: it is the takeaway document, and
+// it is fetched only when a participant asks for it so the reveal is not buried under it.
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import API_BASE from "../config";
+import Sim1TeamReport from "../report/Sim1TeamReport";
 import "./ResultsDashboard.css";
 
 const BAND_COLOR = {
@@ -20,6 +24,11 @@ export default function ResultsDashboard() {
   const [params] = useSearchParams();
   const runId = params.get("runId");
   const [reveal, setReveal] = useState(null);
+
+  const [report, setReport] = useState(null);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportBusy, setReportBusy] = useState(false);
+  const [reportError, setReportError] = useState("");
 
   useEffect(() => {
     if (!runId) return;
@@ -34,6 +43,27 @@ export default function ResultsDashboard() {
       stop = true;
     };
   }, [runId]);
+
+  // Fetched on demand and cached, so reopening the report after closing it is instant.
+  const openReport = async () => {
+    if (report) {
+      setReportOpen(true);
+      return;
+    }
+    setReportBusy(true);
+    setReportError("");
+    try {
+      const res = await fetch(`${API_BASE}/api/runs/${runId}/report`);
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || "Your report could not be loaded.");
+      setReport(body);
+      setReportOpen(true);
+    } catch (e) {
+      setReportError(e.message);
+    } finally {
+      setReportBusy(false);
+    }
+  };
 
   return (
     <div
@@ -79,6 +109,23 @@ export default function ResultsDashboard() {
       <h1 style={{ fontWeight: 600, letterSpacing: "0.01em", margin: 0 }}>
         Simulation complete.
       </h1>
+
+      <div style={{ marginTop: 40, textAlign: "center" }}>
+        <button className="results-report-btn" onClick={openReport} disabled={reportBusy}>
+          {reportBusy ? "Preparing your report…" : "View your team report"}
+        </button>
+        <div style={{ fontSize: 12.5, color: "#7c8698", marginTop: 12, maxWidth: 380 }}>
+          Your full takeaway report — the roster, your four framings, your construct profile and the
+          whole decision trail. Open it, then use <b>Download PDF</b> to keep a copy.
+        </div>
+        {reportError && (
+          <div style={{ fontSize: 12.5, color: "#e5786a", marginTop: 12 }}>{reportError}</div>
+        )}
+      </div>
+
+      {reportOpen && report && (
+        <Sim1TeamReport data={report} onClose={() => setReportOpen(false)} />
+      )}
     </div>
   );
 }

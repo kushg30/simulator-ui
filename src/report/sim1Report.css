@@ -1,0 +1,293 @@
+/* Simulator 1 team report.
+   Ported from the approved sample (public/sample-report-sim1.html) and scoped under .s1rpt so the
+   report's light, printed-paper palette cannot leak into the dark app chrome around it. */
+
+.s1rpt-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: rgba(6, 8, 12, 0.72);
+  backdrop-filter: blur(3px);
+  overflow-y: auto;
+  padding: 56px 16px 48px;
+}
+
+.s1rpt-toolbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 310;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 16px;
+  background: #11151d;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+  color: #e6ebf3;
+  font-size: 13px;
+}
+.s1rpt-toolbar button {
+  margin-left: 8px;
+  padding: 6px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: #d8b45a;
+  color: #1a1408;
+  cursor: pointer;
+}
+.s1rpt-toolbar button.ghost {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.18);
+  color: #cbd3e0;
+}
+
+.s1rpt {
+  --ink: #1c2230;
+  --muted: #5b6577;
+  --faint: #8b93a3;
+  --gold: #b3902f;
+  --line: #e7e3d8;
+  --paper: #ffffff;
+  --panel: #faf8f2;
+  --good: #3d8a63;
+  --adverse: #a8452f;
+
+  max-width: 820px;
+  margin: 0 auto;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.6;
+  box-shadow: 0 20px 60px -30px rgba(0, 0, 0, 0.5);
+  border-radius: 6px;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+.s1rpt * { box-sizing: border-box; }
+.s1rpt .serif { font-family: "Playfair Display", Georgia, serif; }
+.s1rpt .pad { padding: 34px 46px; }
+
+.s1rpt .mast {
+  padding: 26px 46px;
+  border-bottom: 2px solid var(--ink);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+.s1rpt .brand {
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-size: 15px;
+}
+.s1rpt .brand small {
+  display: block;
+  letter-spacing: 0.14em;
+  font-size: 10px;
+  color: var(--muted);
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.s1rpt h1.title { font-size: 30px; margin: 0 0 6px; line-height: 1.12; }
+.s1rpt .subtitle { color: var(--muted); font-size: 14.5px; }
+.s1rpt .meta-row {
+  display: flex;
+  gap: 26px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+.s1rpt .meta { font-size: 12.5px; }
+.s1rpt .meta b {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--faint);
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+
+.s1rpt .lead {
+  font-size: 15.5px;
+  line-height: 1.65;
+  color: #333c4d;
+  border-left: 3px solid var(--gold);
+  padding-left: 18px;
+  margin: 4px 0 0;
+}
+.s1rpt .sec-label {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--gold);
+  margin: 0 0 16px;
+}
+.s1rpt .divide { border: none; border-top: 1px solid var(--line); margin: 0; }
+.s1rpt .note { font-size: 12.5px; color: var(--muted); }
+
+/* Qualitative band indicator — three segments, no numbers, per the no-scoreboard design. */
+.s1rpt .band-row {
+  display: grid;
+  grid-template-columns: 210px 132px 1fr;
+  gap: 16px;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+.s1rpt .band-row:last-child { border-bottom: none; }
+.s1rpt .band-name { font-weight: 600; font-size: 13.5px; }
+.s1rpt .band-name span {
+  display: block;
+  font-weight: 400;
+  font-size: 11px;
+  color: var(--faint);
+  margin-top: 2px;
+  letter-spacing: 0.03em;
+}
+.s1rpt .segs { display: flex; gap: 4px; }
+.s1rpt .seg { height: 9px; flex: 1; border-radius: 999px; background: #eeece4; }
+.s1rpt .seg.on { background: linear-gradient(90deg, #d9be6e, var(--gold)); }
+.s1rpt .seg.on.bad { background: linear-gradient(90deg, #d79b86, var(--adverse)); }
+.s1rpt .band-val {
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.s1rpt .band-val.bad { color: var(--adverse); }
+.s1rpt .band-val.ok { color: var(--good); }
+.s1rpt .band-meaning { font-size: 12.5px; color: var(--muted); }
+.s1rpt .band-rank {
+  display: block;
+  font-size: 10.5px;
+  letter-spacing: 0.05em;
+  color: var(--faint);
+  margin-top: 2px;
+}
+
+/* Round spine */
+.s1rpt .round { padding: 18px 0; border-bottom: 1px solid var(--line); }
+.s1rpt .round:last-child { border-bottom: none; }
+.s1rpt .round-head { display: flex; align-items: baseline; gap: 10px; }
+.s1rpt .round-no {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 21px;
+  color: var(--gold);
+  line-height: 1;
+}
+.s1rpt .round-title { font-weight: 700; font-size: 14.5px; }
+.s1rpt .framing {
+  margin: 9px 0 0;
+  padding: 11px 14px;
+  background: var(--panel);
+  border-left: 3px solid var(--gold);
+  font-size: 13.5px;
+  color: #2c3444;
+}
+.s1rpt .framing b {
+  display: block;
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--faint);
+  margin-bottom: 4px;
+}
+.s1rpt .framing.missed { border-left-color: var(--adverse); color: var(--adverse); }
+.s1rpt .consequence { font-size: 13px; color: var(--muted); margin: 9px 0 0; }
+
+/* Glossary */
+.s1rpt .gloss { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 26px; }
+.s1rpt .gloss > div { font-size: 12.8px; }
+.s1rpt .gloss h4 { margin: 0 0 3px; font-size: 13px; }
+.s1rpt .gloss p { margin: 0; color: var(--muted); }
+.s1rpt .gloss .dir {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--faint);
+}
+
+.s1rpt table { width: 100%; border-collapse: collapse; font-size: 12.8px; }
+.s1rpt th {
+  text-align: left;
+  font-size: 10px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--faint);
+  font-weight: 700;
+  padding: 0 10px 9px;
+}
+.s1rpt td { padding: 10px; border-top: 1px solid var(--line); vertical-align: top; }
+.s1rpt .pill {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  letter-spacing: 0.04em;
+}
+.s1rpt .pill.none { background: #f7e9e5; color: var(--adverse); }
+
+.s1rpt .narr p { font-size: 14px; color: #333c4d; margin: 0 0 12px; }
+.s1rpt .narr p:last-child { margin-bottom: 0; }
+.s1rpt .prompts { margin: 0; padding-left: 20px; }
+.s1rpt .prompts li { font-size: 13.5px; color: #333c4d; margin-bottom: 10px; }
+.s1rpt .prompts li b {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.s1rpt .foot {
+  padding: 24px 46px 34px;
+  background: var(--panel);
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* Charts inside the report share the paper palette. */
+.s1rpt .chart-wrap { display: flex; gap: 26px; align-items: center; flex-wrap: wrap; }
+.s1rpt .chart-legend { font-size: 11.5px; color: var(--muted); max-width: 320px; }
+.s1rpt .chart-legend div { margin-bottom: 5px; }
+
+@page { margin: 12mm; }
+@media print {
+  /* Print the report alone: the app chrome, the scrim and the toolbar all disappear so the PDF is
+     the sheet and nothing else. */
+  body > *:not(.s1rpt-scrim) { display: none !important; }
+  .s1rpt-scrim {
+    position: static;
+    inset: auto;
+    background: #fff;
+    padding: 0;
+    overflow: visible;
+    backdrop-filter: none;
+  }
+  .s1rpt-toolbar { display: none !important; }
+  .s1rpt {
+    box-shadow: none;
+    margin: 0;
+    max-width: none;
+    border-radius: 0;
+  }
+  .s1rpt .round,
+  .s1rpt .band-row,
+  .s1rpt .gloss > div,
+  .s1rpt tr,
+  .s1rpt .prompts li { break-inside: avoid; }
+  .s1rpt section { break-inside: avoid-page; }
+}

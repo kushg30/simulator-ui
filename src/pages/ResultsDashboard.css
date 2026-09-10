@@ -750,3 +750,20 @@
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 2px; }
+
+/* Team report entry point on the completion screen. Deliberately quiet — the qualitative reveal is
+   the moment; the report is the thing you take away from it. */
+.results-report-btn {
+  padding: 11px 26px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: #1a1408;
+  background: #d8b45a;
+  border: none;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+.results-report-btn:hover:not(:disabled) { filter: brightness(1.07); }
+.results-report-btn:disabled { opacity: 0.6; cursor: default; }

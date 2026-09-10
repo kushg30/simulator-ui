@@ -338,3 +338,56 @@ html.faculty-scroll::-webkit-scrollbar-thumb:hover { background: #64749a; backgr
 .rpt-gloss-what { font-size: 13px; color: #333c4d; line-height: 1.6; }
 .rpt-gloss-why { font-size: 12.5px; color: #5b6577; line-height: 1.55; margin-top: 3px; }
 .rpt-gloss-why b { color: #b3902f; }
+
+/* ── Simulator 1 ranking + distribution ───────────────────────────────────
+   The rank cards are shared with Sim 2; these additions carry the direction of
+   each construct, which Sim 1 needs and Sim 2 does not (there, higher is always
+   better). */
+.fac .f-rank-dir {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--f-muted);
+  margin-top: 2px;
+}
+/* The team whose report is open, highlighted inside the ranking. */
+.fac .f-rank-me .f-rank-name { color: var(--f-text); font-weight: 600; }
+
+.fac .f-dist { margin-top: 8px; }
+.fac .f-dist-row {
+  display: grid;
+  grid-template-columns: 190px 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 7px 0;
+}
+.fac .f-dist-name {
+  font-size: 0.8rem;
+  color: var(--f-text);
+}
+.fac .f-dist-name span {
+  display: block;
+  font-size: 0.67rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--f-muted);
+  margin-top: 1px;
+}
+.fac .f-dist-bar {
+  display: flex;
+  height: 22px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.05);
+}
+.fac .f-dist-seg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.92);
+  min-width: 18px;
+}

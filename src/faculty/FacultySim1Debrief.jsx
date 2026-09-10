@@ -85,6 +85,40 @@ export default function FacultySim1Debrief({ simulationId }) {
         direction, so the colour is inverted while the label still reads the raw level.
       </p>
 
+      {/* Per-team bars for the four hidden variables. Colour follows MEANING, not size: a long bar on
+          Organizational Risk or Ethical Exposure is the adverse reading, so it shows red while the
+          same length on Trust or Execution shows green. */}
+      <div className="f-rank-grid" style={{ marginBottom: 16 }}>
+        {teams.map((t) => (
+          <div className="f-rank-card" key={`chart-${t.runId}`}>
+            <div className="f-rank-title">
+              {t.teamName}
+              <span className="f-rank-dir">hidden variables (Set A)</span>
+            </div>
+            {constructs.map((c) => {
+              const v = t.scores?.[c];
+              const adverse = SIM1_ADVERSE.has(c);
+              const bad = v == null ? false : adverse ? v >= 67 : v < 34;
+              return (
+                <div className="f-rank-row" key={c} title={`${SIM1_CONSTRUCT_LABELS[c] || c}: ${v ?? "—"}`}>
+                  <span className="f-rank-name">{SIM1_CONSTRUCT_LABELS[c] || c}</span>
+                  <span className="f-rank-track">
+                    <span
+                      className="f-rank-fill"
+                      style={{
+                        width: `${Math.max(2, v ?? 0)}%`,
+                        background: v == null ? "#4b5563" : bad ? "#a8452f" : "#3fb950",
+                      }}
+                    />
+                  </span>
+                  <span className="f-rank-val">{v ?? "—"}</span>
+                </div>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+
       <div style={{ overflowX: "auto" }}>
         <table>
           <thead>
