@@ -32,6 +32,11 @@ export default function WaitingPage() {
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState("");
 
+  // The bot-fill shortcut is a testing affordance only — never shown to a live cohort.
+  const devMode =
+    searchParams.get("dev") === "1" ||
+    (typeof window !== "undefined" && /^(localhost|127\.0\.0\.1)$/.test(window.location.hostname));
+
   const fetchParticipants = useCallback(async () => {
     try {
       const res = await fetch(`${API_BASE}/api/teams/${teamId}/participants`);
@@ -193,8 +198,10 @@ export default function WaitingPage() {
           <p className="s2-sub">Waiting for the CEO to start the simulation…</p>
         )}
 
-        {/* TESTING ONLY — remove before real sessions. */}
-        {!allSeatsFilled && (
+        {/* Testing shortcut, hidden from students. A live cohort must never see this: a student who
+            clicked it would fill their own teammates' seats with bots and lock them out of the team.
+            Kept available for solo testing behind ?dev=1 (or on localhost). */}
+        {devMode && !allSeatsFilled && (
           <div className="s2-card" style={{ borderStyle: "dashed", marginTop: 14 }}>
             <p className="s2-sub" style={{ margin: "0 0 10px" }}>
               Testing shortcut — fill the empty seats with bots so you can start solo.

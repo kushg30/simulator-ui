@@ -74,7 +74,7 @@ export default function TeamJoinPage() {
   return (
     <div className="sim2">
       <div className="s2-shell">
-        <h1>Leadership Judgment — ANP Phoenix</h1>
+        <h1>Phoenix AI Judgment — ANP Phoenix</h1>
         <p className="s2-sub">
           You are the senior leadership team of ANP Phoenix. Create a team to lead it as CEO, or join
           an existing one with the 4-digit code your CEO shares.

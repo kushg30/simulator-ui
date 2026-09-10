@@ -18,7 +18,10 @@ export default function ArtifactList({ artifacts, selectedId, onSelect, typeLabe
           typeLabels[artifact.artifactType] ||
           artifact.artifactType;
 
-        const typeLabel = typeLabels[artifact.artifactType] || artifact.artifactType;
+        // Script 1.3: the category tab already says what kind of artifact this is, so the row must
+        // NOT repeat a sub-type tag ("Internal Note", "Message", …). Show the sender instead — that is
+        // the line the reader actually needs, and it matches the sender convention in 1.4.
+        const meta = payload?.from || payload?.channel || "";
 
         return (
           <div
@@ -35,7 +38,7 @@ export default function ArtifactList({ artifacts, selectedId, onSelect, typeLabe
               {title}
               {artifact.status === "UNREAD" && <span className="unread-dot" />}
             </div>
-            <div className="meta">{typeLabel}</div>
+            {meta && <div className="meta">{meta}</div>}
           </div>
         );
       })}
