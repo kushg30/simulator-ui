@@ -297,3 +297,51 @@
 }
 @keyframes rtf-in { from { opacity: 0; transform: translate(-50%, -8px); } to { opacity: 1; transform: translate(-50%, 0); } }
 @keyframes rtf-out { to { opacity: 0; transform: translate(-50%, -8px); } }
+
+/* ── Facilitator pause ─────────────────────────────────────────────────────
+   Above the news overlay and the round-ending flash: a pause has to stop play
+   for every role, not just freeze the countdown in the corner. */
+.pause-overlay {
+  position: fixed; inset: 0; z-index: 120;
+  display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(120% 100% at 50% 40%, rgba(10, 14, 24, 0.93), rgba(3, 5, 9, 0.98));
+  backdrop-filter: blur(14px);
+  animation: rt-fade 0.3s ease both;
+}
+.pause-inner {
+  max-width: 620px; padding: 0 32px; text-align: center;
+  animation: rt-rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.pause-mark { font-size: 46px; line-height: 1; opacity: 0.85; margin-bottom: 18px; }
+.pause-headline {
+  font-size: 30px; font-weight: 650; letter-spacing: -0.01em;
+  color: #e8edf6; margin-bottom: 14px;
+}
+.pause-body { font-size: 16px; line-height: 1.6; color: #a8b4c8; }
+.pause-foot {
+  margin-top: 22px; font-family: "IBM Plex Mono", monospace;
+  font-size: 12px; letter-spacing: 0.09em; text-transform: uppercase; color: #6f7d93;
+}
+
+/* ── Session terminated by the facilitator ─────────────────────────────────
+   A full page, not an overlay: there is nothing left underneath to return to. */
+.session-ended {
+  position: fixed; inset: 0; z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(120% 100% at 50% 38%, #16090b, #050304);
+  color: #e8edf6;
+}
+.session-ended-inner {
+  max-width: 560px; padding: 0 32px; text-align: center;
+  animation: rt-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.session-ended-mark { color: #d9534f; font-size: 28px; line-height: 1; margin-bottom: 20px; }
+.session-ended h1 {
+  font-size: 32px; font-weight: 650; letter-spacing: -0.01em; margin: 0 0 16px;
+}
+.session-ended p { font-size: 16px; line-height: 1.65; color: #a8b4c8; margin: 0 0 12px; }
+.session-ended-sub {
+  margin-top: 22px !important;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12.5px; letter-spacing: 0.06em; color: #7c8a9f !important;
+}

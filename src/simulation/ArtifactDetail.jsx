@@ -679,7 +679,12 @@ export default function ArtifactDetail({ artifact, runId, participantId, refetch
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ participantId, decisionId: artifact.decisionId, action }),
       });
-      if (!res.ok) throw new Error("Couldn't record that — please try again.");
+      if (!res.ok) {
+        // The server rejects writes into a paused or ended session — say which, rather than telling
+        // the participant to retry something that will keep failing.
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || "Couldn't record that — please try again.");
+      }
       await refetch();
       if (artifact.updateStatus) artifact.updateStatus(artifact.artifactId, "ACTED");
     } catch (err) {

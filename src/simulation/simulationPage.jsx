@@ -145,6 +145,7 @@ export default function SimulationPage() {
   const [pausedSeconds, setPausedSeconds] = useState(0);  // faculty pause + News slide (1.2)
   const [news,         setNews]         = useState(null); // active News interrupt (1.2)
   const [interstitial, setInterstitial] = useState(null); // post-round debrief screen (1.10)
+  const [terminated,   setTerminated]   = useState(false); // facilitator ended the session
 
   useEffect(() => {
     if (!runId) return;
@@ -154,6 +155,12 @@ export default function SimulationPage() {
         const res = await fetch(`${API_BASE}/api/runs/${runId}/round-state`);
         if (!res.ok) return;
         const s = await res.json();
+        // Ending a session has to be visible in the room. Previously terminate only stopped the feed
+        // server-side and the participants sat looking at a live-looking round, so nobody knew to stop.
+        if (s.terminated) {
+          setTerminated(true);
+          return;
+        }
         if (s.completed) {
           // If the last round was still on screen, show its interstitial before the reveal.
           navigate(`/results?runId=${runId}`);
@@ -223,12 +230,9 @@ export default function SimulationPage() {
       : "ANP Phoenix — CaseRun";
   }, [round?.roundNumber]);
 
-  useEffect(() => {
-    const id = setInterval(() => {
-      if (document.visibilityState === "visible") refetch();
-    }, 3000);
-    return () => clearInterval(id);
-  }, [refetch]);
+  // (The artifact feed polls itself inside useArtifacts — it must not be driven from here, because this
+  // component re-renders every second for the countdown and an interval hung off `refetch` was being
+  // torn down before it could ever fire.)
 
   useEffect(() => {
     if (!artifacts) return;
@@ -335,6 +339,7 @@ export default function SimulationPage() {
 
   const handleFlashDecision = async action => {
     if (!activeFlash?.decisionId) return;
+    if (round?.paused) return; // paused: the server would reject it anyway
     try {
       setFlashLoading(true);
       const res = await fetch(`${API_BASE}/api/runs/${runId}/decisions`, {
@@ -398,6 +403,24 @@ export default function SimulationPage() {
 
   if (!runId || !participantId)
     return <div className="sim-error">Invalid session.</div>;
+  // Takes precedence over loading/error: once the facilitator ends the session, that is the only thing
+  // the participant should see, whatever else the page was doing.
+  if (terminated)
+    return (
+      <div className="session-ended" role="alertdialog" aria-label="Session ended">
+        <div className="session-ended-inner">
+          <div className="session-ended-mark">■</div>
+          <h1>Session ended</h1>
+          <p>
+            The facilitator has ended this simulation. Your team’s decisions up to this point have been
+            saved.
+          </p>
+          <p className="session-ended-sub">
+            Please stop here and close this browser window. Your facilitator will take it from here.
+          </p>
+        </div>
+      </div>
+    );
   if (loading)
     return <div className="sim-loading">Loading session</div>;
   if (error)
@@ -460,6 +483,23 @@ export default function SimulationPage() {
               The round timer is paused
               {news.secondsLeft > 0 ? ` — resuming in ${news.secondsLeft}s` : ""}.
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* A facilitator pause stops PLAY, not just the clock. It sits above everything (including the
+          round-ending decision flash) so no role can keep answering while the room is being held. The
+          server rejects writes during a pause as well — this is the visible half of that rule. */}
+      {paused && (
+        <div className="pause-overlay" role="alertdialog" aria-label="Round paused">
+          <div className="pause-inner">
+            <div className="pause-mark">⏸</div>
+            <div className="pause-headline">Round paused</div>
+            <div className="pause-body">
+              Your facilitator has paused Round {round?.roundNumber}. The timer is frozen and no
+              decisions can be recorded until they resume.
+            </div>
+            <div className="pause-foot">Please turn your attention to the front of the room.</div>
           </div>
         </div>
       )}
