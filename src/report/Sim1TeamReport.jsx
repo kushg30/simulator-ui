@@ -114,6 +114,37 @@ const FRAMEWORKS = [
 ];
 
 /**
+ * The decision trail, reduced to the moments where the trajectory actually moved.
+ *
+ * A full team records around 78 decisions across four rounds; printed in full that is an unreadable
+ * table and, in a downloadable PDF, a near-complete map of the scenario. What earns a row:
+ *
+ *  - every EXPLICIT decision — the deliberate, scripted choice points, as opposed to the ambient
+ *    implicit reactions that surround them;
+ *  - every No Response, always, because an unanswered decision is a finding in its own right;
+ *  - and where two roles answered the SAME artifact independently, one grouped row showing both, so
+ *    the disagreement is visible rather than split across two lines.
+ *
+ * The CEO's four round-ending framings are excluded — they already have their own section above.
+ */
+function curateTrail(trail) {
+  const keep = trail.filter(
+    (t) => !t.isFinal && (t.noResponse || t.decisionType === "EXPLICIT"),
+  );
+
+  const byMoment = new Map();
+  for (const t of keep) {
+    const key = `${t.round}|${t.artifactTitle}`;
+    if (!byMoment.has(key)) {
+      byMoment.set(key, { ...t, entries: [t] });
+    } else {
+      byMoment.get(key).entries.push(t);
+    }
+  }
+  return [...byMoment.values()];
+}
+
+/**
  * The Simulator 1 team report.
  *
  * One component, two audiences: the facilitator opens it per team from the console, and the team
@@ -123,7 +154,7 @@ const FRAMEWORKS = [
  * Everything here is qualitative by design. Set A and Set B are reported as bands, and the narrative
  * is assembled from what the team actually did rather than from a score.
  */
-export default function Sim1TeamReport({ data, onClose, sample = false }) {
+export default function Sim1TeamReport({ data, onClose, sample = false, faculty = false }) {
   useReportFonts();
   if (!data) return null;
 
@@ -143,7 +174,7 @@ export default function Sim1TeamReport({ data, onClose, sample = false }) {
   const roster = [...(data.participants || [])].sort(
     (a, b) => ROLE_ORDER.indexOf(a.role) - ROLE_ORDER.indexOf(b.role),
   );
-  const trail = data.trail || [];
+  const trail = curateTrail(data.trail || []);
   const rounds = data.rounds || [];
   const noResponses = data.noResponses || 0;
 
@@ -407,8 +438,8 @@ export default function Sim1TeamReport({ data, onClose, sample = false }) {
         <section className="pad">
           <div className="sec-label">Your decision trail</div>
           <p className="note" style={{ margin: "-6px 0 14px" }}>
-            Every decision your team recorded, in the order the artifacts opened. The CEO's framing was
-            never the only thing that mattered.
+            The moments where the trajectory moved — your team's deliberate choice points, plus every
+            decision that expired unanswered. The CEO's framing was never the only thing that mattered.
           </p>
           <table>
             <thead>
@@ -424,13 +455,22 @@ export default function Sim1TeamReport({ data, onClose, sample = false }) {
                 <tr key={i}>
                   <td>{t.round}</td>
                   <td>{t.artifactTitle}</td>
-                  <td>{ROLE_LABELS[t.role] || t.role}</td>
                   <td>
-                    {t.noResponse ? (
-                      <span className="pill none">No Response</span>
-                    ) : (
-                      t.label || t.action
-                    )}
+                    {t.entries
+                      .map((e) => ROLE_LABELS[e.role] || e.role)
+                      .join(" / ")}
+                  </td>
+                  <td>
+                    {t.entries.map((e, k) => (
+                      <span key={k}>
+                        {k > 0 && " / "}
+                        {e.noResponse ? (
+                          <span className="pill none">No Response</span>
+                        ) : (
+                          e.label || e.action
+                        )}
+                      </span>
+                    ))}
                   </td>
                 </tr>
               ))}
@@ -494,22 +534,30 @@ export default function Sim1TeamReport({ data, onClose, sample = false }) {
           </ol>
         </section>
 
-        <hr className="divide" />
-
-        {/* ── FRAMEWORKS ─────────────────────────────────────────────────── */}
-        <section className="pad">
-          <div className="sec-label">The frameworks behind each round</div>
-          <table>
-            <tbody>
-              {FRAMEWORKS.map(([r, f]) => (
-                <tr key={r}>
-                  <td style={{ width: "18%" }}><b>{r}</b></td>
-                  <td>{f}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
+        {/* ── FRAMEWORKS — facilitator copy only ──────────────────────────
+            The theory map is the course design. The facilitator walks the room through it live,
+            which is where it lands better anyway; it does not go out in a shareable student PDF. */}
+        {faculty && (
+          <>
+            <hr className="divide" />
+            <section className="pad">
+              <div className="sec-label">The frameworks behind each round</div>
+              <p className="note" style={{ margin: "-6px 0 12px" }}>
+                Facilitator copy only — this section does not appear in the students' report.
+              </p>
+              <table>
+                <tbody>
+                  {FRAMEWORKS.map(([r, f]) => (
+                    <tr key={r}>
+                      <td style={{ width: "18%" }}><b>{r}</b></td>
+                      <td>{f}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </section>
+          </>
+        )}
 
         <div className="foot">
           CaseRun measures how leadership teams handle ambiguity. Your facilitator walks through the
