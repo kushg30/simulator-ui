@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
-import { ConstructBars, ConstructRadar, ordinal } from "./Sim1Charts";
+import { BAND_PLOT, ConstructBars, ConstructRadar, ordinal } from "./Sim1Charts";
 import "./sim1Report.css";
 
 // The report is set in Playfair Display + DM Sans, per the approved design. They are loaded when the
@@ -129,8 +129,14 @@ export default function Sim1TeamReport({ data, onClose, sample = false }) {
 
   const setB = data.setB || {};
   const constructNodes = setB.constructs || {};
+  // A student payload carries the BAND only — the 0-100 value behind it is a scoring internal and
+  // stays on the faculty side. Where it is withheld, plot the band's midpoint: the profile reads the
+  // same, and every label in this report is a band anyway.
   const values = {};
-  SETB_ORDER.forEach((c) => { values[c] = constructNodes[c]?.value ?? 50; });
+  SETB_ORDER.forEach((c) => {
+    const node = constructNodes[c];
+    values[c] = node?.value ?? BAND_PLOT[node?.band] ?? 50;
+  });
   const standing = data.standing?.constructs || {};
   const cohortSize = data.standing?.teamCount || 0;
 
@@ -210,9 +216,8 @@ export default function Sim1TeamReport({ data, onClose, sample = false }) {
 
         <div className="pad">
           <p className="lead">
-            This simulation has no winning answer and no score. The four framing decisions your CEO made
-            are all defensible readings of the same ambiguous evidence — leaders genuinely disagree about
-            them. What this report shows is not whether you were right, but{" "}
+            The four framing decisions your CEO made are all defensible readings of the same ambiguous
+            evidence — leaders genuinely disagree about them. What this report shows is{" "}
             <em>what your team's choices added up to</em>: the posture you settled into, how early it
             set, and what it left you exposed to.
           </p>
@@ -507,9 +512,8 @@ export default function Sim1TeamReport({ data, onClose, sample = false }) {
         </section>
 
         <div className="foot">
-          CaseRun measures how leadership teams handle ambiguity — not whether they reached a correct
-          answer, because this scenario has none. Your facilitator walks through the cohort patterns in
-          the live debrief. © CaseRun.
+          CaseRun measures how leadership teams handle ambiguity. Your facilitator walks through the
+          cohort patterns in the live debrief. © CaseRun.
         </div>
       </div>
     </div>,

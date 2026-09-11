@@ -30,6 +30,8 @@ export function ConstructRadar({ values, labels, adverse, size = 260 }) {
   const at = (i, frac) => [cx + Math.cos(angle(i)) * r * frac, cy + Math.sin(angle(i)) * r * frac];
 
   const pts = keys.map((k, i) => at(i, Math.max(0, Math.min(100, values[k] ?? 50)) / 100));
+  // A student payload carries bands without the 0-100 values behind them, so the caller plots band
+  // midpoints. The shape still reads; the exact score stays where it belongs.
   const poly = pts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
 
   return (
@@ -50,7 +52,7 @@ export function ConstructRadar({ values, labels, adverse, size = 260 }) {
       <polygon points={poly} fill="rgba(179,144,47,0.18)" stroke={GOLD} strokeWidth="1.8" />
       {pts.map(([x, y], i) => (
         <circle key={i} cx={x} cy={y} r="3.2" fill={adverse.has(keys[i]) ? ADVERSE : GOLD}>
-          <title>{`${labels[keys[i]]}: ${values[keys[i]]}`}</title>
+          <title>{`${labels[keys[i]]}: ${bandOfValue(values[keys[i]])}`}</title>
         </circle>
       ))}
 
@@ -211,6 +213,15 @@ export function BandDistribution({ leaderboard, labels, adverse, order }) {
     </div>
   );
 }
+
+/** Banding used everywhere on the platform: >=67 High, >=34 Medium, else Low. */
+export function bandOfValue(v) {
+  if (v == null) return "—";
+  return v >= 67 ? "High" : v >= 34 ? "Medium" : "Low";
+}
+
+/** Radius a band plots at when the exact value is withheld (student reports). */
+export const BAND_PLOT = { High: 84, Medium: 50, Low: 18 };
 
 export function ordinal(n) {
   if (n == null) return "—";
