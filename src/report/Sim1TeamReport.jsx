@@ -432,13 +432,20 @@ export default function Sim1TeamReport({ data, onClose, sample = false, faculty 
           </div>
         </section>
 
+        {/* ── DECISION TRAIL — facilitator copy only ──────────────────────
+            The team already lived these decisions, and the artifact titles paired with the exact
+            option wording are the most directly copyable part of the scenario. The facilitator keeps
+            the full audit view; the student report does not carry it (nor does the student payload). */}
+        {faculty && (
+        <>
         <hr className="divide" />
-
-        {/* ── DECISION TRAIL ─────────────────────────────────────────────── */}
         <section className="pad">
-          <div className="sec-label">Your decision trail</div>
+          <div className="sec-label">Decision trail</div>
+          <p className="note" style={{ margin: "-10px 0 12px" }}>
+            Facilitator copy only — this section does not appear in the students' report.
+          </p>
           <p className="note" style={{ margin: "-6px 0 14px" }}>
-            The moments where the trajectory moved — your team's deliberate choice points, plus every
+            The moments where the trajectory moved — the team's deliberate choice points, plus every
             decision that expired unanswered. The CEO's framing was never the only thing that mattered.
           </p>
           <table>
@@ -486,6 +493,8 @@ export default function Sim1TeamReport({ data, onClose, sample = false, faculty 
             the more cautious of the two is what carried into the next round.
           </p>
         </section>
+        </>
+        )}
 
         <hr className="divide" />
 
