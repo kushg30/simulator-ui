@@ -254,7 +254,7 @@ export default function FacultySim1SetB({ simulationId }) {
       </div>
       </Collapsible>
 
-      {report && <Sim1TeamReport data={report} faculty onClose={() => setReport(null)} />}
+      {report && <Sim1TeamReport data={report} onClose={() => setReport(null)} />}
     </div>
   );
 }

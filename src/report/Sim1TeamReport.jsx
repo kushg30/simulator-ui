@@ -106,63 +106,27 @@ const SETA_MEANING = {
     "The gap between what the company said about Sentinel externally and what the room already knew internally.",
 };
 
-const FRAMEWORKS = [
-  ["Round 1", "Ansoff weak signals · normalization of deviance (Vaughan)"],
-  ["Round 2", "Sensemaking (Weick) · groupthink (Janis)"],
-  ["Round 3", "Three Lines of Defense · governance escalation"],
-  ["Round 4", "Psychological safety (Edmondson) · institutional memory"],
-];
-
-/**
- * The decision trail, reduced to the moments where the trajectory actually moved.
- *
- * A full team records around 78 decisions across four rounds; printed in full that is an unreadable
- * table and, in a downloadable PDF, a near-complete map of the scenario. What earns a row:
- *
- *  - every EXPLICIT decision — the deliberate, scripted choice points, as opposed to the ambient
- *    implicit reactions that surround them;
- *  - every No Response, always, because an unanswered decision is a finding in its own right;
- *  - and where two roles answered the SAME artifact independently, one grouped row showing both, so
- *    the disagreement is visible rather than split across two lines.
- *
- * The CEO's four round-ending framings are excluded — they already have their own section above.
- */
-function curateTrail(trail) {
-  const keep = trail.filter(
-    (t) => !t.isFinal && (t.noResponse || t.decisionType === "EXPLICIT"),
-  );
-
-  const byMoment = new Map();
-  for (const t of keep) {
-    const key = `${t.round}|${t.artifactTitle}`;
-    if (!byMoment.has(key)) {
-      byMoment.set(key, { ...t, entries: [t] });
-    } else {
-      byMoment.get(key).entries.push(t);
-    }
-  }
-  return [...byMoment.values()];
-}
-
 /**
  * The Simulator 1 team report.
  *
- * One component, two audiences: the facilitator opens it per team from the console, and the team
- * opens its own copy from the results screen after the simulation ends. The payload is identical and
- * carries no other team's name — a team sees its rank within the cohort, never the ordered list.
+ * ONE document, two audiences: the facilitator opens it per team from the console, the team opens it
+ * from the results screen once the simulation ends, and both see exactly the same thing. It carries
+ * no other team's name — a team sees its own rank within the cohort, never the ordered list.
  *
  * Everything here is qualitative by design. Set A and Set B are reported as bands, and the narrative
- * is assembled from what the team actually did rather than from a score.
+ * is assembled from what the team actually did rather than from a score. What is deliberately NOT
+ * here: the per-decision trail and the framework map. Both are scenario and course IP, and a report
+ * is a downloadable file — the facilitator reads that detail in the console, behind the token.
  */
-export default function Sim1TeamReport({ data, onClose, sample = false, faculty = false }) {
+export default function Sim1TeamReport({ data, onClose, sample = false }) {
   useReportFonts();
   if (!data) return null;
 
   const setB = data.setB || {};
   const constructNodes = setB.constructs || {};
-  // A student payload carries the BAND only — the 0-100 value behind it is a scoring internal and
-  // stays on the faculty side. Where it is withheld, plot the band's midpoint: the profile reads the
-  // same, and every label in this report is a band anyway.
+  // The payload carries the BAND only — the 0-100 value behind it is a scoring internal that never
+  // leaves the server. Plot the band's midpoint: the profile reads the same, and every label in this
+  // report is a band anyway.
   const values = {};
   SETB_ORDER.forEach((c) => {
     const node = constructNodes[c];
@@ -174,7 +138,6 @@ export default function Sim1TeamReport({ data, onClose, sample = false, faculty 
   const roster = [...(data.participants || [])].sort(
     (a, b) => ROLE_ORDER.indexOf(a.role) - ROLE_ORDER.indexOf(b.role),
   );
-  const trail = curateTrail(data.trail || []);
   const rounds = data.rounds || [];
   const noResponses = data.noResponses || 0;
 
@@ -432,69 +395,6 @@ export default function Sim1TeamReport({ data, onClose, sample = false, faculty 
           </div>
         </section>
 
-        {/* ── DECISION TRAIL — facilitator copy only ──────────────────────
-            The team already lived these decisions, and the artifact titles paired with the exact
-            option wording are the most directly copyable part of the scenario. The facilitator keeps
-            the full audit view; the student report does not carry it (nor does the student payload). */}
-        {faculty && (
-        <>
-        <hr className="divide" />
-        <section className="pad">
-          <div className="sec-label">Decision trail</div>
-          <p className="note" style={{ margin: "-10px 0 12px" }}>
-            Facilitator copy only — this section does not appear in the students' report.
-          </p>
-          <p className="note" style={{ margin: "-6px 0 14px" }}>
-            The moments where the trajectory moved — the team's deliberate choice points, plus every
-            decision that expired unanswered. The CEO's framing was never the only thing that mattered.
-          </p>
-          <table>
-            <thead>
-              <tr>
-                <th style={{ width: "7%" }}>Rd</th>
-                <th style={{ width: "34%" }}>Moment</th>
-                <th style={{ width: "22%" }}>Role</th>
-                <th>Decision</th>
-              </tr>
-            </thead>
-            <tbody>
-              {trail.map((t, i) => (
-                <tr key={i}>
-                  <td>{t.round}</td>
-                  <td>{t.artifactTitle}</td>
-                  <td>
-                    {t.entries
-                      .map((e) => ROLE_LABELS[e.role] || e.role)
-                      .join(" / ")}
-                  </td>
-                  <td>
-                    {t.entries.map((e, k) => (
-                      <span key={k}>
-                        {k > 0 && " / "}
-                        {e.noResponse ? (
-                          <span className="pill none">No Response</span>
-                        ) : (
-                          e.label || e.action
-                        )}
-                      </span>
-                    ))}
-                  </td>
-                </tr>
-              ))}
-              {trail.length === 0 && (
-                <tr>
-                  <td colSpan={4} className="note">No decisions were recorded for this team.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-          <p className="note" style={{ marginTop: 12 }}>
-            Where two roles answered the same artifact independently and disagreed, both answers stand —
-            the more cautious of the two is what carried into the next round.
-          </p>
-        </section>
-        </>
-        )}
 
         <hr className="divide" />
 
@@ -543,30 +443,6 @@ export default function Sim1TeamReport({ data, onClose, sample = false, faculty 
           </ol>
         </section>
 
-        {/* ── FRAMEWORKS — facilitator copy only ──────────────────────────
-            The theory map is the course design. The facilitator walks the room through it live,
-            which is where it lands better anyway; it does not go out in a shareable student PDF. */}
-        {faculty && (
-          <>
-            <hr className="divide" />
-            <section className="pad">
-              <div className="sec-label">The frameworks behind each round</div>
-              <p className="note" style={{ margin: "-6px 0 12px" }}>
-                Facilitator copy only — this section does not appear in the students' report.
-              </p>
-              <table>
-                <tbody>
-                  {FRAMEWORKS.map(([r, f]) => (
-                    <tr key={r}>
-                      <td style={{ width: "18%" }}><b>{r}</b></td>
-                      <td>{f}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </section>
-          </>
-        )}
 
         <div className="foot">
           CaseRun measures how leadership teams handle ambiguity. Your facilitator walks through the
