@@ -128,6 +128,7 @@ export default function SimulationPage() {
   const runId         = params.get("runId");
   const participantId = params.get("participantId");
   const role          = params.get("role");
+  const isCEORole     = role === "CEO";
 
   const { artifacts, loading, error, refetch } = useArtifacts(runId, participantId);
 
@@ -139,6 +140,7 @@ export default function SimulationPage() {
   const [dismissed,        setDismissed]        = useState(new Set());
   const [timeFlash,        setTimeFlash]        = useState(null);   // "5 minutes remaining" toast
   const firedThresholds = useRef(new Set());
+  const finalPrompted   = useRef(false); // the round-ending framing is raised once per round
 
   // ── round state: number, per-round start time, total, completion ──────────
   const [round,        setRound]        = useState(null); // { roundNumber, startedAt, totalRounds }
@@ -179,6 +181,7 @@ export default function SimulationPage() {
           setActiveFlash(null);
           setDismissed(new Set());
           firedThresholds.current = new Set();
+          finalPrompted.current = false; // the new round's framing must be raised again
           setTimeFlash(null);
           refetch();
           const completed = prev;
@@ -260,13 +263,28 @@ export default function SimulationPage() {
     const flash = artifactsState.find(
       a =>
         a.artifactType === "SCREEN_FLASH" &&
-        !a.decisionId && // the CEO's round-ending decision is NOT auto-popped — it's opened from the
-                         // info bar button, so it never covers the screen (or the countdown alerts)
+        !a.decisionId && // the CEO's round-ending decision is handled separately, below
         (a.actionState === "OPEN" || a.actionState === "READ_ONLY") &&
         !dismissed.has(a.artifactId)
     );
     if (flash) setActiveFlash(flash);
   }, [artifactsState, activeFlash, dismissed]);
+
+  // The CEO's round-ending decision is raised ONCE, the moment it opens, then never again — it stays
+  // reachable from the info-bar button. It used not to be raised at all, on the reasoning that it
+  // should never cover the countdown; in the live session two of five CEOs missed it entirely and
+  // their rounds expired as No Response, so the cost of staying quiet turned out to be far higher
+  // than the cost of one dismissible prompt.
+  useEffect(() => {
+    if (activeFlash || !isCEORole) return;
+    const final = artifactsState.find(
+      a => a.artifactType === "SCREEN_FLASH" && a.decisionId && a.actionState === "OPEN"
+    );
+    if (final && !finalPrompted.current) {
+      finalPrompted.current = true;
+      setActiveFlash(final);
+    }
+  }, [artifactsState, activeFlash, isCEORole]);
 
   const safeParse = d => {
     try { return typeof d === "string" ? JSON.parse(d) : d; }
@@ -319,12 +337,14 @@ export default function SimulationPage() {
   const tabCounts = TABS.reduce((acc, tab) => {
     if (tab.id === "decisions") {
       // Badge = decisions still open for this participant (addressed to them, not yet acted).
+      // Only decisions THIS participant can actually take. An artifact addressed to the whole team
+      // whose decision belongs to one role now comes back READ_ONLY, and counting those would tell
+      // five people they owe a decision the CEO is going to make.
       acc[tab.id] = artifactsState.filter(
         a =>
           a.decisionId &&
           a.artifactType !== "SCREEN_FLASH" &&
-          a.actionState !== "ACTED" &&
-          a.actionState !== "LOCKED"
+          a.actionState === "OPEN"
       ).length;
     } else {
       acc[tab.id] = artifactsState.filter(
@@ -568,9 +588,29 @@ export default function SimulationPage() {
 
       {/* Visible to EVERYONE: the round is time-boxed and advances on its own. The CEO also gets the
           round-ending decision control inline here once it opens. */}
-      <div className={`round-info-bar${isCEO && finalSubmitted ? " done" : ""}`}>
+      <div
+        className={[
+          "round-info-bar",
+          isCEO && finalSubmitted ? "done" : "",
+          // Once the framing is open and unsubmitted the bar stops being informational and starts
+          // being a warning; under five minutes it goes urgent. Two of five CEOs let a round expire
+          // without submitting, so this is the standing reminder behind the one-time prompt.
+          isCEO && finalFlash && !finalSubmitted
+            ? remaining != null && remaining <= 300 ? "urgent" : "pending"
+            : "",
+        ].join(" ").trim()}
+      >
         <span>
-          Round {round?.roundNumber} advances automatically when the timer ends — no skipping ahead.
+          {isCEO && finalFlash && !finalSubmitted ? (
+            <>
+              <strong>Your Round {round?.roundNumber} framing is not submitted yet.</strong>{" "}
+              {remaining != null && remaining <= 300
+                ? "The round ends soon — submit now or it is recorded as No Response."
+                : "Submit it before the timer ends, or it is recorded as No Response."}
+            </>
+          ) : (
+            <>Round {round?.roundNumber} advances automatically when the timer ends — no skipping ahead.</>
+          )}
         </span>
         {isCEO && finalFlash && !finalSubmitted && (
           <button className="ceo-final-btn" onClick={() => setActiveFlash(finalFlash)}>

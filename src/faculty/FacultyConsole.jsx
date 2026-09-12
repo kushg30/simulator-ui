@@ -246,6 +246,16 @@ export default function FacultyConsole() {
   const activeTeams = overview.filter((r) => !isFinished(r));
   const finishedTeams = overview.filter(isFinished);
 
+  // Grouped per simulation, newest-finishing simulation first, so a room running both sims gets one
+  // header per sim instead of a single undifferentiated list.
+  const finishedBySim = Object.entries(
+    finishedTeams.reduce((acc, r) => {
+      const key = r.simulationName || "Other";
+      (acc[key] = acc[key] || []).push(r);
+      return acc;
+    }, {}),
+  ).sort((a, b) => a[0].localeCompare(b[0]));
+
   const teamRow = (r) => {
     const isSel = selected?.runId === r.runId;
     const live = r.roundStatus === "ACTIVE" && !r.bypassed;
@@ -548,14 +558,17 @@ export default function FacultyConsole() {
           )}
         </div>
 
-        {finishedTeams.length > 0 && (
+        {/* Finished teams are grouped per simulation. With two sims running in the same room they all
+            piled into one 25-row header, and finding a Sim 1 team meant reading every row. */}
+        {finishedBySim.map(([simName, rows]) => (
           <Collapsible
-            title={`Finished teams · ${finishedTeams.length}`}
+            key={simName}
+            title={`Finished · ${simName} · ${rows.length}`}
             subtitle="completed all rounds"
           >
-            <div style={{ overflowX: "auto" }}>{teamsTable(finishedTeams)}</div>
+            <div style={{ overflowX: "auto" }}>{teamsTable(rows)}</div>
           </Collapsible>
-        )}
+        ))}
 
         {/* ── per-team controls ────────────────────────────────────────── */}
         {selectedRow && (

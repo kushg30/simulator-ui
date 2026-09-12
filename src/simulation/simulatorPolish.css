@@ -345,3 +345,24 @@
   font-family: "IBM Plex Mono", monospace;
   font-size: 12.5px; letter-spacing: 0.06em; color: #7c8a9f !important;
 }
+
+/* The round-info bar escalates while the CEO's framing is still unsubmitted. Informational by
+   default; amber once the framing is open; red under five minutes. */
+.round-info-bar.pending {
+  background: rgba(193, 118, 42, 0.14);
+  border-color: rgba(193, 118, 42, 0.45);
+  color: #f0d9b8;
+}
+.round-info-bar.urgent {
+  background: rgba(168, 69, 47, 0.18);
+  border-color: rgba(216, 92, 66, 0.6);
+  color: #f7d5cc;
+  animation: rib-pulse 1.8s ease-in-out infinite;
+}
+@keyframes rib-pulse {
+  0%, 100% { border-color: rgba(216, 92, 66, 0.6); }
+  50%      { border-color: rgba(216, 92, 66, 1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .round-info-bar.urgent { animation: none; }
+}

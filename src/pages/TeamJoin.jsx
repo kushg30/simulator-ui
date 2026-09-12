@@ -8,6 +8,15 @@ import "../sim2/sim2.css";
  * Two clear paths: create a team (you become CEO) or join one with a 4-digit code.
  * Joining asks only for the code — you give your name when you pick your role.
  */
+const ROLE_LABELS = {
+  CEO: "CEO",
+  CFO: "CFO",
+  CHRO: "CHRO",
+  HEAD_OF_ENGINEERING: "Head of Engineering",
+  OPERATIONS: "Head of Operations",
+  PRODUCT: "Head of Product",
+};
+
 export default function TeamJoinPage() {
   const navigate = useNavigate();
 
@@ -17,9 +26,66 @@ export default function TeamJoinPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
+  // ── rejoin ────────────────────────────────────────────────────────────────
+  // A refresh, a dropped connection or a closed tab loses the ids that live in the URL, and without a
+  // way back the student's only option is to join again — which creates a SECOND roleless participant
+  // row and (before the seat-count fix) could leave the team unable to start at all. Rejoin puts them
+  // back in the seat they already hold.
+  const [rejoinCode, setRejoinCode] = useState("");
+  const [rejoinTeamId, setRejoinTeamId] = useState("");
+  const [seats, setSeats] = useState(null); // occupied seats, or null before a lookup
+  const [rejoinRunId, setRejoinRunId] = useState(null);
+
   useEffect(() => {
     warmup();
   }, []);
+
+  async function findSession(e) {
+    e.preventDefault();
+    const code = rejoinCode.trim();
+    if (!code || busy) return;
+    setBusy(true);
+    setError("");
+    setSeats(null);
+    try {
+      const rres = await fetch(`${API_BASE}/api/teams/resolve/${encodeURIComponent(code)}`);
+      if (!rres.ok) throw new Error("No team found for that code. Check it with your CEO.");
+      const { teamId } = await rres.json();
+      setRejoinTeamId(teamId);
+
+      const pres = await fetch(`${API_BASE}/api/teams/${teamId}/participants`);
+      const list = pres.ok ? await pres.json() : [];
+      // Only seated people can be rejoined as. A row with no role is someone who never finished
+      // picking one, and rejoining as them would drop the student into the game with no seat.
+      const seated = (list || []).filter((p) => p.role);
+      if (seated.length === 0) {
+        throw new Error("Nobody has taken a role on that team yet — join it instead.");
+      }
+      setSeats(seated);
+
+      // If the run has already started, rejoining goes straight back into the round.
+      try {
+        const runRes = await fetch(`${API_BASE}/api/runs/team/${teamId}`);
+        const run = runRes.ok ? await runRes.json() : null;
+        setRejoinRunId(run ? run.runId || run.run_id || null : null);
+      } catch {
+        setRejoinRunId(null);
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function rejoinAs(p) {
+    const base = `teamId=${rejoinTeamId}&participantId=${p.participantId}&role=${p.role}`;
+    if (rejoinRunId) {
+      navigate(`/simulator?runId=${rejoinRunId}&participantId=${p.participantId}&role=${p.role}`);
+    } else {
+      navigate(`/waiting?${base}`);
+    }
+  }
 
   async function handleCreate(e) {
     e.preventDefault();
@@ -127,6 +193,51 @@ export default function TeamJoinPage() {
               </button>
             </div>
           </form>
+        </div>
+
+        <div className="s2-card">
+          <h2>Rejoin your team</h2>
+          <p className="s2-sub">
+            Already picked your role and got disconnected, or closed the tab? Enter your team code and
+            tap your name — you go straight back to your seat.
+          </p>
+          <form onSubmit={findSession}>
+            <label htmlFor="s1-rejoin-code">Team code</label>
+            <input
+              id="s1-rejoin-code"
+              type="text"
+              inputMode="numeric"
+              value={rejoinCode}
+              placeholder="e.g. 4821"
+              onChange={(e) => setRejoinCode(e.target.value)}
+            />
+            <div className="s2-row" style={{ marginTop: 14 }}>
+              <button type="submit" className="s2-secondary" disabled={busy || !rejoinCode.trim()}>
+                {busy ? "Looking…" : "Find my seat"}
+              </button>
+            </div>
+          </form>
+
+          {seats && (
+            <div style={{ marginTop: 16 }}>
+              <p className="s2-sub" style={{ marginBottom: 8 }}>
+                {rejoinRunId
+                  ? "This team is already playing. Tap your name to rejoin the round:"
+                  : "Tap your name to return to the waiting room:"}
+              </p>
+              {seats.map((p) => (
+                <div key={p.participantId} className="s2-construct">
+                  <span>
+                    {p.name || "—"}
+                    <span className="s2-sub"> · {ROLE_LABELS[p.role] || p.role}</span>
+                  </span>
+                  <button className="s2-secondary" onClick={() => rejoinAs(p)}>
+                    Rejoin
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {error && <p className="s2-error">{error}</p>}
