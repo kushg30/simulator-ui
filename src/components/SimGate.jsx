@@ -6,11 +6,12 @@ import "./SimGate.css";
 // a lightweight barrier to keep the public from wandering into a live sim — it is
 // NOT a security boundary (the check runs in the browser). Real per-session
 // enforcement, if needed later, belongs on the backend.
-// Per-simulation access codes. Sim 1 uses SIBM, Sim 2 uses SPARTA. Each keeps its
-// own grant flag so unlocking one does not unlock the other. Codes are overridable
+// Per-simulation access codes. Both simulations currently use SPARTA. They are still separate
+// entries, each with its own grant flag, so unlocking one does not unlock the other and the two can
+// be given different codes again without touching anything else. Codes are overridable
 // per-environment via env vars; the legacy REACT_APP_SIM_ACCESS_CODE still backs Sim 2.
 const CODES = {
-  sim1: process.env.REACT_APP_SIM1_ACCESS_CODE || "SIBM",
+  sim1: process.env.REACT_APP_SIM1_ACCESS_CODE || "SPARTA",
   sim2:
     process.env.REACT_APP_SIM2_ACCESS_CODE ||
     process.env.REACT_APP_SIM_ACCESS_CODE ||

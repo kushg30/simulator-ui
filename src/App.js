@@ -141,7 +141,7 @@ export default function App() {
       <Route path="/demo"           element={<DemoPage />} />
       <Route path="/demo/sim1"      element={<DemoSim1Page />} />
 
-      {/* ── Simulator 1 — ANP Phoenix (access-gated: SIBM) ───────────── */}
+      {/* ── Simulator 1 — ANP Phoenix (access-gated: SPARTA) ─────────── */}
       <Route path="/sim1"           element={<SimGate sim="sim1"><ContextPage /></SimGate>} />
       <Route path="/teamjoin"       element={<SimGate sim="sim1"><TeamJoinPage /></SimGate>} />
       <Route path="/context"        element={<SimGate sim="sim1"><ContextPage /></SimGate>} />
