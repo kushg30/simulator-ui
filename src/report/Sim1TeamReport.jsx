@@ -168,74 +168,127 @@ export default function Sim1TeamReport({ data, onClose, sample = false }) {
 
   // Print / Save-as-PDF.
   //
-  // Printing the live page produced a BLANK PDF: the report is portalled into <body> inside a
-  // position:fixed, overflow:auto scrim sitting over the dark app, and a fixed scrolling container is
-  // exactly the thing print layout handles worst — the browser lays out one viewport's worth and
-  // takes it out of flow, so the pages come out empty. Trying to unwind that with print-only
-  // overrides means fighting every global rule the app ships.
+  // Two things have to be true and both were broken:
   //
-  // So we do not print the live page at all. The sheet is copied into a hidden same-origin iframe
-  // that contains nothing else, with the document's stylesheets carried over so it keeps its own
-  // styling, and that iframe is printed. It is deterministic, and it is immune to whatever the
-  // surrounding app does to <body>.
+  //  - The PAGES must not be blank. The report is portalled into <body> inside a position:fixed,
+  //    overflow:auto scrim over the dark app, and printing that lays out one viewport and takes it
+  //    out of flow, so the output is empty. A first attempt printed a hidden 0x0 iframe instead —
+  //    but a browser will not print a zero-size or visually hidden frame, and Chrome quietly falls
+  //    back to printing the TOP document, which is the blank scrim again. The print surface has to
+  //    be a real, laid-out, on-screen-sized document.
+  //
+  //  - The FILE must be named for the team. Chrome names the PDF after the title of the document it
+  //    actually printed, which is why the fallback produced "CaseRun.pdf" — the parent page title.
+  //
+  // So: open the sheet as its own document, titled for the team, and print that. A window opened
+  // from a click is not popup-blocked; if it is blocked anyway, fall back to an off-screen but
+  // properly sized iframe, and set the parent title so even that names the file correctly.
   const printReport = () => {
     const safe = (s) => (s || "").trim().replace(/[^\w]+/g, "_").replace(/^_+|_+$/g, "");
     const fileName = `${safe(data.teamName) || "Team"}_Phoenix_AI_Judgment_Report`;
     const sheet = sheetRef.current;
     if (!sheet) return;
 
-    const frame = document.createElement("iframe");
-    frame.setAttribute("aria-hidden", "true");
-    frame.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden";
-    document.body.appendChild(frame);
+    // Carry across THIS REPORT's rules and nothing else.
+    //
+    // Taking the app's whole stylesheet was what blanked the PDF: the Sim 2 report ships
+    // `@media print { body > *:not(.rpt-scrim) { display: none } }`, it lands in the same bundle, and
+    // it hid the Sim 1 scrim wholesale. Shipping only the rules that mention this report means no
+    // unrelated stylesheet can reach the print document at all — including the next one somebody adds.
+    //
+    // Rules are inlined rather than linked because a <link> loads asynchronously and against the new
+    // document's base URL, so the print could fire before the CSS arrived and print unstyled. Our own
+    // stylesheets are same-origin, so cssRules reads fine; a cross-origin one (the webfonts) falls
+    // back to a link and is covered by the font wait below.
+    const MINE = /s1rpt/;
+    const collect = (rules) =>
+      Array.from(rules)
+        .map((r) => {
+          if (r.type === CSSRule.MEDIA_RULE) {
+            const inner = collect(r.cssRules);
+            return inner ? `@media ${r.conditionText}{${inner}}` : "";
+          }
+          if (r.type === CSSRule.FONT_FACE_RULE || r.type === CSSRule.PAGE_RULE) return r.cssText;
+          return r.selectorText && MINE.test(r.selectorText) ? r.cssText : "";
+        })
+        .filter(Boolean)
+        .join("\n");
 
-    // Carry over the app's CSS so the sheet keeps the styling it has on screen. The rules are
-    // serialised into a <style> rather than copying <link> tags: a linked stylesheet loads
-    // asynchronously and against the iframe's own base URL, so printing could fire before the CSS
-    // arrived and produce an unstyled sheet. Our own stylesheets are same-origin, so cssRules is
-    // readable; anything cross-origin (the webfonts) falls back to a link, which only affects the
-    // typeface and is covered by the fonts.ready wait below. Report rules are all scoped under
-    // .s1rpt, so nothing else carried across can reach it.
     const styles = Array.from(document.styleSheets)
       .map((ss) => {
         try {
-          return `<style>${Array.from(ss.cssRules).map((r) => r.cssText).join("\n")}</style>`;
+          const css = collect(ss.cssRules);
+          return css ? `<style>${css}</style>` : "";
         } catch {
+          // Cross-origin (the webfont stylesheet) — link it and let the font wait cover it.
           return ss.href ? `<link rel="stylesheet" href="${ss.href}">` : "";
         }
       })
       .join("");
 
-    const doc = frame.contentDocument;
-    doc.open();
-    doc.write(
+    const html =
       `<!doctype html><html><head><meta charset="utf-8"><title>${fileName}</title>` +
-        `<base href="${document.baseURI}">${styles}` +
-        `<style>` +
-        // The sheet is the whole document here: no scrim, no app chrome, nothing to escape from.
-        `html,body{background:#fff!important;margin:0!important;padding:0!important;` +
-        `height:auto!important;overflow:visible!important}` +
-        `.s1rpt{box-shadow:none!important;margin:0!important;max-width:none!important;` +
-        `border-radius:0!important}` +
-        `@page{margin:12mm}` +
-        `</style></head><body>${sheet.outerHTML}</body></html>`,
-    );
-    doc.close();
+      `<base href="${document.baseURI}">${styles}` +
+      `<style>` +
+      // The sheet IS the document here. It is still wrapped in .s1rpt-scrim because the app's own
+      // print rules hide every body child that is NOT the scrim — a rule written for the live page,
+      // where the scrim is what wraps the report. Dropping the wrapper made that rule hide the sheet
+      // itself, which is what produced the blank PDF. Keeping the wrapper lets those rules do exactly
+      // what they were written to do instead of fighting them.
+      `html,body{background:#fff!important;margin:0!important;padding:0!important;` +
+      `height:auto!important;overflow:visible!important;display:block!important}` +
+      `.s1rpt-scrim{position:static!important;inset:auto!important;display:block!important;` +
+      `background:#fff!important;padding:0!important;height:auto!important;` +
+      `overflow:visible!important;backdrop-filter:none!important}` +
+      `.s1rpt-toolbar{display:none!important}` +
+      `.s1rpt{box-shadow:none!important;margin:0 auto!important;max-width:none!important;` +
+      `border-radius:0!important;overflow:visible!important}` +
+      `@page{margin:12mm}` +
+      `@media print{.s1rpt{margin:0!important}}` +
+      `</style></head><body><div class="s1rpt-scrim">${sheet.outerHTML}</div></body></html>`;
 
-    const go = () => {
-      try {
-        frame.contentWindow.focus();
-        frame.contentWindow.print();
-      } finally {
-        // Safari fires print synchronously, Chrome after the dialog closes; a timeout covers both
-        // without leaving the iframe behind.
-        setTimeout(() => frame.remove(), 1000);
-      }
+    // Wait for layout and webfonts before printing, or the first page lays out in the fallback face.
+    const printDoc = (win, cleanup) => {
+      const fire = () => {
+        try {
+          win.focus();
+          win.print();
+        } catch {
+          /* the user can still print the open window by hand */
+        }
+        cleanup();
+      };
+      const fonts = win.document.fonts && win.document.fonts.ready;
+      (fonts || Promise.resolve()).then(() => setTimeout(fire, 250)).catch(() => setTimeout(fire, 500));
     };
 
-    // Wait for the webfonts, otherwise the first print can lay out in the fallback face.
-    const ready = doc.fonts && doc.fonts.ready ? doc.fonts.ready : Promise.resolve();
-    ready.then(() => setTimeout(go, 150)).catch(() => setTimeout(go, 400));
+    const win = window.open("", "_blank", "width=900,height=1000");
+    if (win && win.document) {
+      win.document.open();
+      win.document.write(html);
+      win.document.close();
+      // Leave the window open after printing: if the user cancels the dialog, closing it would throw
+      // away the rendered report and they would have nothing to retry from.
+      printDoc(win, () => {});
+      return;
+    }
+
+    // Popup blocked. Use an iframe that is off-screen but REAL — a full page wide and tall, never
+    // display:none or visibility:hidden, or the browser prints the parent document instead.
+    const prevTitle = document.title;
+    document.title = fileName; // Chrome takes the PDF name from the top document in this path
+    const frame = document.createElement("iframe");
+    frame.setAttribute("title", fileName);
+    frame.style.cssText = "position:fixed;left:-10000px;top:0;width:900px;height:1200px;border:0";
+    frame.srcdoc = html;
+    frame.onload = () =>
+      printDoc(frame.contentWindow, () => {
+        setTimeout(() => {
+          frame.remove();
+          document.title = prevTitle;
+        }, 1000);
+      });
+    document.body.appendChild(frame);
   };
 
   return createPortal(

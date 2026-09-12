@@ -279,7 +279,12 @@
     overflow: visible !important;
     margin: 0 !important;
   }
-  body > *:not(.s1rpt-scrim) { display: none !important; }
+  /* Hide the app chrome around the report — but ONLY the chrome. This used to read
+     `body > *:not(.s1rpt-scrim)`, and the Sim 2 report ships the mirror-image rule
+     (`body > *:not(.rpt-scrim)`). Both land in the same bundle, so whichever loaded second hid the
+     other report's scrim and printed a blank page. Naming every report scrim keeps them from
+     destroying each other. */
+  body > *:not(.s1rpt-scrim):not(.rpt-scrim) { display: none !important; }
   .s1rpt-scrim {
     position: static !important;
     inset: auto !important;

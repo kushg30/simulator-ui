@@ -294,7 +294,10 @@
   /* The report is portaled to <body>. Hide the rest of the app entirely (not just
      visibility:hidden, which keeps the tall console's height and prints blank pages)
      and put the report in normal flow so page count follows the report alone. */
-  body > *:not(.rpt-scrim) { display: none !important; }
+  /* Every report scrim is named here, not just this one. The Sim 1 report ships the mirror-image
+     rule and both land in the same bundle, so a rule naming only its own scrim hid the other
+     report and printed a blank page. */
+  body > *:not(.rpt-scrim):not(.s1rpt-scrim) { display: none !important; }
   .rpt-scrim { position: static !important; inset: auto; background: #fff; padding: 0; overflow: visible !important; }
   .rpt-toolbar { display: none !important; }
   .rpt-sheet { max-width: none; margin: 0; box-shadow: none; border-radius: 0; overflow: visible; }
