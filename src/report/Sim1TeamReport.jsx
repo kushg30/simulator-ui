@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { BAND_PLOT, ConstructBars, ConstructRadar, ordinal } from "./Sim1Charts";
 import "./sim1Report.css";
@@ -120,6 +120,7 @@ const SETA_MEANING = {
  */
 export default function Sim1TeamReport({ data, onClose, sample = false }) {
   useReportFonts();
+  const sheetRef = useRef(null); // the printable sheet, copied into the print iframe
   if (!data) return null;
 
   const setB = data.setB || {};
@@ -165,14 +166,76 @@ export default function Sim1TeamReport({ data, onClose, sample = false }) {
     });
   };
 
-  // Print / Save-as-PDF: name the document so the saved file is meaningful (the browser's print
-  // header uses it too), then restore the previous title.
+  // Print / Save-as-PDF.
+  //
+  // Printing the live page produced a BLANK PDF: the report is portalled into <body> inside a
+  // position:fixed, overflow:auto scrim sitting over the dark app, and a fixed scrolling container is
+  // exactly the thing print layout handles worst — the browser lays out one viewport's worth and
+  // takes it out of flow, so the pages come out empty. Trying to unwind that with print-only
+  // overrides means fighting every global rule the app ships.
+  //
+  // So we do not print the live page at all. The sheet is copied into a hidden same-origin iframe
+  // that contains nothing else, with the document's stylesheets carried over so it keeps its own
+  // styling, and that iframe is printed. It is deterministic, and it is immune to whatever the
+  // surrounding app does to <body>.
   const printReport = () => {
     const safe = (s) => (s || "").trim().replace(/[^\w]+/g, "_").replace(/^_+|_+$/g, "");
-    const prev = document.title;
-    document.title = `${safe(data.teamName) || "Team"}_Phoenix_AI_Judgment_Report`;
-    window.addEventListener("afterprint", () => { document.title = prev; }, { once: true });
-    window.print();
+    const fileName = `${safe(data.teamName) || "Team"}_Phoenix_AI_Judgment_Report`;
+    const sheet = sheetRef.current;
+    if (!sheet) return;
+
+    const frame = document.createElement("iframe");
+    frame.setAttribute("aria-hidden", "true");
+    frame.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden";
+    document.body.appendChild(frame);
+
+    // Carry over the app's CSS so the sheet keeps the styling it has on screen. The rules are
+    // serialised into a <style> rather than copying <link> tags: a linked stylesheet loads
+    // asynchronously and against the iframe's own base URL, so printing could fire before the CSS
+    // arrived and produce an unstyled sheet. Our own stylesheets are same-origin, so cssRules is
+    // readable; anything cross-origin (the webfonts) falls back to a link, which only affects the
+    // typeface and is covered by the fonts.ready wait below. Report rules are all scoped under
+    // .s1rpt, so nothing else carried across can reach it.
+    const styles = Array.from(document.styleSheets)
+      .map((ss) => {
+        try {
+          return `<style>${Array.from(ss.cssRules).map((r) => r.cssText).join("\n")}</style>`;
+        } catch {
+          return ss.href ? `<link rel="stylesheet" href="${ss.href}">` : "";
+        }
+      })
+      .join("");
+
+    const doc = frame.contentDocument;
+    doc.open();
+    doc.write(
+      `<!doctype html><html><head><meta charset="utf-8"><title>${fileName}</title>` +
+        `<base href="${document.baseURI}">${styles}` +
+        `<style>` +
+        // The sheet is the whole document here: no scrim, no app chrome, nothing to escape from.
+        `html,body{background:#fff!important;margin:0!important;padding:0!important;` +
+        `height:auto!important;overflow:visible!important}` +
+        `.s1rpt{box-shadow:none!important;margin:0!important;max-width:none!important;` +
+        `border-radius:0!important}` +
+        `@page{margin:12mm}` +
+        `</style></head><body>${sheet.outerHTML}</body></html>`,
+    );
+    doc.close();
+
+    const go = () => {
+      try {
+        frame.contentWindow.focus();
+        frame.contentWindow.print();
+      } finally {
+        // Safari fires print synchronously, Chrome after the dialog closes; a timeout covers both
+        // without leaving the iframe behind.
+        setTimeout(() => frame.remove(), 1000);
+      }
+    };
+
+    // Wait for the webfonts, otherwise the first print can lay out in the fallback face.
+    const ready = doc.fonts && doc.fonts.ready ? doc.fonts.ready : Promise.resolve();
+    ready.then(() => setTimeout(go, 150)).catch(() => setTimeout(go, 400));
   };
 
   return createPortal(
@@ -185,7 +248,7 @@ export default function Sim1TeamReport({ data, onClose, sample = false }) {
         </div>
       </div>
 
-      <div className="s1rpt" onClick={(e) => e.stopPropagation()}>
+      <div className="s1rpt" ref={sheetRef} onClick={(e) => e.stopPropagation()}>
         <div className="mast">
           <div className="brand">
             CaseRun<small>Phoenix AI Judgment · ANP Phoenix</small>

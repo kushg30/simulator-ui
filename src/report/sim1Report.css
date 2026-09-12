@@ -266,23 +266,37 @@
 
 @page { margin: 12mm; }
 @media print {
-  /* Print the report alone: the app chrome, the scrim and the toolbar all disappear so the PDF is
-     the sheet and nothing else. */
+  /* Fallback path, for Ctrl+P on the live page and for the sheet saved as a standalone file. The
+     Download button does not rely on any of this — it prints a dedicated iframe — but Ctrl+P has to
+     produce something correct too.
+
+     Every reset here is !important because it has to beat the app's own global rules, and the scrim
+     MUST be returned to normal flow: a position:fixed, overflow:auto container is laid out as one
+     viewport and taken out of flow when printing, which is what produced blank pages. */
+  html, body {
+    background: #fff !important;
+    height: auto !important;
+    overflow: visible !important;
+    margin: 0 !important;
+  }
   body > *:not(.s1rpt-scrim) { display: none !important; }
   .s1rpt-scrim {
-    position: static;
-    inset: auto;
-    background: #fff;
-    padding: 0;
-    overflow: visible;
-    backdrop-filter: none;
+    position: static !important;
+    inset: auto !important;
+    display: block !important;
+    background: #fff !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    height: auto !important;
+    backdrop-filter: none !important;
   }
   .s1rpt-toolbar { display: none !important; }
   .s1rpt {
-    box-shadow: none;
-    margin: 0;
-    max-width: none;
-    border-radius: 0;
+    box-shadow: none !important;
+    margin: 0 !important;
+    max-width: none !important;
+    border-radius: 0 !important;
+    overflow: visible !important;
   }
   .s1rpt .round,
   .s1rpt .band-row,
