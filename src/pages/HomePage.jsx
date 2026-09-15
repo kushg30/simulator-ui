@@ -133,30 +133,37 @@ const TESTIMONIALS = [
 ];
 
 // Anonymous written highlights from the experience survey.
-// The one line that states what the platform is actually for, in a participant's own words.
-const VOICE_FEATURED = {
-  quote: "I enjoyed the realistic decision-making. Interesting that there was no single right answer.",
-  sim: "Phoenix AI Judgment",
-};
-
-// Anonymous written highlights from the post-session feedback forms, across both simulations.
-// Each carries the theme it speaks to and which simulation it came from: the tag is there because
-// it tells the reader something true about the quote, not as decoration.
-const VOICE_QUOTES = [
-  { q: "I understood how a single decision, if not taken carefully, can create a huge negative impact on the company.", theme: "Consequence", sim: "Phoenix AI Judgment" },
-  { q: "Seeing how raw, messy data could be transformed into clear insights and real business decisions.", theme: "Analysis", sim: "Meridian QBR" },
-  { q: "I learned the importance of critical thinking and human oversight in AI risk management.", theme: "AI oversight", sim: "Phoenix AI Judgment" },
-  { q: "I felt like I was really an employee working in the company, doing my job.", theme: "Realism", sim: "Meridian QBR" },
-  { q: "Working in a team of six made navigating the uncertain scenarios genuinely engaging — strategising with teammates, and seeing the direct impact of our final decisions.", theme: "Teamwork", sim: "Phoenix AI Judgment" },
-  { q: "Knowing a concept is one thing; applying it in practice is what we're really looking for.", theme: "Application", sim: "Meridian QBR" },
-  { q: "I was the CEO. I took a decision against my team — and it landed well.", theme: "Judgment", sim: "Phoenix AI Judgment" },
-  { q: "Turning raw data into a clear insight — and a decision that can actually be defended.", theme: "Analysis", sim: "Meridian QBR" },
-  { q: "Taking up a role and working it gave us a real sense of how a company works, and how much coordination between team members matters.", theme: "Roles", sim: "Phoenix AI Judgment" },
-  { q: "A genuinely fun, unique and thoughtfully designed experience — you could see the effort that went into it.", theme: "Craft", sim: "Meridian QBR" },
-  { q: "I enjoyed that uncertainty could surface at any moment, and that we had to address it as a team, quickly.", theme: "Uncertainty", sim: "Phoenix AI Judgment" },
-  { q: "Very interactive, with real-life problems that tested us. I hope to have more simulations going ahead.", theme: "Realism", sim: "Meridian QBR" },
-  { q: "It gave us the opportunity to step into the role of CXOs, and to understand what kind of thought process that requires.", theme: "Realism", sim: "Phoenix AI Judgment" },
-  { q: "Each team member has a different role that becomes vital at a different stage.", theme: "Roles", sim: "Phoenix AI Judgment" },
+// Anonymous written highlights from the post-session feedback forms, kept in their own set per
+// simulation. The reader moves between the two rather than seeing them mixed: the two simulations
+// teach different things, and the feedback reads as evidence of that only when it is not shuffled
+// together. Meridian leads because it is the one most visitors have heard of.
+const VOICE_SETS = [
+  {
+    sim: "Meridian Retail — QBR",
+    line: "Turning messy data into a decision a board will accept",
+    quotes: [
+      "Seeing how raw, messy data could be transformed into clear insights and real business decisions.",
+      "I felt like I was really an employee working in the company, doing my job.",
+      "A genuinely fun, unique and thoughtfully designed experience — you could see the effort that went into it.",
+      "Very interactive, with real-life problems that tested us. I hope to have more simulations going ahead.",
+      "Knowing a concept is one thing; applying it in practice is what we're really looking for.",
+      "Turning raw data into a clear insight — and a decision that can actually be defended.",
+    ],
+  },
+  {
+    sim: "Phoenix AI Judgment",
+    line: "Leading through an AI risk signal nobody can yet confirm",
+    quotes: [
+      "I enjoyed the realistic decision-making. Interesting that there was no single right answer.",
+      "I understood how a single decision, if not taken carefully, can create a huge negative impact on the company.",
+      "I learned the importance of critical thinking and human oversight in AI risk management.",
+      "Working in a team of six made navigating the uncertain scenarios genuinely engaging — strategising with teammates, and seeing the direct impact of our final decisions.",
+      "I was the CEO. I took a decision against my team — and it landed well.",
+      "I enjoyed that uncertainty could surface at any moment, and that we had to address it as a team, quickly.",
+      // Six per set, deliberately: the two panels swap in place, and unequal counts made the section
+      // jump height on every click.
+    ],
+  },
 ];
 
 // Gallery — put session photos at public/gallery/1.jpg, 2.jpg, … Missing files hide themselves.
@@ -171,6 +178,7 @@ export default function HomePage() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeT, setActiveT] = useState(0);
+  const [activeVoice, setActiveVoice] = useState(0); // which simulation's feedback is showing
   const [paused, setPaused] = useState(false);
   const [lightbox, setLightbox] = useState(null);
   const [galleryOk, setGalleryOk] = useState({}); // index -> true once the image loads
@@ -529,20 +537,45 @@ export default function HomePage() {
               Symbiosis Institute of Business &amp; Management, Hyderabad · MBA 2026–28
             </p>
           </div>
-          <figure className="voice-featured reveal">
-            <blockquote>“{VOICE_FEATURED.quote}”</blockquote>
-            <figcaption>{VOICE_FEATURED.sim}</figcaption>
-          </figure>
+          <div className="voice-switch reveal">
+            <button
+              className="voice-nav-btn"
+              aria-label="Previous simulation"
+              onClick={() => setActiveVoice((i) => (i - 1 + VOICE_SETS.length) % VOICE_SETS.length)}
+            >
+              ‹
+            </button>
+            <div className="voice-switch-label">
+              <div className="voice-switch-sim">{VOICE_SETS[activeVoice].sim}</div>
+              <div className="voice-switch-line">{VOICE_SETS[activeVoice].line}</div>
+            </div>
+            <button
+              className="voice-nav-btn"
+              aria-label="Next simulation"
+              onClick={() => setActiveVoice((i) => (i + 1) % VOICE_SETS.length)}
+            >
+              ›
+            </button>
+          </div>
 
-          <div className="voice-quotes reveal">
-            {VOICE_QUOTES.map((v, i) => (
-              <figure className="voice-quote" key={i}>
-                <blockquote>“{v.q}”</blockquote>
-                <figcaption>
-                  <span className="voice-tag">{v.theme}</span>
-                  <span className="voice-sim">{v.sim}</span>
-                </figcaption>
+          {/* Keyed on the active set so React remounts it and the fade replays on every switch. */}
+          <div className="voice-quotes reveal" key={activeVoice}>
+            {VOICE_SETS[activeVoice].quotes.map((q, i) => (
+              <figure className="voice-quote" key={i} style={{ animationDelay: `${i * 45}ms` }}>
+                <blockquote>“{q}”</blockquote>
               </figure>
+            ))}
+          </div>
+
+          <div className="voice-dots voice-switch-dots">
+            {VOICE_SETS.map((s, i) => (
+              <button
+                key={i}
+                className={`voice-dot ${i === activeVoice ? "on" : ""}`}
+                aria-label={`Show ${s.sim} feedback`}
+                aria-current={i === activeVoice}
+                onClick={() => setActiveVoice(i)}
+              />
             ))}
           </div>
 

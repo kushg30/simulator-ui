@@ -1156,33 +1156,45 @@ section {
   font-size: 16px;
   line-height: 1.6;
 }
-/* The single line that states what the platform is for. Set in the display face at a size nothing
-   else in this section competes with, so the eye lands here first and the wall reads as support. */
-.voice-featured {
-  margin: 0 auto 30px;
-  max-width: 880px;
-  text-align: center;
-  padding: 0 16px;
+/* Switcher between the two simulations feedback sets. The arrows use the same visual language
+   as the testimonial carousel above, so the section reads as one component rather than two. */
+.voice-switch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  margin: 0 auto 26px;
 }
-.voice-featured blockquote {
+.voice-switch-label { text-align: center; min-width: 300px; }
+.voice-switch-sim {
   font-family: "Playfair Display", Georgia, serif;
-  font-size: clamp(22px, 3vw, 34px);
-  line-height: 1.34;
+  font-size: clamp(20px, 2.4vw, 27px);
+  line-height: 1.25;
   color: #f0f2f7;
-  margin: 0;
-  text-wrap: balance;
 }
-.voice-featured figcaption {
-  margin-top: 14px;
-  font-size: 11.5px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+.voice-switch-line { margin-top: 6px; font-size: 13px; color: #8a93a6; }
+.voice-nav-btn {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(13, 17, 32, 0.72);
+  border: 1px solid rgba(201, 168, 76, 0.35);
   color: #c9a84c;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
 }
+.voice-nav-btn:hover { background: rgba(201, 168, 76, 0.9); border-color: #c9a84c; color: #0d1120; }
+.voice-nav-btn:focus-visible { outline: 2px solid #c9a84c; outline-offset: 3px; }
+.voice-switch-dots { margin-top: 4px; }
 
-/* A masonry wall rather than a grid: quotes differ in length, and a grid forced every card to the
-   tallest in its row, which left dead space and made six quotes look like a static block. Columns
-   let each card be exactly as tall as what it holds. */
+/* A masonry wall rather than a grid: quotes differ a lot in length, and a grid stretched every card
+   to the tallest in its row, which left dead space and made the set look like a static block. */
 .voice-quotes {
   column-count: 3;
   column-gap: 20px;
@@ -1203,34 +1215,21 @@ section {
   border-left-color: rgba(201, 168, 76, 0.9);
   transform: translateY(-2px);
 }
+.voice-quote {
+  animation: voice-card-in 0.42s ease both;
+}
+@keyframes voice-card-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .voice-quote { animation: none; }
+}
 .voice-quote blockquote {
   font-size: 15px;
   line-height: 1.7;
   color: #c8ccd8;
-  margin: 0 0 14px;
-}
-.voice-quote figcaption {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-/* The theme tag and the simulation name are both facts about the quote, so they are labelled
-   differently from each other and neither is styled as a button. */
-.voice-tag {
-  font-size: 10.5px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #c9a84c;
-  border: 1px solid rgba(201, 168, 76, 0.32);
-  border-radius: 999px;
-  padding: 3px 9px;
-}
-.voice-sim {
-  font-size: 11.5px;
-  letter-spacing: 0.03em;
-  color: #6b7384;
+  margin: 0;
 }
 .voice-quote-by {
   font-size: 12px;
