@@ -1215,8 +1215,14 @@ section {
   border-left-color: rgba(201, 168, 76, 0.9);
   transform: translateY(-2px);
 }
+/* The resting state is VISIBLE, and the entrance animation only plays on the way in (fill-mode
+   backwards, never forwards). A card must never depend on an animation finishing, an observer
+   firing, or a class being added in order to be readable — getting that wrong is what made the
+   panel come up blank. If the animation is skipped, interrupted or unsupported, the card is
+   simply already there. */
 .voice-quote {
-  animation: voice-card-in 0.42s ease both;
+  opacity: 1;
+  animation: voice-card-in 0.42s ease backwards;
 }
 @keyframes voice-card-in {
   from { opacity: 0; transform: translateY(10px); }

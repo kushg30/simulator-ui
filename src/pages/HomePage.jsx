@@ -234,11 +234,22 @@ export default function HomePage() {
       { threshold: 0.1 }
     );
 
-    document.querySelectorAll(".reveal").forEach((el) => {
-      observerRef.current.observe(el);
-    });
+    // Re-scan whenever the DOM changes, not just once on mount. A .reveal element starts at
+    // opacity 0 and stays there until this observer sees it, so any node React adds after mount —
+    // anything behind a key, a tab, or a conditional — would otherwise be permanently invisible.
+    const scan = () =>
+      document
+        .querySelectorAll(".reveal:not(.visible)")
+        .forEach((el) => observerRef.current.observe(el));
+    scan();
 
-    return () => observerRef.current?.disconnect();
+    const mo = new MutationObserver(scan);
+    mo.observe(document.body, { childList: true, subtree: true });
+
+    return () => {
+      mo.disconnect();
+      observerRef.current?.disconnect();
+    };
   }, []);
 
   return (
@@ -558,8 +569,13 @@ export default function HomePage() {
             </button>
           </div>
 
-          {/* Keyed on the active set so React remounts it and the fade replays on every switch. */}
-          <div className="voice-quotes reveal" key={activeVoice}>
+          {/* Keyed on the active set so React remounts it and the card fade replays on every switch.
+              Deliberately NOT a .reveal element: .reveal starts at opacity 0 and is only un-hidden
+              when the scroll observer adds .visible, and that observer runs once on mount. Remounting
+              this node on every switch produced a node the observer had never seen, so the panel
+              stayed invisible — which is exactly what went wrong. The cards carry their own entrance
+              animation, so nothing is lost. */}
+          <div className="voice-quotes" key={activeVoice}>
             {VOICE_SETS[activeVoice].quotes.map((q, i) => (
               <figure className="voice-quote" key={i} style={{ animationDelay: `${i * 45}ms` }}>
                 <blockquote>“{q}”</blockquote>
