@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import API_BASE from "../config";
 import Sim1TeamReport from "../report/Sim1TeamReport";
+import { useSim } from "../simConfig";
 import "./ResultsDashboard.css";
 
 const BAND_COLOR = {
@@ -23,6 +24,7 @@ const BAND_COLOR = {
 export default function ResultsDashboard() {
   const [params] = useSearchParams();
   const runId = params.get("runId");
+  const sim = useSim();
   const [reveal, setReveal] = useState(null);
 
   const [report, setReport] = useState(null);
@@ -78,31 +80,52 @@ export default function ResultsDashboard() {
       }}
     >
       {reveal && (
-        <div style={{ width: "100%", maxWidth: 460, marginBottom: 48 }}>
-          {reveal.map((r) => (
-            <div
-              key={r.construct}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "baseline",
-                padding: "14px 0",
-                borderBottom: "1px solid rgba(255,255,255,0.08)",
-              }}
-            >
-              <span style={{ fontSize: 15, color: "#9aa4bd" }}>{r.label}</span>
-              <span
+        <div style={{ width: "100%", maxWidth: 520, marginBottom: 48 }}>
+          {reveal.map((r) => {
+            // The engine returns one row per stored variable. Which of those variables a simulation
+            // calls what — and which direction is the good one — is the simulation's own business,
+            // so the label and the meaning line come from its config rather than from the server.
+            const cfg = (sim.reveal || []).find((c) => c.construct === r.construct);
+            return (
+              <div
+                key={r.construct}
                 style={{
-                  fontSize: 17,
-                  fontWeight: 600,
-                  letterSpacing: "0.02em",
-                  color: BAND_COLOR[r.band] || "#e5e9f2",
+                  padding: "14px 0",
+                  borderBottom: "1px solid rgba(255,255,255,0.08)",
                 }}
               >
-                {r.band}
-              </span>
-            </div>
-          ))}
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "baseline",
+                  }}
+                >
+                  <span style={{ fontSize: 15, color: "#9aa4bd" }}>
+                    {cfg?.label || r.label}
+                    {cfg?.adverse && (
+                      <span style={{ fontSize: 11.5, color: "#7c8698" }}> · lower is better</span>
+                    )}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: 17,
+                      fontWeight: 600,
+                      letterSpacing: "0.02em",
+                      color: BAND_COLOR[r.band] || "#e5e9f2",
+                    }}
+                  >
+                    {r.band}
+                  </span>
+                </div>
+                {cfg?.meaning && (
+                  <div style={{ fontSize: 12.5, color: "#7c8698", marginTop: 4, lineHeight: 1.5 }}>
+                    {cfg.meaning}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
 

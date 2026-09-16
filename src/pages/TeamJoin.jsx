@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API_BASE, { warmup } from "../config";
+import { useSim } from "../simConfig";
 import "../sim2/sim2.css";
 
 /**
@@ -19,6 +20,7 @@ const ROLE_LABELS = {
 
 export default function TeamJoinPage() {
   const navigate = useNavigate();
+  const sim = useSim();
 
   const [name, setName] = useState("");
   const [teamName, setTeamName] = useState("");
@@ -81,9 +83,9 @@ export default function TeamJoinPage() {
   function rejoinAs(p) {
     const base = `teamId=${rejoinTeamId}&participantId=${p.participantId}&role=${p.role}`;
     if (rejoinRunId) {
-      navigate(`/simulator?runId=${rejoinRunId}&participantId=${p.participantId}&role=${p.role}`);
+      navigate(sim.path(`/simulator?runId=${rejoinRunId}&participantId=${p.participantId}&role=${p.role}`));
     } else {
-      navigate(`/waiting?${base}`);
+      navigate(sim.path(`/waiting?${base}`));
     }
   }
 
@@ -96,13 +98,19 @@ export default function TeamJoinPage() {
       const res = await fetch(`${API_BASE}/api/teams`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ teamName: teamName.trim(), participantName: name.trim() }),
+        body: JSON.stringify({
+          teamName: teamName.trim(),
+          participantName: name.trim(),
+          simulationId: sim.id,
+        }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Could not create the team. Please try again.");
       navigate(
-        `/waiting?teamId=${data.teamId}&participantId=${data.participantId}` +
-          `&role=${data.role || "CEO"}&joinCode=${data.joinCode || ""}`
+        sim.path(
+          `/waiting?teamId=${data.teamId}&participantId=${data.participantId}` +
+            `&role=${data.role || "CEO"}&joinCode=${data.joinCode || ""}`
+        )
       );
     } catch (err) {
       setError(err.message);
@@ -129,7 +137,7 @@ export default function TeamJoinPage() {
       });
       if (!jres.ok) throw new Error("Could not join — please try again.");
       const data = await jres.json();
-      navigate(`/role-selection?teamId=${teamId}&participantId=${data.participantId}`);
+      navigate(sim.path(`/role-selection?teamId=${teamId}&participantId=${data.participantId}`));
     } catch (err) {
       setError(err.message);
     } finally {
@@ -140,7 +148,7 @@ export default function TeamJoinPage() {
   return (
     <div className="sim2">
       <div className="s2-shell">
-        <h1>Phoenix AI Judgment — ANP Phoenix</h1>
+        <h1>{sim.name} — ANP Phoenix</h1>
         <p className="s2-sub">
           You are the senior leadership team of ANP Phoenix. Create a team to lead it as CEO, or join
           an existing one with the 4-digit code your CEO shares.

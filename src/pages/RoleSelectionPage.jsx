@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import API_BASE from "../config";
+import { useSim } from "../simConfig";
 import "../sim2/sim2.css";
 
 const ROLE_LABELS = {
@@ -15,6 +16,7 @@ const ROLE_LABELS = {
 export default function RoleSelectionPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const sim = useSim();
   const teamId = searchParams.get("teamId");
   const participantId = searchParams.get("participantId");
 
@@ -53,7 +55,7 @@ export default function RoleSelectionPage() {
         body: JSON.stringify({ participantId, role, name: name.trim() }),
       });
       if (!res.ok) throw new Error("That role was just taken — pick another.");
-      navigate(`/waiting?teamId=${teamId}&participantId=${participantId}&role=${role}`);
+      navigate(sim.path(`/waiting?teamId=${teamId}&participantId=${participantId}&role=${role}`));
     } catch (e) {
       setError(e.message);
       fetchRoles();

@@ -12,6 +12,7 @@ import "./SimGate.css";
 // per-environment via env vars; the legacy REACT_APP_SIM_ACCESS_CODE still backs Sim 2.
 const CODES = {
   sim1: process.env.REACT_APP_SIM1_ACCESS_CODE || "SPARTA",
+  sim3: process.env.REACT_APP_SIM3_ACCESS_CODE || "SPARTA",
   sim2:
     process.env.REACT_APP_SIM2_ACCESS_CODE ||
     process.env.REACT_APP_SIM_ACCESS_CODE ||

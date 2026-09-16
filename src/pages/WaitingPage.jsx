@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import API_BASE from "../config";
+import { useSim } from "../simConfig";
 import "../sim2/sim2.css";
 
 const ROLE_LABELS = {
@@ -20,6 +21,7 @@ const ROLE_LABELS = {
 export default function WaitingPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const sim = useSim();
 
   const teamId = searchParams.get("teamId");
   const participantId = searchParams.get("participantId");
@@ -62,12 +64,12 @@ export default function WaitingPage() {
       const data = await res.json();
       const runId = data && (data.runId || data.run_id);
       if (runId) {
-        navigate(`/simulator?runId=${runId}&participantId=${participantId}&role=${role}`);
+        navigate(sim.path(`/simulator?runId=${runId}&participantId=${participantId}&role=${role}`));
       }
     } catch (e) {
       /* transient */
     }
-  }, [teamId, participantId, role, navigate]);
+  }, [teamId, participantId, role, navigate, sim]);
 
   useEffect(() => {
     if (!teamId) return;

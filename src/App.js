@@ -21,6 +21,7 @@ import FacultyConsole from "./faculty/FacultyConsole";
 
 // Access gate — students must enter the facilitator's access code to reach a sim
 import SimGate from "./components/SimGate";
+import { SimProvider } from "./simConfig";
 
 // Public sample-round demos (no sign-in, no real backend) — marketing tours
 import DemoPage from "./demo/DemoPage";
@@ -131,6 +132,19 @@ function useNeuralCanvas() {
 // ─────────────────────────────────────────────────────────────
 // App
 // ─────────────────────────────────────────────────────────────
+/**
+ * One wrapper for a simulation's screens: the access gate plus the simulation's own config. Both
+ * simulations that share the Simulator-1 player go through this, so a route can never end up gated
+ * as one simulation while creating teams against another.
+ */
+function Sim({ sim, children }) {
+  return (
+    <SimProvider sim={sim}>
+      <SimGate sim={sim}>{children}</SimGate>
+    </SimProvider>
+  );
+}
+
 export default function App() {
   useNeuralCanvas();
 
@@ -141,14 +155,29 @@ export default function App() {
       <Route path="/demo"           element={<DemoPage />} />
       <Route path="/demo/sim1"      element={<DemoSim1Page />} />
 
-      {/* ── Simulator 1 — ANP Phoenix (access-gated: SPARTA) ─────────── */}
-      <Route path="/sim1"           element={<SimGate sim="sim1"><ContextPage /></SimGate>} />
-      <Route path="/teamjoin"       element={<SimGate sim="sim1"><TeamJoinPage /></SimGate>} />
-      <Route path="/context"        element={<SimGate sim="sim1"><ContextPage /></SimGate>} />
-      <Route path="/role-selection" element={<SimGate sim="sim1"><RoleSelectionPage /></SimGate>} />
-      <Route path="/waiting"        element={<SimGate sim="sim1"><WaitingPage /></SimGate>} />
-      <Route path="/simulator"      element={<SimGate sim="sim1"><SimulationPage /></SimGate>} />
-      <Route path="/results"        element={<SimGate sim="sim1"><ResultsDashboard /></SimGate>} />
+      {/* ── Simulator 1 — ANP Phoenix (access-gated: SPARTA) ───────────
+          Keeps the unprefixed routes it has always owned. The SimProvider makes explicit what used
+          to be implicit — which simulation a team created here belongs to, and what the four hidden
+          variables are called on the results screen. */}
+      <Route path="/sim1"           element={<Sim sim="sim1"><ContextPage /></Sim>} />
+      <Route path="/teamjoin"       element={<Sim sim="sim1"><TeamJoinPage /></Sim>} />
+      <Route path="/context"        element={<Sim sim="sim1"><ContextPage /></Sim>} />
+      <Route path="/role-selection" element={<Sim sim="sim1"><RoleSelectionPage /></Sim>} />
+      <Route path="/waiting"        element={<Sim sim="sim1"><WaitingPage /></Sim>} />
+      <Route path="/simulator"      element={<Sim sim="sim1"><SimulationPage /></Sim>} />
+      <Route path="/results"        element={<Sim sim="sim1"><ResultsDashboard /></Sim>} />
+
+      {/* ── Simulator 3 — Trust the Machine (ANP Phoenix, new script) ──
+          Same engine and the same screens as Simulation 1 by design; what differs is the simulation
+          a team is created against, and the four variables the results screen names. Its own route
+          tree under /sim3 so Simulation 1 keeps running untouched for live cohorts. */}
+      <Route path="/sim3"                element={<Sim sim="sim3"><ContextPage /></Sim>} />
+      <Route path="/sim3/teamjoin"       element={<Sim sim="sim3"><TeamJoinPage /></Sim>} />
+      <Route path="/sim3/context"        element={<Sim sim="sim3"><ContextPage /></Sim>} />
+      <Route path="/sim3/role-selection" element={<Sim sim="sim3"><RoleSelectionPage /></Sim>} />
+      <Route path="/sim3/waiting"        element={<Sim sim="sim3"><WaitingPage /></Sim>} />
+      <Route path="/sim3/simulator"      element={<Sim sim="sim3"><SimulationPage /></Sim>} />
+      <Route path="/sim3/results"        element={<Sim sim="sim3"><ResultsDashboard /></Sim>} />
 
       {/* ── Simulator 2 — Meridian Retail QBR (access-gated) ────────────
           Fully separate route tree; Simulation 1's routes above are untouched. */}

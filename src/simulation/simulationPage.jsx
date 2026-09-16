@@ -7,6 +7,7 @@ import ScreenFlashOverlay from "./ScreenFlashOverlay";
 import "../simulator.css";
 import "./simulatorPolish.css";
 import API_BASE from "../config";
+import { useSim } from "../simConfig";
 
 // ─────────────────────────────────────────────────────────────
 // Timer
@@ -125,6 +126,7 @@ export default function SimulationPage() {
   // participant fetches their own artifacts for the real run.
   const [params] = useSearchParams();
   const navigate = useNavigate();
+  const sim = useSim();
   const runId         = params.get("runId");
   const participantId = params.get("participantId");
   const role          = params.get("role");
@@ -165,7 +167,7 @@ export default function SimulationPage() {
         }
         if (s.completed) {
           // If the last round was still on screen, show its interstitial before the reveal.
-          navigate(`/results?runId=${runId}`);
+          navigate(sim.path(`/results?runId=${runId}`));
           return;
         }
         setRound(s);
@@ -229,8 +231,8 @@ export default function SimulationPage() {
   // Meaningful browser-tab title instead of "React App".
   useEffect(() => {
     document.title = round?.roundNumber
-      ? `Round ${round.roundNumber} · ANP Phoenix — CaseRun`
-      : "ANP Phoenix — CaseRun";
+      ? `Round ${round.roundNumber} · ${sim.name} — CaseRun`
+      : `${sim.name} — CaseRun`;
   }, [round?.roundNumber]);
 
   // (The artifact feed polls itself inside useArtifacts — it must not be driven from here, because this
@@ -572,7 +574,7 @@ export default function SimulationPage() {
           Role:&nbsp;<span className="role-value">{ROLE_DISPLAY[role] || role}</span>
         </div>
         <div className="top-center">
-          <div className="app-title">Phoenix AI Judgment</div>
+          <div className="app-title">{sim.name}</div>
           <div className="phase-label">
             Round {round?.roundNumber ?? 1}
             {round?.totalRounds ? ` of ${round.totalRounds}` : ""} · Interpretation Phase

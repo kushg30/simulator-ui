@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { simulator1 } from "../data/simulator1";
 import { warmup } from "../config";
+import { useSim } from "../simConfig";
 import "../ContextPage.css";
 
 const TABS = [
@@ -13,6 +14,7 @@ const TABS = [
 export default function ContextPage() {
   const [tab, setTab] = useState("company");
   const navigate = useNavigate();
+  const sim = useSim();
 
   // Wake the backend while the brief is being read, so creating/joining is instant.
   useEffect(() => {
@@ -116,7 +118,7 @@ export default function ContextPage() {
           </div>
           <button
             className="btn-enter"
-            onClick={() => navigate("/teamjoin")}
+            onClick={() => navigate(sim.path("/teamjoin"))}
           >
             Continue — create or join a team
             <span className="btn-arrow">→</span>
