@@ -337,7 +337,7 @@ export default function HomePage() {
               <div className="video-badge">Live Demo</div>
               <div className="video-container">
                 <iframe
-                  src="https://www.youtube.com/embed/xt9s48_k0ak"
+                  src="https://www.youtube.com/embed/k3IqrQ7j-Ms"
                   title="Simulation Demo"
                   frameBorder="0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
