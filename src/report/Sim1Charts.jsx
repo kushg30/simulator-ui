@@ -229,3 +229,193 @@ export function ordinal(n) {
   const v = n % 100;
   return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
+
+/* ── Final Results Screen charts (script section 8) ────────────────────────────
+   These render on the dark app surface, unlike the report's charts which sit on
+   printed paper, so they take their colours from the results palette rather than
+   the report's. All inline SVG: no CDN to fail in a classroom, and they stay
+   crisp if a facilitator projects the screen. */
+
+const R_INK = "#e5e9f2";
+const R_MUTED = "#8b93a8";
+const R_GRID = "rgba(255,255,255,0.10)";
+const VAR_COLOR = {
+  trust: "#4a9eff",
+  governance: "#c9a84c",
+  rigor: "#3fb950",
+  exposure: "#e5786a",
+};
+
+/**
+ * The cohort's composite scores as ranked bars, with this team's own bar marked.
+ *
+ * The point is the SHAPE of the distribution, not the rank number — whether a team sits in a tight
+ * cluster or well clear of it says more than "4th of 11". Bars are unlabelled by design: another
+ * team's score is not this team's to read.
+ */
+export function CohortBars({ cohort = [], width = 520, barH = 13, gap = 5 }) {
+  if (!cohort.length) return null;
+  const vals = cohort.map((c) => c.composite);
+  const lo = Math.min(0, ...vals);
+  const hi = Math.max(1, ...vals);
+  const span = hi - lo || 1;
+  const padL = 34;
+  const h = cohort.length * (barH + gap) + 26;
+  const zeroX = padL + ((0 - lo) / span) * (width - padL - 16);
+
+  return (
+    <svg width={width} height={h} viewBox={`0 0 ${width} ${h}`} className="res-svg"
+      role="img" aria-label="Composite score across the cohort">
+      {/* A zero line, because a negative composite is a real and meaningful outcome here. */}
+      <line x1={zeroX} y1={4} x2={zeroX} y2={h - 20} stroke={R_GRID} />
+      {cohort.map((c, i) => {
+        const y = i * (barH + gap) + 4;
+        const x0 = Math.min(zeroX, padL + ((c.composite - lo) / span) * (width - padL - 16));
+        const x1 = Math.max(zeroX, padL + ((c.composite - lo) / span) * (width - padL - 16));
+        return (
+          <g key={i}>
+            <text x={padL - 8} y={y + barH - 2} textAnchor="end" fontSize="10" fill={c.isYou ? R_INK : R_MUTED}>
+              {i + 1}
+            </text>
+            <rect
+              x={x0} y={y} width={Math.max(2, x1 - x0)} height={barH} rx="2.5"
+              fill={c.isYou ? "#c9a84c" : "rgba(255,255,255,0.14)"}
+              stroke={c.isYou ? "#e4c76a" : "none"} strokeWidth={c.isYou ? 1.5 : 0}
+            />
+            {c.isYou && (
+              <text x={x1 + 7} y={y + barH - 2} fontSize="10.5" fill="#c9a84c" fontWeight="600">
+                your team · {c.composite}
+              </text>
+            )}
+          </g>
+        );
+      })}
+      <text x={padL} y={h - 5} fontSize="10" fill={R_MUTED}>
+        ranked by composite score · {cohort.length} team{cohort.length === 1 ? "" : "s"}
+      </text>
+    </svg>
+  );
+}
+
+/**
+ * The four variables as running totals across the four rounds.
+ *
+ * Section 8 calls this the most useful chart on the screen, and the reason is that a final number
+ * cannot show WHICH round set it — a team that ended level may have spent three rounds recovering
+ * from the first one.
+ */
+export function TrajectoryChart({ trajectory = [], labels = {}, width = 560, height = 220 }) {
+  if (!trajectory.length) return null;
+  const keys = ["trust", "governance", "rigor", "exposure"];
+  const padL = 34, padR = 12, padT = 12, padB = 26;
+  const all = trajectory.flatMap((p) => keys.map((k) => p[k] ?? 0));
+  const lo = Math.min(0, ...all);
+  const hi = Math.max(1, ...all);
+  const span = hi - lo || 1;
+  const x = (i) => padL + (i / Math.max(1, trajectory.length - 1)) * (width - padL - padR);
+  const y = (v) => padT + (1 - (v - lo) / span) * (height - padT - padB);
+
+  const ticks = [hi, Math.round((hi + lo) / 2), lo];
+  return (
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="res-svg"
+      role="img" aria-label="Each variable's running total by round">
+      {ticks.map((t, i) => (
+        <g key={i}>
+          <line x1={padL} y1={y(t)} x2={width - padR} y2={y(t)} stroke={R_GRID} />
+          <text x={padL - 6} y={y(t) + 3} textAnchor="end" fontSize="9.5" fill={R_MUTED}>{t}</text>
+        </g>
+      ))}
+      {trajectory.map((p, i) => (
+        <text key={i} x={x(i)} y={height - 8} textAnchor="middle" fontSize="10" fill={R_MUTED}>
+          R{p.round}
+        </text>
+      ))}
+      {keys.map((k) => {
+        const pts = trajectory.map((p, i) => `${x(i).toFixed(1)},${y(p[k] ?? 0).toFixed(1)}`);
+        return (
+          <g key={k}>
+            <polyline points={pts.join(" ")} fill="none" stroke={VAR_COLOR[k]} strokeWidth="2"
+              strokeLinejoin="round" strokeLinecap="round" />
+            {trajectory.map((p, i) => (
+              <circle key={i} cx={x(i)} cy={y(p[k] ?? 0)} r="3" fill={VAR_COLOR[k]}>
+                <title>{`${labels[k] || k} after R${p.round}: ${p[k] ?? 0}`}</title>
+              </circle>
+            ))}
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+/** Legend shared by the trajectory and radar, so the two charts read as one pair. */
+export function VariableLegend({ labels = {} }) {
+  const keys = ["trust", "governance", "rigor", "exposure"];
+  return (
+    <div className="res-legend">
+      {keys.map((k) => (
+        <span key={k}>
+          <i style={{ background: VAR_COLOR[k] }} />
+          {labels[k] || k}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * The same four variables as a shape. Each axis is normalised against that variable's own possible
+ * range, because the four do not share a scale — plotting raw points would make the variable with
+ * the most decisions look dominant rather than strong.
+ */
+export function ResultsRadar({ variables = [], labels = {}, size = 230 }) {
+  if (variables.length < 3) return null;
+  const cx = size / 2, cy = size / 2, r = size / 2 - 42;
+  const n = variables.length;
+  const angle = (i) => (Math.PI * 2 * i) / n - Math.PI / 2;
+  const at = (i, f) => [cx + Math.cos(angle(i)) * r * f, cy + Math.sin(angle(i)) * r * f];
+  const frac = (v) => {
+    const span = (v.max ?? 1) - (v.min ?? 0);
+    if (span <= 0) return 0.5;
+    return Math.max(0.04, Math.min(1, ((v.points ?? 0) - v.min) / span));
+  };
+  const pts = variables.map((v, i) => at(i, frac(v)));
+
+  return (
+    <svg
+      width={size + 120}
+      height={size + 16}
+      viewBox={`-60 -8 ${size + 120} ${size + 16}`}
+      className="res-svg"
+      role="img"
+      aria-label="Variable profile"
+    >
+      {[0.25, 0.5, 0.75, 1].map((f) => (
+        <polygon key={f} fill="none" stroke={R_GRID}
+          points={variables.map((_, i) => at(i, f).map((c) => c.toFixed(1)).join(",")).join(" ")} />
+      ))}
+      {variables.map((_, i) => {
+        const [px, py] = at(i, 1);
+        return <line key={i} x1={cx} y1={cy} x2={px} y2={py} stroke={R_GRID} />;
+      })}
+      <polygon points={pts.map((p) => p.map((c) => c.toFixed(1)).join(",")).join(" ")}
+        fill="rgba(201,168,76,0.16)" stroke="#c9a84c" strokeWidth="1.8" />
+      {pts.map((p, i) => (
+        <circle key={i} cx={p[0]} cy={p[1]} r="3.2" fill={VAR_COLOR[variables[i].key] || "#c9a84c"}>
+          <title>{`${labels[variables[i].key] || variables[i].key}: ${variables[i].points}`}</title>
+        </circle>
+      ))}
+      {variables.map((v, i) => {
+        const [px, py] = at(i, 1.22);
+        const anchor = Math.abs(px - cx) < 12 ? "middle" : px > cx ? "start" : "end";
+        const words = (labels[v.key] || v.key).split(" ");
+        const lines = words.length > 1 ? [words.slice(0, -1).join(" "), words.slice(-1)[0]] : words;
+        return (
+          <text key={v.key} x={px} y={py} textAnchor={anchor} fontSize="9.5" fill={R_MUTED}>
+            {lines.map((ln, k) => (<tspan key={k} x={px} dy={k === 0 ? 0 : 10}>{ln}</tspan>))}
+          </text>
+        );
+      })}
+    </svg>
+  );
+}
