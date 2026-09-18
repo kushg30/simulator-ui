@@ -45,7 +45,8 @@ export default function FacultySim1Debrief({ simulationId }) {
     );
   }
 
-  // Higher is better for trust/execution; for risk/exposure a high value is the adverse band.
+  // Higher is better for all four except Ethical Exposure, the one forward-looking variable
+  // where a high value is the adverse reading.
   const bandOf = (key, v) => {
     if (v == null) return "na";
     const high = v >= 67;
@@ -81,13 +82,13 @@ export default function FacultySim1Debrief({ simulationId }) {
       </div>
       <p className="f-note" style={{ margin: "6px 0 12px" }}>
         The engine's four hidden variables (Set A). Students never see these numbers — reveal them
-        qualitatively. For Organizational Risk and Ethical Exposure a high value is the adverse
+        qualitatively. Ethical Exposure is the only one where a high value is the adverse
         direction, so the colour is inverted while the label still reads the raw level.
       </p>
 
       {/* Per-team bars for the four hidden variables. Colour follows MEANING, not size: a long bar on
-          Organizational Risk or Ethical Exposure is the adverse reading, so it shows red while the
-          same length on Trust or Execution shows green. */}
+          Ethical Exposure is the adverse reading, so it shows red while the
+          same length on the other three shows green. */}
       <div className="f-rank-grid" style={{ marginBottom: 16 }}>
         {teams.map((t) => (
           <div className="f-rank-card" key={`chart-${t.runId}`}>

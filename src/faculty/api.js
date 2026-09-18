@@ -146,12 +146,15 @@ export const SIM1_SETB_ADVERSE = new Set([
 
 export const SIM1_CONSTRUCT_LABELS = {
   stakeholder_trust: "Stakeholder Trust",
-  organizational_risk: "Organizational Risk",
+  organizational_risk: "Governance Accountability",
   ethical_exposure: "Ethical Exposure",
-  execution_quality: "Execution Quality",
+  execution_quality: "Diagnostic Rigor",
 };
 // Constructs where a higher value is the adverse direction (flagged for faculty).
-export const SIM1_ADVERSE = new Set(["organizational_risk", "ethical_exposure"]);
+// Under the current script only Ethical Exposure is adverse. The organizational_risk column now
+// carries Governance Accountability, where a HIGH value is good; the storage key is unchanged so the
+// recorded cohort sessions keep resolving.
+export const SIM1_ADVERSE = new Set(["ethical_exposure"]);
 
 // ── reference wiki / FAQ (spec 9F) ──────────────────────────────────────────
 export const getWiki = (simulationId) => call(`/sim2/simulations/${simulationId}/wiki`);
