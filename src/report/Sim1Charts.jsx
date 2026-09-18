@@ -247,14 +247,46 @@ const VAR_COLOR = {
 };
 
 /**
+ * These four charts render in two places now: the Final Results Screen, which is dark, and the team
+ * report, which is cream paper and also gets printed. Near-white ink and translucent-white fills are
+ * invisible on paper, so every surface-dependent colour comes from here instead of being inline.
+ * The four variable hues are shared — they carry meaning across both surfaces — but the two golds
+ * differ, because the screen's gold is too pale to hold on cream.
+ */
+const PALETTE = {
+  dark: {
+    ink: R_INK,
+    muted: R_MUTED,
+    grid: R_GRID,
+    neutral: "rgba(255,255,255,0.14)",
+    mine: "#c9a84c",
+    mineEdge: "#e4c76a",
+    fillMine: "rgba(201,168,76,0.16)",
+    varColor: VAR_COLOR,
+  },
+  light: {
+    ink: "#1c2230",
+    muted: "#5b6577",
+    grid: "#e7e3d8",
+    neutral: "#dcd8cc",
+    mine: "#b3902f",
+    mineEdge: "#8d7023",
+    fillMine: "rgba(179,144,47,0.16)",
+    varColor: { ...VAR_COLOR, governance: "#a8862c", rigor: "#2f7d4a", exposure: "#c2543f" },
+  },
+};
+const paletteFor = (theme) => PALETTE[theme] || PALETTE.dark;
+
+/**
  * The cohort's composite scores as ranked bars, with this team's own bar marked.
  *
  * The point is the SHAPE of the distribution, not the rank number — whether a team sits in a tight
  * cluster or well clear of it says more than "4th of 11". Bars are unlabelled by design: another
  * team's score is not this team's to read.
  */
-export function CohortBars({ cohort = [], width = 520, barH = 13, gap = 5 }) {
+export function CohortBars({ cohort = [], width = 520, barH = 13, gap = 5, theme = "dark" }) {
   if (!cohort.length) return null;
+  const P = paletteFor(theme);
   const vals = cohort.map((c) => c.composite);
   const lo = Math.min(0, ...vals);
   const hi = Math.max(1, ...vals);
@@ -267,30 +299,30 @@ export function CohortBars({ cohort = [], width = 520, barH = 13, gap = 5 }) {
     <svg width={width} height={h} viewBox={`0 0 ${width} ${h}`} className="res-svg"
       role="img" aria-label="Composite score across the cohort">
       {/* A zero line, because a negative composite is a real and meaningful outcome here. */}
-      <line x1={zeroX} y1={4} x2={zeroX} y2={h - 20} stroke={R_GRID} />
+      <line x1={zeroX} y1={4} x2={zeroX} y2={h - 20} stroke={P.grid} />
       {cohort.map((c, i) => {
         const y = i * (barH + gap) + 4;
         const x0 = Math.min(zeroX, padL + ((c.composite - lo) / span) * (width - padL - 16));
         const x1 = Math.max(zeroX, padL + ((c.composite - lo) / span) * (width - padL - 16));
         return (
           <g key={i}>
-            <text x={padL - 8} y={y + barH - 2} textAnchor="end" fontSize="10" fill={c.isYou ? R_INK : R_MUTED}>
+            <text x={padL - 8} y={y + barH - 2} textAnchor="end" fontSize="10" fill={c.isYou ? P.ink : P.muted}>
               {i + 1}
             </text>
             <rect
               x={x0} y={y} width={Math.max(2, x1 - x0)} height={barH} rx="2.5"
-              fill={c.isYou ? "#c9a84c" : "rgba(255,255,255,0.14)"}
-              stroke={c.isYou ? "#e4c76a" : "none"} strokeWidth={c.isYou ? 1.5 : 0}
+              fill={c.isYou ? P.mine : P.neutral}
+              stroke={c.isYou ? P.mineEdge : "none"} strokeWidth={c.isYou ? 1.5 : 0}
             />
             {c.isYou && (
-              <text x={x1 + 7} y={y + barH - 2} fontSize="10.5" fill="#c9a84c" fontWeight="600">
+              <text x={x1 + 7} y={y + barH - 2} fontSize="10.5" fill={P.mine} fontWeight="600">
                 your team · {c.composite}
               </text>
             )}
           </g>
         );
       })}
-      <text x={padL} y={h - 5} fontSize="10" fill={R_MUTED}>
+      <text x={padL} y={h - 5} fontSize="10" fill={P.muted}>
         ranked by composite score · {cohort.length} team{cohort.length === 1 ? "" : "s"}
       </text>
     </svg>
@@ -304,7 +336,8 @@ export function CohortBars({ cohort = [], width = 520, barH = 13, gap = 5 }) {
  * cannot show WHICH round set it — a team that ended level may have spent three rounds recovering
  * from the first one.
  */
-export function TrajectoryChart({ trajectory = [], labels = {}, width = 560, height = 220 }) {
+export function TrajectoryChart({ trajectory = [], labels = {}, width = 560, height = 220, theme = "dark" }) {
+  const P = paletteFor(theme);
   if (!trajectory.length) return null;
   const keys = ["trust", "governance", "rigor", "exposure"];
   const padL = 34, padR = 12, padT = 12, padB = 26;
@@ -321,12 +354,12 @@ export function TrajectoryChart({ trajectory = [], labels = {}, width = 560, hei
       role="img" aria-label="Each variable's running total by round">
       {ticks.map((t, i) => (
         <g key={i}>
-          <line x1={padL} y1={y(t)} x2={width - padR} y2={y(t)} stroke={R_GRID} />
-          <text x={padL - 6} y={y(t) + 3} textAnchor="end" fontSize="9.5" fill={R_MUTED}>{t}</text>
+          <line x1={padL} y1={y(t)} x2={width - padR} y2={y(t)} stroke={P.grid} />
+          <text x={padL - 6} y={y(t) + 3} textAnchor="end" fontSize="9.5" fill={P.muted}>{t}</text>
         </g>
       ))}
       {trajectory.map((p, i) => (
-        <text key={i} x={x(i)} y={height - 8} textAnchor="middle" fontSize="10" fill={R_MUTED}>
+        <text key={i} x={x(i)} y={height - 8} textAnchor="middle" fontSize="10" fill={P.muted}>
           R{p.round}
         </text>
       ))}
@@ -334,10 +367,10 @@ export function TrajectoryChart({ trajectory = [], labels = {}, width = 560, hei
         const pts = trajectory.map((p, i) => `${x(i).toFixed(1)},${y(p[k] ?? 0).toFixed(1)}`);
         return (
           <g key={k}>
-            <polyline points={pts.join(" ")} fill="none" stroke={VAR_COLOR[k]} strokeWidth="2"
+            <polyline points={pts.join(" ")} fill="none" stroke={P.varColor[k]} strokeWidth="2"
               strokeLinejoin="round" strokeLinecap="round" />
             {trajectory.map((p, i) => (
-              <circle key={i} cx={x(i)} cy={y(p[k] ?? 0)} r="3" fill={VAR_COLOR[k]}>
+              <circle key={i} cx={x(i)} cy={y(p[k] ?? 0)} r="3" fill={P.varColor[k]}>
                 <title>{`${labels[k] || k} after R${p.round}: ${p[k] ?? 0}`}</title>
               </circle>
             ))}
@@ -349,13 +382,14 @@ export function TrajectoryChart({ trajectory = [], labels = {}, width = 560, hei
 }
 
 /** Legend shared by the trajectory and radar, so the two charts read as one pair. */
-export function VariableLegend({ labels = {} }) {
+export function VariableLegend({ labels = {}, theme = "dark" }) {
+  const P = paletteFor(theme);
   const keys = ["trust", "governance", "rigor", "exposure"];
   return (
     <div className="res-legend">
       {keys.map((k) => (
         <span key={k}>
-          <i style={{ background: VAR_COLOR[k] }} />
+          <i style={{ background: P.varColor[k] }} />
           {labels[k] || k}
         </span>
       ))}
@@ -368,7 +402,8 @@ export function VariableLegend({ labels = {} }) {
  * range, because the four do not share a scale — plotting raw points would make the variable with
  * the most decisions look dominant rather than strong.
  */
-export function ResultsRadar({ variables = [], labels = {}, size = 230 }) {
+export function ResultsRadar({ variables = [], labels = {}, size = 230, theme = "dark" }) {
+  const P = paletteFor(theme);
   if (variables.length < 3) return null;
   const cx = size / 2, cy = size / 2, r = size / 2 - 42;
   const n = variables.length;
@@ -391,17 +426,17 @@ export function ResultsRadar({ variables = [], labels = {}, size = 230 }) {
       aria-label="Variable profile"
     >
       {[0.25, 0.5, 0.75, 1].map((f) => (
-        <polygon key={f} fill="none" stroke={R_GRID}
+        <polygon key={f} fill="none" stroke={P.grid}
           points={variables.map((_, i) => at(i, f).map((c) => c.toFixed(1)).join(",")).join(" ")} />
       ))}
       {variables.map((_, i) => {
         const [px, py] = at(i, 1);
-        return <line key={i} x1={cx} y1={cy} x2={px} y2={py} stroke={R_GRID} />;
+        return <line key={i} x1={cx} y1={cy} x2={px} y2={py} stroke={P.grid} />;
       })}
       <polygon points={pts.map((p) => p.map((c) => c.toFixed(1)).join(",")).join(" ")}
-        fill="rgba(201,168,76,0.16)" stroke="#c9a84c" strokeWidth="1.8" />
+        fill={P.fillMine} stroke={P.mine} strokeWidth="1.8" />
       {pts.map((p, i) => (
-        <circle key={i} cx={p[0]} cy={p[1]} r="3.2" fill={VAR_COLOR[variables[i].key] || "#c9a84c"}>
+        <circle key={i} cx={p[0]} cy={p[1]} r="3.2" fill={P.varColor[variables[i].key] || P.mine}>
           <title>{`${labels[variables[i].key] || variables[i].key}: ${variables[i].points}`}</title>
         </circle>
       ))}
@@ -411,7 +446,7 @@ export function ResultsRadar({ variables = [], labels = {}, size = 230 }) {
         const words = (labels[v.key] || v.key).split(" ");
         const lines = words.length > 1 ? [words.slice(0, -1).join(" "), words.slice(-1)[0]] : words;
         return (
-          <text key={v.key} x={px} y={py} textAnchor={anchor} fontSize="9.5" fill={R_MUTED}>
+          <text key={v.key} x={px} y={py} textAnchor={anchor} fontSize="9.5" fill={P.muted}>
             {lines.map((ln, k) => (<tspan key={k} x={px} dy={k === 0 ? 0 : 10}>{ln}</tspan>))}
           </text>
         );

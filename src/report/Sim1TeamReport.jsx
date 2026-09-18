@@ -1,6 +1,11 @@
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { BAND_PLOT, ConstructBars, ConstructRadar, ordinal } from "./Sim1Charts";
+import {
+  CohortBars,
+  ResultsRadar,
+  TrajectoryChart,
+  VariableLegend,
+} from "./Sim1Charts";
 import "./sim1Report.css";
 
 // The report is set in Playfair Display + DM Sans, per the approved design. They are loaded when the
@@ -32,33 +37,7 @@ const ROLE_LABELS = {
 };
 const ROLE_ORDER = ["CEO", "CFO", "CHRO", "HEAD_OF_ENGINEERING", "OPERATIONS", "PRODUCT"];
 
-const SETB_ORDER = [
-  "EARLY_SIGNAL_LEGITIMIZATION",
-  "SILENCE_ACCUMULATION",
-  "FRAMING_COMMITMENT",
-  "AUTHORITY_CENTRALIZATION",
-  "OPTION_SPACE_CONTRACTION",
-];
-const SETB_FULL = {
-  EARLY_SIGNAL_LEGITIMIZATION: "Early Signal Legitimization",
-  SILENCE_ACCUMULATION: "Silence Accumulation",
-  FRAMING_COMMITMENT: "Framing Commitment",
-  AUTHORITY_CENTRALIZATION: "Authority Centralization",
-  OPTION_SPACE_CONTRACTION: "Option Space Contraction",
-};
-const SETB_ADVERSE = new Set([
-  "SILENCE_ACCUMULATION",
-  "FRAMING_COMMITMENT",
-  "AUTHORITY_CENTRALIZATION",
-  "OPTION_SPACE_CONTRACTION",
-]);
 
-const SETA_ORDER = [
-  "stakeholder_trust",
-  "organizational_risk",
-  "execution_quality",
-  "ethical_exposure",
-];
 // Two of the four were renamed by the final script, and one reversed direction: the
 // organizational_risk column now carries Governance Accountability, where high is GOOD. The storage
 // keys stay as they are so the recorded cohort sessions keep resolving.
@@ -85,18 +64,23 @@ const ROUND_PROMPTS = {
   4: "Was the whistle-channel inquiry treated as a data point or a threat?",
 };
 
-const SETB_GLOSSARY = {
-  EARLY_SIGNAL_LEGITIMIZATION:
-    "Whether a weak, deniable signal was given standing — named, owned and made discussable — before anything forced the issue.",
-  SILENCE_ACCUMULATION:
-    "Concern that was felt but not voiced. Silence is rarely a single choice; it compounds, and each unspoken round makes the next one easier.",
-  FRAMING_COMMITMENT:
-    "How tightly the organisation held its first description of the problem once that description became public inside the company.",
-  AUTHORITY_CENTRALIZATION:
-    "How far judgment collapsed upward — functions deferring to the CEO rather than exercising the authority their role already carried.",
-  OPTION_SPACE_CONTRACTION:
-    "How much room to act the team still had at the end. Early framing plus accumulated silence quietly removes choices long before anyone notices they are gone.",
+
+// The results payload names the four variables with the script's short keys; the report has always
+// keyed its labels and meanings by the engine's storage key. One map joins them, so the report and
+// the Final Results Screen describe the same four things in the same words.
+const KEY_TO_CONSTRUCT = {
+  trust: "stakeholder_trust",
+  governance: "organizational_risk",
+  rigor: "execution_quality",
+  exposure: "ethical_exposure",
 };
+
+const PROVENANCE =
+  "Stakeholder Trust and Governance Accountability draw on Badaracco's writing on right-versus-right " +
+  "decisions, where every option carries a real cost. Diagnostic Rigor and Ethical Exposure draw on " +
+  "Bazerman and Tenbrunsel's research on why capable, well-intentioned people still miss what is in " +
+  "front of them. None of these four is a certified psychometric instrument — they are a structured " +
+  "way of asking the same four questions consistently across every decision the six of you made.";
 
 const SETA_MEANING = {
   stakeholder_trust:
@@ -126,18 +110,15 @@ export default function Sim1TeamReport({ data, onClose, sample = false }) {
   const sheetRef = useRef(null); // the printable sheet, copied into the print iframe
   if (!data) return null;
 
-  const setB = data.setB || {};
-  const constructNodes = setB.constructs || {};
-  // The payload carries the BAND only — the 0-100 value behind it is a scoring internal that never
-  // leaves the server. Plot the band's midpoint: the profile reads the same, and every label in this
-  // report is a band anyway.
-  const values = {};
-  SETB_ORDER.forEach((c) => {
-    const node = constructNodes[c];
-    values[c] = node?.value ?? BAND_PLOT[node?.band] ?? 50;
-  });
-  const standing = data.standing?.constructs || {};
-  const cohortSize = data.standing?.teamCount || 0;
+  // Everything scored in this report comes from the SAME payload the Final Results Screen renders.
+  // The two used to compute independently and disagreed with each other on the same team.
+  const res = data.results || {};
+  const resVars = res.variables || [];
+  const labels = Object.fromEntries(
+    Object.entries(KEY_TO_CONSTRUCT).map(([k, c]) => [k, SETA_LABELS[c]]),
+  );
+  const meaningOf = (k) => SETA_MEANING[KEY_TO_CONSTRUCT[k]];
+  const cohortSize = res.teamCount || 0;
 
   const roster = [...(data.participants || [])].sort(
     (a, b) => ROLE_ORDER.indexOf(a.role) - ROLE_ORDER.indexOf(b.role),
@@ -145,16 +126,16 @@ export default function Sim1TeamReport({ data, onClose, sample = false }) {
   const rounds = data.rounds || [];
   const noResponses = data.noResponses || 0;
 
-  const bandOf = (v) => (v >= 67 ? "High" : v >= 34 ? "Medium" : "Low");
-  const isBad = (c, v) => (SETB_ADVERSE.has(c) ? v >= 67 : v < 34);
-
-  // Strength / development read in the DIRECTION of each construct, not by raw size.
-  const scored = SETB_ORDER.map((c) => ({
-    c,
-    v: values[c],
-    // Normalise every construct so that higher always means "did better".
-    good: SETB_ADVERSE.has(c) ? 100 - values[c] : values[c],
-  })).sort((a, b) => b.good - a.good);
+  // Strength / development read in the DIRECTION of each variable, not by raw size: on Ethical
+  // Exposure — the one adverse variable — a low number is the good outcome. Each variable is scored
+  // as how far along its OWN possible range the team landed, so four different ranges compare fairly.
+  const scored = resVars
+    .map((v) => {
+      const span = (v.max ?? 0) - (v.min ?? 0);
+      const pos = span > 0 ? ((v.points - v.min) / span) * 100 : 50;
+      return { k: v.key, v, good: v.lowerIsBetter ? 100 - pos : pos };
+    })
+    .sort((a, b) => b.good - a.good);
   const strength = scored[0];
   const development = scored[scored.length - 1];
 
@@ -381,21 +362,19 @@ export default function Sim1TeamReport({ data, onClose, sample = false }) {
         <section className="pad">
           <div className="sec-label">Where your team ended</div>
           <p className="note" style={{ margin: "-6px 0 16px" }}>
-            Four variables ran underneath the whole simulation. You never saw them during play. They are
-            reported as bands, not numbers — the band is the finding; a decimal would imply a precision
-            this does not have.
+            Four variables ran underneath the whole simulation. You never saw them during play. Each
+            one is shown as the points your team accumulated against the full range that was available
+            on it, and the band those points fall into. These are the same figures as your results
+            screen.
           </p>
-          {SETA_ORDER.map((c) => {
-            const node = data.setA?.[c] || {};
-            const adverse = node.adverse;
-            const b = node.band;
-            const bad = b === (adverse ? "High" : "Low");
-            const filled = b === "High" ? 3 : b === "Medium" ? 2 : b === "Low" ? 1 : 0;
+          {resVars.map((v) => {
+            const bad = v.band === (v.lowerIsBetter ? "High" : "Low");
+            const filled = v.band === "High" ? 3 : v.band === "Medium" ? 2 : v.band === "Low" ? 1 : 0;
             return (
-              <div className="band-row" key={c}>
+              <div className="band-row" key={v.key}>
                 <div className="band-name">
-                  {SETA_LABELS[c]}
-                  <span>{adverse ? "Higher is more exposed" : "Higher is stronger"}</span>
+                  {labels[v.key]}
+                  <span>{v.lowerIsBetter ? "Higher is more exposed" : "Higher is stronger"}</span>
                 </div>
                 <div className="segs">
                   {[0, 1, 2].map((s) => (
@@ -403,12 +382,50 @@ export default function Sim1TeamReport({ data, onClose, sample = false }) {
                   ))}
                 </div>
                 <div>
-                  <span className={`band-val${bad ? " bad" : ""}`}>{b || "—"}</span>
-                  <div className="band-meaning">{SETA_MEANING[c]}</div>
+                  <span className={`band-val${bad ? " bad" : ""}`}>{v.band || "—"}</span>
+                  <span className="band-points">
+                    {v.points > 0 ? `+${v.points}` : v.points}
+                    <span className="band-range"> of {v.min} to {v.max}</span>
+                  </span>
+                  <div className="band-meaning">{meaningOf(v.key)}</div>
                 </div>
               </div>
             );
           })}
+
+          {/* The composite is the one number that ranks teams, so the report states how it is made
+              rather than leaving a bare figure to be misread as a percentage or a mark out of 100. */}
+          {res.composite != null && (
+            <div className="composite-row">
+              <div>
+                <div className="composite-val serif">
+                  {res.composite > 0 ? `+${res.composite}` : res.composite}
+                </div>
+                <div className="composite-cap">
+                  composite score
+                  {res.compositeMin != null && res.compositeMax != null
+                    ? ` · range ${res.compositeMin} to ${res.compositeMax}`
+                    : ""}
+                </div>
+              </div>
+              {cohortSize > 1 && (
+                <div>
+                  <div className="composite-val serif">
+                    {res.rank}
+                    <span className="composite-of"> of {cohortSize}</span>
+                  </div>
+                  <div className="composite-cap">in your cohort</div>
+                </div>
+              )}
+              <p className="note composite-note">
+                The composite adds the three variables where more is better — Stakeholder Trust,
+                Governance Accountability and Diagnostic Rigor — and subtracts Ethical Exposure, the
+                one where more is worse. It is a signed total, not a percentage: a negative composite
+                means the exposure your team took on outweighed the trust, accountability and rigor it
+                built. Zero is the neutral line, not the floor.
+              </p>
+            </div>
+          )}
         </section>
 
         <hr className="divide" />
@@ -438,78 +455,101 @@ export default function Sim1TeamReport({ data, onClose, sample = false }) {
 
         <hr className="divide" />
 
-        {/* ── SET B PROFILE + RADAR ──────────────────────────────────────── */}
+        {/* ── WHICH ROUND SET THE RESULT ─────────────────────────────────── */}
         <section className="pad">
-          <div className="sec-label">Leadership construct profile</div>
-          <p className="note" style={{ margin: "-6px 0 16px" }}>
-            Five constructs describe <em>how</em> your team handled ambiguity, drawn from every decision
-            the six of you made — not only the CEO's four.
+          <div className="sec-label">Which round set your result</div>
+          <p className="note" style={{ margin: "-6px 0 12px" }}>
+            Each line is a running total across the four rounds. A final number cannot show where it
+            came from — this can.
           </p>
-
-          <div className="chart-wrap" style={{ marginBottom: 10 }}>
-            <ConstructRadar
-              values={values}
-              labels={SETB_FULL}
-              adverse={SETB_ADVERSE}
-              size={280}
-            />
-            <div className="chart-legend">
-              <div>
-                <b>Reading the shape.</b> Each axis runs 0 at the centre to 100 at the rim. A shape that
-                reaches far on the four adverse axes is not a strong profile — it is a team whose options
-                narrowed.
-              </div>
-              <div>
-                Only <b>Early Signal Legitimization</b> is favourable when it reaches the rim. The other
-                four describe pressure building against you.
-              </div>
-              {cohortSize > 1 && (
-                <div>Ranks below are against the {cohortSize} teams in your cohort.</div>
-              )}
-            </div>
+          <VariableLegend labels={labels} theme="light" />
+          <div className="chart-wrap" style={{ marginTop: 8 }}>
+            <TrajectoryChart trajectory={res.trajectory} labels={labels} theme="light" />
           </div>
 
-          <ConstructBars
-            values={values}
-            labels={SETB_FULL}
-            adverse={SETB_ADVERSE}
-            standing={standing}
-          />
-
-          <p className="note" style={{ marginTop: 16 }}>
-            <b>Dominant pattern: {setB.dominantPattern || "—"}.</b> Option Space Contraction is not
-            measured directly — it compounds from accumulated Silence and Framing Commitment.
-            {setB.effects?.escalationForeclosed
-              ? " Your team crossed the Round-1 silence threshold, the point after which escalation starts costing more than it saves."
-              : " Your team stayed below the Round-1 silence threshold, so escalation remained available throughout."}
-          </p>
-          {(setB.insights || []).map((s, i) => (
-            <p className="note" key={i} style={{ marginTop: 6 }}>• {s}</p>
-          ))}
+          <div className="chart-wrap" style={{ marginTop: 18 }}>
+            <ResultsRadar variables={resVars} labels={labels} size={300} theme="light" />
+            <div className="chart-legend">
+              <div>
+                <b>Reading the shape.</b> Each axis is plotted against its OWN possible range, so a
+                point near the rim means your team went as far as this simulation allowed on that
+                variable — not that it scored 100.
+              </div>
+              <div>
+                <b>Ethical Exposure is the one axis where far is bad.</b> On the other three, further
+                out is the stronger outcome.
+              </div>
+            </div>
+          </div>
         </section>
+
+        {cohortSize > 1 && (
+          <>
+            <hr className="divide" />
+            <section className="pad">
+              <div className="sec-label">Your team against the cohort</div>
+              <p className="note" style={{ margin: "-6px 0 12px" }}>
+                Every team's composite score, ranked, with yours highlighted. No other team is named.
+                The shape of the spread says more than the position does — a tight cluster means the
+                cohort converged on the same reading of the same evidence.
+              </p>
+              <CohortBars cohort={res.cohort} theme="light" />
+            </section>
+          </>
+        )}
+
+        {res.framingCommitment && (
+          <>
+            <hr className="divide" />
+            <section className="pad">
+              <div className="sec-label">Framing commitment</div>
+              <p className="note" style={{ margin: "-6px 0 12px" }}>
+                The option your CEO chose each round, read as a pattern. This is descriptive only — it
+                carries no score and does not affect your rank.
+              </p>
+              <div className="fc-row">
+                <div className="fc-label serif">{res.framingCommitment.label}</div>
+                <div className="fc-path">
+                  {(res.framingCommitment.path || []).map((p, i) => (
+                    <span key={i} className={`fc-step${p == null ? " gap" : ""}`}>
+                      {p == null ? "—" : p}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <p className="note" style={{ marginTop: 10 }}>{res.framingCommitment.note}</p>
+            </section>
+          </>
+        )}
 
         <hr className="divide" />
 
         {/* ── GLOSSARY ───────────────────────────────────────────────────── */}
         <section className="pad">
-          <div className="sec-label">What the five constructs mean</div>
+          <div className="sec-label">What the four variables mean</div>
           <div className="gloss">
-            {SETB_ORDER.map((c) => (
-              <div key={c}>
-                <h4>{SETB_FULL[c]}</h4>
+            {resVars.map((v) => (
+              <div key={v.key}>
+                <h4>{labels[v.key]}</h4>
                 <div className="dir">
-                  {SETB_ADVERSE.has(c) ? "Higher is more concerning" : "Higher is stronger"}
+                  {v.lowerIsBetter ? "Higher is more concerning" : "Higher is stronger"}
                 </div>
-                <p>{SETB_GLOSSARY[c]}</p>
+                <p>{meaningOf(v.key)}</p>
               </div>
             ))}
             <div>
               <h4>Reading the bands</h4>
               <div className="dir">Low · Medium · High</div>
               <p>
-                Bands, not scores. Only Early Signal Legitimization is favourable when high; the other
-                four describe pressure that builds against you.
+                Each band is a third of the range that variable could actually reach in this
+                simulation, so Medium means the middle third of what was available — not a mark out of
+                100.
               </p>
+            </div>
+            <div>
+              <h4>Where these come from</h4>
+              <div className="dir">Provenance</div>
+              <p>{PROVENANCE}</p>
             </div>
           </div>
         </section>
@@ -520,25 +560,17 @@ export default function Sim1TeamReport({ data, onClose, sample = false }) {
         {/* ── STRENGTH / DEVELOPMENT ─────────────────────────────────────── */}
         <section className="pad narr">
           <div className="sec-label">Where your trajectory was set</div>
+          {strength && development && (
+            <p>
+              Your strongest variable was <b>{labels[strength.k]}</b> ({strength.v.band}
+              {cohortSize > 1 ? `, in a cohort of ${cohortSize} teams` : ""}). The one to sit with is{" "}
+              <b>{labels[development.k]}</b> ({development.v.band}) — {meaningOf(development.k).replace(/^How/, "how")}
+            </p>
+          )}
           <p>
-            Your strongest dimension was <b>{SETB_FULL[strength.c]}</b> ({bandOf(strength.v)}
-            {standing[strength.c]?.outOf > 1
-              ? `, ${ordinal(standing[strength.c].rank)} of ${standing[strength.c].outOf} in the cohort`
-              : ""}
-            ). The one to sit with is <b>{SETB_FULL[development.c]}</b> ({bandOf(development.v)}
-            {standing[development.c]?.outOf > 1
-              ? `, ${ordinal(standing[development.c].rank)} of ${standing[development.c].outOf}`
-              : ""}
-            ) — {SETB_GLOSSARY[development.c].toLowerCase()}
-          </p>
-          <p>
-            {isBad("SILENCE_ACCUMULATION", values.SILENCE_ACCUMULATION) || noResponses > 0
-              ? `Concern that is felt but not voiced is the quietest failure mode in this simulation. ${
-                  noResponses > 0
-                    ? `Your team let ${noResponses} decision${noResponses === 1 ? "" : "s"} expire unanswered — each one is a position the organisation took by default.`
-                    : "Watch where your team held back rather than where it acted."
-                }`
-              : "Your team kept raising things rather than absorbing them, which is what kept the option space open."}
+            {noResponses > 0
+              ? `Concern that is felt but not voiced is the quietest failure mode in this simulation. Your team let ${noResponses} decision${noResponses === 1 ? "" : "s"} expire unanswered — each one is a position the organisation took by default.`
+              : "Your team answered every decision that reached it, which is what kept the option space open. Where a team goes quiet, the organisation still takes a position — just not one anybody chose."}
           </p>
           <p>
             Nothing here required anyone to behave badly. The anomaly never worsened, no customer

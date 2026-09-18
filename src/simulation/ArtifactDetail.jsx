@@ -18,13 +18,18 @@ function avatarColor(name = "") {
 function DocHeaderStrip({ type, actionState }) {
   // The backend reports an expired window as "LOCKED"; treat it the same as EXPIRED.
   const expired = actionState === "EXPIRED" || actionState === "LOCKED";
+  // READ_ONLY used to fall through to "Open", so an artifact carrying another role's decision looked
+  // like an unanswered item with its buttons missing. It has its own label now.
+  const readOnly = actionState === "READ_ONLY";
   const statusLabel =
-    actionState === "ACTED" ? "Acted"   :
-    expired                 ? "Expired" : "Open";
+    actionState === "ACTED" ? "Acted"     :
+    expired                 ? "Expired"   :
+    readOnly                ? "Read only" : "Open";
 
   const statusClass =
-    actionState === "ACTED" ? "acted"   :
-    expired                 ? "expired" : "open";
+    actionState === "ACTED" ? "acted"     :
+    expired                 ? "expired"   :
+    readOnly                ? "readonly"  : "open";
 
   // Per script 1.3: the category tab already communicates the artifact type, so we no
   // longer show a per-item sub-type tag ("Memo", "Internal Note", …) — only the status.
@@ -60,6 +65,16 @@ function DecisionStrip({ artifact, options, onDecide, loading, error, className 
 
   if (artifact.actionState === "EXPIRED" || artifact.actionState === "LOCKED") {
     return <div className="decision-confirmation expired">Decision window closed</div>;
+  }
+
+  // The artifact is addressed to you, but the decision on it belongs to another seat. Saying so is
+  // better than showing nothing: silence here read as a broken screen.
+  if (artifact.actionState === "READ_ONLY" && artifact.decisionId) {
+    return (
+      <div className="decision-confirmation readonly">
+        For your awareness — this decision is another role's to make.
+      </div>
+    );
   }
 
   if (artifact.actionState === "OPEN" && options) {
@@ -297,34 +312,102 @@ function DiagnosticNoteArtifact({ artifact, payload, options, onDecide, loading,
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// EXCERPT (quoted document) — a digest, analyst note or forwarded question. It lives in the Excerpts
+// tab like a chat thread does, but it is a document, so it is framed as one.
+// ─────────────────────────────────────────────────────────────────────────────
+function ExcerptDocArtifact({ artifact, payload, options, onDecide, loading, error }) {
+  const paragraphs = String(payload?.body || "")
+    .split(/\n+/)
+    .map((p) => p.trim())
+    .filter(Boolean);
+
+  return (
+    <div className="artifact-card excerpt-doc">
+      <DocHeaderStrip type="Excerpt" actionState={artifact.actionState} />
+
+      <div className="doc-content">
+        {(payload?.from || payload?.source) && (
+          <div className="doc-meta-row">
+            <div className="doc-meta-item">
+              <span className="doc-meta-label">Source</span>
+              <span className="doc-meta-value">{payload.from || payload.source}</span>
+            </div>
+          </div>
+        )}
+
+        <div className="doc-title">{payload?.title}</div>
+        <div className="doc-body excerpt-doc-body">
+          {paragraphs.length
+            ? paragraphs.map((p, i) => <p key={i}>{p}</p>)
+            : <p className="excerpt-doc-empty">No further detail was attached to this item.</p>}
+        </div>
+        <InnerVoice text={payload?.inner_voice} />
+      </div>
+
+      <DecisionStrip
+        artifact={artifact} options={options}
+        onDecide={onDecide} loading={loading} error={error}
+        className="doc-actions"
+      />
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // EXCERPT (Slack thread)
 // ─────────────────────────────────────────────────────────────────────────────
 function SlackArtifact({ artifact, payload, options, onDecide, loading, error }) {
+  // Two different things arrive as EXCERPT: an actual chat thread, which carries `messages`, and a
+  // quoted document — a digest, an analyst note, a forwarded question — which carries only `body`.
+  // Rendering the second one inside channel chrome produced a card with nothing but a headline, so
+  // each shape gets the frame it deserves.
   const messages = payload?.messages || [];
+  if (!messages.length) return <ExcerptDocArtifact {...{ artifact, payload, options, onDecide, loading, error }} />;
+
+  // Authors have been stored as `author` and, for a while, as `from`. Accept either so no message
+  // can render as a nameless avatar, and fall back to the channel's own team rather than a blank.
+  const nameOf = (msg) => msg.author || msg.from || payload?.department || "Team";
+
   return (
     <div className="slack-artifact">
       <DocHeaderStrip type="Slack Thread" actionState={artifact.actionState} />
 
       <div className="slack-artifact-header">
         <div className="slack-channel-name">{payload?.channel || payload?.title}</div>
-        <div className="slack-channel-meta">{payload?.department || "Engineering"}</div>
+        <div className="slack-channel-meta">
+          {payload?.department || "Engineering"}
+          <span className="slack-channel-count"> · {messages.length} replies</span>
+        </div>
       </div>
 
       <div className="slack-thread">
-        {messages.map((msg, i) => (
-          <div key={i} className="slack-message">
-            <div className="slack-avatar-circle" style={{ background: avatarColor(msg.author) }}>
-              {getInitials(msg.author)}
-            </div>
-            <div className="slack-message-content">
-              <div className="slack-message-header">
-                <span className="slack-author">{msg.author}</span>
-                <span className="slack-time">{msg.time}</span>
+        {messages.map((msg, i) => {
+          const author = nameOf(msg);
+          // Consecutive messages from one person collapse into the previous block, the way a real
+          // client groups them, instead of repeating the avatar and name on every line.
+          const grouped = i > 0 && nameOf(messages[i - 1]) === author;
+          return (
+            <div key={i} className={`slack-message${grouped ? " grouped" : ""}`}>
+              <div className="slack-avatar-col">
+                {!grouped && (
+                  <div className="slack-avatar-circle" style={{ background: avatarColor(author) }}>
+                    {getInitials(author)}
+                  </div>
+                )}
               </div>
-              <div className="slack-text">{msg.text}</div>
+              <div className="slack-message-content">
+                {!grouped && (
+                  <div className="slack-message-header">
+                    <span className="slack-author">{author}</span>
+                    {msg.role && <span className="slack-role">{msg.role}</span>}
+                    {msg.time && <span className="slack-time">{msg.time}</span>}
+                  </div>
+                )}
+                <div className="slack-text">{msg.text}</div>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {payload?.inner_voice && (

@@ -296,11 +296,15 @@ export default function SimulationPage() {
   const getTab = a => safeParse(a.payload)?.tab || "inbox";
 
   // The Decisions tab is this participant's decision history: every artifact addressed to them that
-  // carries a decision, so they can see what they answered (or still owe) in one place. Other tabs
-  // list their own artifacts as authored (by payload tab).
+  // carries a decision THEY can take, so they can see what they answered (or still owe) in one place.
+  // READ_ONLY is excluded: those carry a decision that belongs to another role, and listing them here
+  // made participants queue up on items they could never answer, which then expired as "No Response".
+  // Other tabs list their own artifacts as authored (by payload tab).
   const visibleArtifacts =
     activeTab === "decisions"
-      ? artifactsState.filter(a => a.decisionId && a.artifactType !== "SCREEN_FLASH")
+      ? artifactsState.filter(
+          a => a.decisionId && a.artifactType !== "SCREEN_FLASH" && a.actionState !== "READ_ONLY"
+        )
       : artifactsState.filter(
           a => getTab(a) === activeTab && a.artifactType !== "SCREEN_FLASH"
         );
@@ -398,21 +402,31 @@ export default function SimulationPage() {
   // while the schedule is held rather than ticking through the pause.
   const paused = Boolean(round?.paused);
   const remaining = useServerCountdown(round?.remainingSeconds, paused);
+  // "Running out of time" is five minutes in the 60-minute build, but it has to scale: in the
+  // 20-minute build a flat 300s would mean the clock was amber and the CEO banner was screaming
+  // from the opening second of every round. Never more than half the round.
+  const urgentAt = Math.min(300, Math.max(60, ((round?.durationMinutes || 10) * 60) / 2));
   const timerClass =
     paused ? "warn"
     : remaining == null ? ""
     : remaining <= 60 ? "critical"
-    : remaining <= 300 ? "warn"
+    : remaining <= urgentAt ? "warn"
     : "";
 
-  // Fire a brief on-screen flash as the round nears its end (5 min, then 1 min left) — once per round,
-  // for EVERY role (all seeded from the same server clock), and never while paused.
+  // Fire a brief on-screen flash as the round nears its end — once per round, for EVERY role (all
+  // seeded from the same server clock), and never while paused.
+  //
+  // A threshold only makes sense if it lands meaningfully INTO the round. In the 20-minute build the
+  // rounds are 4-6 minutes long, so "5 minutes remaining" fired at the starting gun and told nobody
+  // anything. Any mark at more than half the round is therefore dropped, which keeps the 5-minute
+  // warning in the 60-minute build and leaves the short build with just the 1-minute one.
   useEffect(() => {
     if (remaining == null || paused) return;
+    const roundSeconds = (round?.durationMinutes || 0) * 60;
     const marks = [
       { at: 300, label: "5 minutes remaining" },
       { at: 60, label: "1 minute remaining" },
-    ];
+    ].filter((m) => !roundSeconds || m.at <= roundSeconds / 2);
     for (const m of marks) {
       const key = `${round?.roundNumber}-${m.at}`;
       if (remaining > 0 && remaining <= m.at && !firedThresholds.current.has(key)) {
@@ -598,7 +612,7 @@ export default function SimulationPage() {
           // being a warning; under five minutes it goes urgent. Two of five CEOs let a round expire
           // without submitting, so this is the standing reminder behind the one-time prompt.
           isCEO && finalFlash && !finalSubmitted
-            ? remaining != null && remaining <= 300 ? "urgent" : "pending"
+            ? remaining != null && remaining <= urgentAt ? "urgent" : "pending"
             : "",
         ].join(" ").trim()}
       >
@@ -606,7 +620,7 @@ export default function SimulationPage() {
           {isCEO && finalFlash && !finalSubmitted ? (
             <>
               <strong>Your Round {round?.roundNumber} framing is not submitted yet.</strong>{" "}
-              {remaining != null && remaining <= 300
+              {remaining != null && remaining <= urgentAt
                 ? "The round ends soon — submit now or it is recorded as No Response."
                 : "Submit it before the timer ends, or it is recorded as No Response."}
             </>
