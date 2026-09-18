@@ -20,11 +20,35 @@ const SIM1 = {
   id: "475db739-0708-48d4-b4db-5a23f1da50d9",
   name: "Phoenix AI Judgment",
   base: "", // Simulation 1 owns the unprefixed routes it has always owned
+  // The final script renames two of the four variables and, for one of them, reverses which end is
+  // good: `organizational_risk` now carries Governance Accountability, where a HIGH value means the
+  // team could always point to who owned a decision. The storage keys are deliberately unchanged —
+  // renaming them would orphan the recorded cohort sessions that reference them.
   reveal: [
-    { construct: "stakeholder_trust", label: "Stakeholder Trust", adverse: false },
-    { construct: "organizational_risk", label: "Organizational Risk", adverse: true },
-    { construct: "execution_quality", label: "Execution Quality", adverse: false },
-    { construct: "ethical_exposure", label: "Ethical Exposure", adverse: true },
+    {
+      construct: "stakeholder_trust",
+      label: "Stakeholder Trust",
+      adverse: false,
+      meaning: "How much the people outside your leadership team believed you were being straight with them.",
+    },
+    {
+      construct: "organizational_risk",
+      label: "Governance Accountability",
+      adverse: false,
+      meaning: "How clearly your team could always point to who owned a decision, and why.",
+    },
+    {
+      construct: "execution_quality",
+      label: "Diagnostic Rigor",
+      adverse: false,
+      meaning: "How often your team checked claims with evidence instead of assuming.",
+    },
+    {
+      construct: "ethical_exposure",
+      label: "Ethical Exposure",
+      adverse: true,
+      meaning: "How exposed your company would be if today's choices became public tomorrow.",
+    },
   ],
 };
 

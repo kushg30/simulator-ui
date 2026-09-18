@@ -59,10 +59,13 @@ const SETA_ORDER = [
   "execution_quality",
   "ethical_exposure",
 ];
+// Two of the four were renamed by the final script, and one reversed direction: the
+// organizational_risk column now carries Governance Accountability, where high is GOOD. The storage
+// keys stay as they are so the recorded cohort sessions keep resolving.
 const SETA_LABELS = {
   stakeholder_trust: "Stakeholder Trust",
-  organizational_risk: "Organizational Risk",
-  execution_quality: "Execution Quality",
+  organizational_risk: "Governance Accountability",
+  execution_quality: "Diagnostic Rigor",
   ethical_exposure: "Ethical Exposure",
 };
 
@@ -97,13 +100,13 @@ const SETB_GLOSSARY = {
 
 const SETA_MEANING = {
   stakeholder_trust:
-    "How much credibility the team still held with the people it had to answer to — the board, investors, its own staff.",
+    "How much the people outside your leadership team believed you were being straight with them.",
   organizational_risk:
-    "How much unowned exposure the anomaly was still carrying by the end: not whether it got worse, but whether anyone formally held it.",
+    "How clearly your team could always point to who owned a decision, and why.",
   execution_quality:
-    "Whether the operational response actually resolved the pressure or simply absorbed it round after round.",
+    "How often your team checked claims with evidence instead of assuming.",
   ethical_exposure:
-    "The gap between what the company said about Sentinel externally and what the room already knew internally.",
+    "How exposed your company would be if today's choices became public tomorrow.",
 };
 
 /**
