@@ -10,43 +10,6 @@ import Sim2TeamReport from "./Sim2TeamReport";
 import Collapsible from "./Collapsible";
 
 /**
- * Small step-line of Data Trust across the rounds, reconstructed from the final value and the rounds
- * where it dropped — so the reveal shows *when* trust broke, not just that it did. One series, so no
- * legend; drop rounds are marked in the alert colour.
- */
-function DataTrustSpark({ finalValue, dropRounds, rounds = 5 }) {
-  const W = 240;
-  const H = 72;
-  const pad = 10;
-  const drops = Array.isArray(dropRounds) ? dropRounds : [];
-  const stepDown = drops.length ? (100 - (finalValue ?? 100)) / drops.length : 0;
-  // With no drop rounds, Data Trust simply held — draw a flat line at the team's actual value.
-  const valAt = (r) =>
-    drops.length
-      ? Math.max(0, 100 - stepDown * drops.filter((d) => d <= r).length)
-      : (finalValue ?? 100);
-  const x = (r) => pad + ((r - 1) / (rounds - 1)) * (W - 2 * pad);
-  const y = (v) => pad + (1 - v / 100) * (H - 2 * pad);
-  const pts = [];
-  for (let r = 1; r <= rounds; r++) pts.push([x(r), y(valAt(r)), r]);
-  const path = pts.map(([px, py], i) => `${i ? "L" : "M"}${px.toFixed(1)},${py.toFixed(1)}`).join(" ");
-  return (
-    <svg width={W} height={H} role="img" aria-label="Data Trust by round">
-      {[100, 50, 0].map((v) => (
-        <line key={v} x1={pad} y1={y(v)} x2={W - pad} y2={y(v)} stroke="rgba(255,255,255,0.06)" />
-      ))}
-      <path d={path} fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinejoin="round" />
-      {pts.map(([px, py, r]) => (
-        <circle key={r} cx={px} cy={py} r={drops.includes(r) ? 4 : 3}
-          fill={drops.includes(r) ? "#da3633" : "#3b82f6"}>
-          <title>{`Round ${r}: ${Math.round(valAt(r))}${drops.includes(r) ? " (dropped)" : ""}`}</title>
-        </circle>
-      ))}
-    </svg>
-  );
-}
-
-/**
  * Facilitator debrief (spec section 8): the cross-team leaderboard, the two highlights the spec
  * asks for, and the ability to override a finalised construct after reviewing a team's work.
  * Rendered inside the faculty console, so it inherits the token gate.
@@ -265,30 +228,6 @@ export default function FacultyDebrief({ simulationId }) {
       </div>
 
       </Collapsible>
-
-      {/* ── Data Trust trajectory for every team ───────────────────────── */}
-      {teams.length > 0 && (
-        <Collapsible title="Data Trust trajectory — all teams" subtitle="each team's trust across the rounds">
-          <p className="f-note" style={{ marginBottom: 10 }}>
-            Each team's Data Trust across the five rounds (red marks a round where it dropped). A flat
-            line means trust held throughout.
-          </p>
-          <div className="f-rank-grid">
-            {teams.map((t) => (
-              <div className="f-rank-card" key={t.runId}>
-                <div className="f-rank-title">
-                  {t.teamName}{" "}
-                  <span className="f-note">· {t.dataTrustPattern || "held"}</span>
-                </div>
-                <DataTrustSpark
-                  finalValue={t.scores?.DATA_TRUST_SCORE}
-                  dropRounds={t.dataTrustDropRounds}
-                />
-              </div>
-            ))}
-          </div>
-        </Collapsible>
-      )}
 
       {/* ── per-round answers grid ──────────────────────────────────── */}
       <Collapsible title="Answers by round" subtitle="per-round outcome + what was missed">

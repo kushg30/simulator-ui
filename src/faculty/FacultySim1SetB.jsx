@@ -9,7 +9,7 @@ import {
 } from "./api";
 import Collapsible from "./Collapsible";
 import Sim1TeamReport from "../report/Sim1TeamReport";
-import { BandDistribution, RankBars } from "../report/Sim1Charts";
+import { RankBars } from "../report/Sim1Charts";
 
 /**
  * Faculty debrief for Simulator 1 (Leadership Judgment — ANP Phoenix), Set-B.
@@ -132,18 +132,6 @@ export default function FacultySim1SetB({ simulationId }) {
         </p>
       </Collapsible>
 
-      {(data.classInsights || []).length > 0 && (
-        <Collapsible title="Class-level insights" defaultOpen>
-          <ul style={{ margin: 0, paddingLeft: 18 }}>
-            {data.classInsights.map((s, i) => (
-              <li key={i} className="f-note" style={{ marginBottom: 4 }}>
-                {s}
-              </li>
-            ))}
-          </ul>
-        </Collapsible>
-      )}
-
       {/* ── cohort ranking ──────────────────────────────────────────────
           Ranked best-first, and "best" respects direction: for the four adverse constructs the
           LOWEST score leads the board. Ranking all five by raw value would put the team that drifted
@@ -163,18 +151,6 @@ export default function FacultySim1SetB({ simulationId }) {
         </Collapsible>
       )}
 
-      {/* ── class distribution — the chart to project in the debrief ───── */}
-      {board && board.teamCount > 0 && (
-        <Collapsible title="Class distribution" subtitle="how the cohort split across the bands">
-          <BandDistribution
-            leaderboard={board}
-            labels={SIM1_SETB_FULL}
-            adverse={SIM1_SETB_ADVERSE}
-            order={order}
-          />
-        </Collapsible>
-      )}
-
       <Collapsible title="Teams" subtitle={`${teams.length} played`} defaultOpen>
       <div style={{ overflowX: "auto" }}>
         <table>
@@ -184,7 +160,6 @@ export default function FacultySim1SetB({ simulationId }) {
               {order.map((c) => (
                 <th key={c}>{SIM1_SETB_LABELS[c] || c}</th>
               ))}
-              <th>Dominant pattern</th>
               <th>Report</th>
             </tr>
           </thead>
@@ -207,7 +182,6 @@ export default function FacultySim1SetB({ simulationId }) {
                     {order.map((c) => (
                       <td key={c}>{cell(c, cons[c])}</td>
                     ))}
-                    <td className="f-note">{team.dominantPattern || "—"}</td>
                     <td onClick={(e) => e.stopPropagation()}>
                       <button
                         className="f-ghost"
@@ -229,12 +203,11 @@ export default function FacultySim1SetB({ simulationId }) {
                           <td key={c}>{cell(c, p.constructs?.[c])}</td>
                         ))}
                         <td />
-                        <td />
                       </tr>
                     ))}
                   {open && (
                     <tr>
-                      <td colSpan={order.length + 3} style={{ paddingLeft: 26 }}>
+                      <td colSpan={order.length + 2} style={{ paddingLeft: 26 }}>
                         <div className="f-note" style={{ padding: "4px 0 8px" }}>
                           Option Space: base {eff.optionSpaceBase} → +{eff.optionSpaceInteraction} interaction
                           {eff.escalationForeclosed ? " → +15 escalation foreclosed" : ""} ={" "}
