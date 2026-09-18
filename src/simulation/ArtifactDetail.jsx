@@ -181,7 +181,7 @@ function MessageArtifact({ artifact, payload, options, onDecide, loading, error 
 // ─────────────────────────────────────────────────────────────────────────────
 // EMAIL / INTERNAL NOTE
 // ─────────────────────────────────────────────────────────────────────────────
-function EmailArtifact({ artifact, payload }) {
+function EmailArtifact({ artifact, payload, options, onDecide, loading, error }) {
   const bodyText = payload?.body || "";
   // Only formal emails (those with a sender address) get the greeting/sign-off wrapper;
   // policy excerpts and internal notes render their body as-is.
@@ -251,6 +251,18 @@ function EmailArtifact({ artifact, payload }) {
         <div>{payload?.org || "ANP Phoenix"}</div>
         {payload?.from_email && <div>{payload.from_email}</div>}
       </div>
+
+      {/* This component was rendering every INTERNAL_NOTE artifact WITHOUT a decision strip, ever —
+          it never received options/onDecide at all. Most internal notes are pure reading, but some
+          (Finance Memo, Board Prep Note, Compliance Query, and 20+ others in the 20-minute build)
+          carry a real scored decision. Every one of them was therefore structurally unanswerable and
+          expired as No Response no matter what the participant did. DecisionStrip renders nothing
+          when the artifact carries no decision, so this is safe for the plain-reading notes too. */}
+      <DecisionStrip
+        artifact={artifact} options={options}
+        onDecide={onDecide} loading={loading} error={error}
+        className="doc-actions"
+      />
     </div>
   );
 }

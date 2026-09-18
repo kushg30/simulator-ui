@@ -496,12 +496,14 @@ export default function FacultyConsole() {
           </div>
         </Collapsible>
 
-        {/* ── Sim 1 News interrupt (1.2) ──────────────────────────────── */}
-        <Collapsible title="News interrupt — Simulator 1 (ANP Phoenix)" subtitle="full-screen to the class, brief timer pause">
+        {/* ── News interrupt (1.2) — Simulator 1 and Simulator 3 share this engine ──── */}
+        <Collapsible title="News interrupt — ANP Phoenix (Sim 1 & Sim 3)" subtitle="full-screen to the class, brief timer pause">
           <p className="f-note">
             Pushes a full-screen external-news modal to every role, and <strong>pauses the round
             timer ~25 seconds</strong> while it's up. It leaves no Inbox entry — it's an ambient
             interrupt, not an artifact. Use it any round, any time, to inject external pressure.
+            Sim 3 is the same engine and content as Sim 1, only compressed to 20 minutes, so both
+            builds broadcast from here.
           </p>
           <label htmlFor="f-news-head">Headline</label>
           <input
@@ -532,8 +534,23 @@ export default function FacultyConsole() {
               Send to all Sim 1 teams
             </button>
             <button
+              className="f-warn"
+              onClick={() =>
+                act(
+                  () => api.postSim1NewsAll(api.PHOENIX_SIM3_SIMULATION_ID, newsHeadline, newsBody, 25, actor),
+                  "News interrupt sent to all Simulator 3 teams"
+                )
+              }
+            >
+              Send to all Sim 3 teams
+            </button>
+            <button
               className="f-ghost"
-              disabled={!selected || selected.simulationId !== api.ANP_PHOENIX_SIMULATION_ID}
+              disabled={
+                !selected ||
+                (selected.simulationId !== api.ANP_PHOENIX_SIMULATION_ID &&
+                  selected.simulationId !== api.PHOENIX_SIM3_SIMULATION_ID)
+              }
               onClick={() =>
                 act(
                   () => api.postSim1News(selected.runId, newsHeadline, newsBody, 25, actor),

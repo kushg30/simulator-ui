@@ -5,6 +5,8 @@ import API_BASE from "../config";
 export const MERIDIAN_SIMULATION_ID = "5116d200-0000-4000-a000-000000000002";
 // Leadership Judgment — ANP Phoenix (Simulator 1).
 export const ANP_PHOENIX_SIMULATION_ID = "475db739-0708-48d4-b4db-5a23f1da50d9";
+// Same engine, same content, compressed to 20 minutes for a demo slot (Simulator 3).
+export const PHOENIX_SIM3_SIMULATION_ID = "5c3d0000-0000-4000-a003-000000000003";
 
 // The facilitator token is kept in sessionStorage: it disappears when the tab
 // closes, so a shared classroom machine does not leave the controls unlocked.
