@@ -215,6 +215,14 @@ export default function HomePage() {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   };
 
+  // Clicking the logo returns to the top of the page. Honours prefers-reduced-motion: a long smooth
+  // scroll is one of the motions that actually makes people ill, so that setting gets a jump.
+  const scrollToTop = () => {
+    setMenuOpen(false);
+    const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
+  };
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
     onScroll();
@@ -257,10 +265,18 @@ export default function HomePage() {
 
       {/* NAVBAR */}
       <nav className={`navbar ${scrolled ? "scrolled" : ""}`}>
-        <div className="logo">
+        {/* The logo returns to the top, the way it does on any other site. A button rather than an
+            anchor: it performs an action on this page instead of navigating, so it needs no href and
+            it stays reachable by keyboard for free. */}
+        <button
+          type="button"
+          className="logo logo-home"
+          onClick={scrollToTop}
+          aria-label="CaseRun — back to top"
+        >
           <span className="logo-biz">CASE</span>
           <span className="logo-sim">RUN</span>
-        </div>
+        </button>
         <div className="nav-links">
           <a href="#">Home</a>
           <a href="#about">About</a>

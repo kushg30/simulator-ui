@@ -90,6 +90,23 @@ section {
   font-weight: 700;
   letter-spacing: 0.04em;
 }
+/* The logo is a <button> so it can scroll back to top and still be keyboard-reachable. Buttons do
+   not inherit font-family, and bring their own chrome, so all of it is stripped back to plain text. */
+.logo-home {
+  font-family: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  line-height: inherit;
+  color: inherit;
+}
+.logo-home:focus-visible {
+  outline: 2px solid #c9a84c;
+  outline-offset: 4px;
+  border-radius: 3px;
+}
 .logo-biz {
   color: #c9a84c;
 }
