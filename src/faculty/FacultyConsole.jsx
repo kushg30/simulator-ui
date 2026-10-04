@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import * as api from "./api";
 import Collapsible from "./Collapsible";
 import FacultyDebrief from "./FacultyDebrief";
+import FacultyGuide from "./FacultyGuide";
 import FacultySim1SetB from "./FacultySim1SetB";
 import FacultyWiki from "./FacultyWiki";
 import "./faculty.css";
@@ -51,7 +52,7 @@ export default function FacultyConsole() {
   const [error, setError] = useState("");
   const [okMsg, setOkMsg] = useState("");
   const [note, setNote] = useState("");
-  const [tab, setTab] = useState("live"); // "live" | "debrief" | "wiki"
+  const [tab, setTab] = useState("live"); // "live" | "debrief" | "wiki" | "guide"
   const [debriefSim, setDebriefSim] = useState("sim2"); // which simulation's results to show
 
   // terminate confirmation
@@ -389,7 +390,19 @@ export default function FacultyConsole() {
           >
             Reference &amp; FAQ
           </button>
+          <button
+            className={tab === "guide" ? "" : "f-ghost"}
+            onClick={() => setTab("guide")}
+          >
+            Facilitation guide
+          </button>
         </div>
+
+        {tab === "guide" && (
+          <div className="f-card">
+            <FacultyGuide />
+          </div>
+        )}
 
         {tab === "debrief" && (
           <div className="f-card">

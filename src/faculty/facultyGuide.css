@@ -1,0 +1,214 @@
+/* Facilitation guide.
+ *
+ * Every selector below contains "fguide" on purpose. The print path collects only the rules whose
+ * selector matches /fguide/ and inlines them into a fresh document, so a rule named any other way
+ * would silently not reach the printed page — and no unrelated stylesheet can reach it either,
+ * which is what kept the report's PDF blank before.
+ *
+ * Colours are declared as literals rather than inherited from the console's custom properties for
+ * the same reason: the print document carries these rules but not .fac, so a var() lookup would
+ * resolve to nothing and the page would print with no colour at all.
+ */
+
+.fguide {
+  --fg-text: #e6edf3;
+  --fg-muted: #8b98a9;
+  --fg-border: #253044;
+  --fg-accent: #d29922;
+
+  color: var(--fg-text);
+  font-size: 0.9rem;
+  line-height: 1.62;
+  max-width: 900px;
+}
+
+/* ── masthead ───────────────────────────────────────────────────────────── */
+.fguide .fguide-mast {
+  border-bottom: 1px solid var(--fg-border);
+  padding-bottom: 18px;
+  margin-bottom: 8px;
+}
+.fguide .fguide-eyebrow {
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--fg-accent);
+}
+.fguide h1 {
+  font-size: 1.6rem;
+  margin: 8px 0 8px;
+  letter-spacing: -0.01em;
+}
+.fguide .fguide-lede {
+  margin: 0 0 14px;
+  max-width: 64ch;
+  color: var(--fg-muted);
+  font-size: 0.95rem;
+}
+.fguide .fguide-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  font-size: 0.78rem;
+  color: var(--fg-muted);
+}
+.fguide .fguide-meta b { color: var(--fg-text); }
+
+/* ── sections ───────────────────────────────────────────────────────────── */
+.fguide .fguide-sec {
+  border-top: 1px solid var(--fg-border);
+  padding: 20px 0 4px;
+}
+.fguide .fguide-sec:first-of-type { border-top: none; }
+.fguide h2 {
+  font-size: 1.02rem;
+  margin: 0 0 12px;
+  letter-spacing: -0.005em;
+}
+.fguide h4 {
+  font-size: 0.82rem;
+  font-weight: 700;
+  margin: 18px 0 7px;
+  letter-spacing: 0.01em;
+}
+.fguide h5 {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  margin: 14px 0 6px;
+}
+
+.fguide .fguide-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  gap: 10px 34px;
+}
+
+.fguide .fguide-note {
+  color: var(--fg-muted);
+  font-size: 0.82rem;
+  margin: 10px 0 0;
+  max-width: 72ch;
+}
+
+/* The two faculty-only sections carry a visible marker, so a guide left open on a projector is
+   obviously not a student-facing document. */
+.fguide .fguide-warn {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--fg-accent);
+  border: 1px solid rgba(210, 153, 34, 0.4);
+  background: rgba(210, 153, 34, 0.08);
+  border-radius: 5px;
+  padding: 5px 10px;
+  margin: 0 0 12px;
+}
+
+.fguide .fguide-ul,
+.fguide .fguide-ol {
+  margin: 0;
+  padding-left: 20px;
+  max-width: 78ch;
+}
+.fguide .fguide-ul li,
+.fguide .fguide-ol li { margin-bottom: 8px; }
+
+/* ── definition lists ───────────────────────────────────────────────────── */
+.fguide .fguide-dl { margin: 0; }
+.fguide .fguide-dl > div {
+  display: grid;
+  grid-template-columns: 190px 1fr;
+  gap: 4px 16px;
+  padding: 7px 0;
+  border-top: 1px solid rgba(37, 48, 68, 0.6);
+}
+.fguide .fguide-dl > div:first-child { border-top: none; }
+.fguide .fguide-dl-wide > div { grid-template-columns: 240px 1fr; }
+.fguide .fguide-dl dt {
+  font-weight: 600;
+  font-size: 0.84rem;
+}
+.fguide .fguide-dl dd {
+  margin: 0;
+  color: var(--fg-muted);
+  font-size: 0.85rem;
+}
+.fguide .fguide-range {
+  display: block;
+  font-weight: 400;
+  font-size: 0.72rem;
+  color: var(--fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── run sheet ──────────────────────────────────────────────────────────── */
+.fguide .fguide-round {
+  border: 1px solid var(--fg-border);
+  border-radius: 9px;
+  padding: 14px 16px;
+  margin-top: 12px;
+}
+.fguide .fguide-round-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 14px;
+  margin-bottom: 8px;
+}
+.fguide .fguide-round-no {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-accent);
+}
+.fguide .fguide-round-title { font-size: 0.98rem; font-weight: 600; }
+.fguide .fguide-round-facts {
+  margin-left: auto;
+  font-size: 0.74rem;
+  color: var(--fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+.fguide .fguide-beat {
+  margin: 0 0 4px;
+  max-width: 78ch;
+  color: var(--fg-muted);
+}
+.fguide .fguide-framings {
+  margin: 0;
+  padding-left: 20px;
+  max-width: 78ch;
+  font-size: 0.85rem;
+}
+.fguide .fguide-framings li { margin-bottom: 5px; }
+
+@media (max-width: 640px) {
+  .fguide .fguide-dl > div,
+  .fguide .fguide-dl-wide > div { grid-template-columns: 1fr; }
+  .fguide .fguide-round-facts { margin-left: 0; width: 100%; }
+}
+
+/* ── print ──────────────────────────────────────────────────────────────── */
+/* These land in the separate print document, where the guide IS the page. Ink on white, and
+   nothing allowed to break across a page in the middle of a round's notes. */
+@media print {
+  .fguide { color: #111; max-width: none; font-size: 10.5pt; }
+  .fguide .fguide-eyebrow,
+  .fguide .fguide-round-no { color: #8a6d1e; }
+  .fguide .fguide-lede,
+  .fguide .fguide-note,
+  .fguide .fguide-beat,
+  .fguide .fguide-meta,
+  .fguide .fguide-dl dd,
+  .fguide h5 { color: #444; }
+  .fguide .fguide-sec { border-top: 1px solid #ccc; break-inside: auto; }
+  .fguide .fguide-round,
+  .fguide .fguide-dl > div { break-inside: avoid; }
+  .fguide .fguide-round { border: 1px solid #ccc; }
+  .fguide h2 { break-after: avoid; }
+  .fguide .fguide-warn { border-color: #b8912a; background: none; color: #8a6d1e; }
+}
