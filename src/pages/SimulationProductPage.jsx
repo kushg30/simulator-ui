@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import SiteFooter from "../components/SiteFooter";
 import { getSimulation } from "./simulationCatalogue";
@@ -16,8 +16,18 @@ export default function SimulationProductPage() {
   const { slug } = useParams();
   const sim = getSimulation(slug);
 
+  // Land at the top with no visible travel.
+  //
+  // Two things made the naive version look wrong. HomePolish.css sets a global
+  // `html { scroll-behavior: smooth }`, so a plain scrollTo(0, 0) animates the entire way up from
+  // wherever the card was clicked — you watch the homepage scroll past. And useEffect runs after
+  // paint, so the new page was briefly drawn at the old scroll offset first. An explicit
+  // "instant" in a layout effect fixes both: it overrides the CSS and happens before the frame.
+  useLayoutEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [slug]);
+
   useEffect(() => {
-    window.scrollTo(0, 0);
     if (sim) document.title = `${sim.shortTitle} — CaseRun`;
     return () => { document.title = "CaseRun"; };
   }, [slug, sim]);
