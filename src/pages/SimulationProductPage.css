@@ -1,0 +1,256 @@
+/* Per-simulation product page.
+ *
+ * HomePage.css declares a bare `section { padding: 100px 0 }`, and CRA makes every imported
+ * stylesheet global, so that rule reaches this page too. Every section here therefore sets its own
+ * padding explicitly rather than inheriting a 100px gap it never asked for.
+ */
+
+.simpage {
+  --sp-bg: #0b0f1a;
+  --sp-panel: #0d1120;
+  --sp-line: rgba(255, 255, 255, 0.08);
+  --sp-text: #f0ece4;
+  --sp-muted: #8b93a8;
+  --sp-gold: #c9a84c;
+
+  background: var(--sp-bg);
+  min-height: 100vh;
+  color: var(--sp-text);
+}
+
+.simpage .simpage-logo {
+  text-decoration: none;
+  display: inline-flex;
+}
+.simpage .simpage-back {
+  color: var(--sp-muted);
+  text-decoration: none;
+  font-size: 13.5px;
+}
+.simpage .simpage-back:hover { color: var(--sp-text); }
+
+/* ── hero ───────────────────────────────────────────────────────────────── */
+.simpage .simpage-hero {
+  padding: 112px 0 48px;
+  border-bottom: 1px solid var(--sp-line);
+  background:
+    radial-gradient(900px 420px at 18% -10%, rgba(201, 168, 76, 0.10), transparent 70%),
+    var(--sp-bg);
+}
+.simpage .simpage-hero-inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: 44px;
+  align-items: center;
+}
+.simpage .simpage-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.simpage .simpage-status {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  padding: 5px 10px;
+  border-radius: 4px;
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.1);
+  border: 1px solid rgba(74, 222, 128, 0.25);
+}
+.simpage .simpage-title {
+  font-size: clamp(28px, 3.6vw, 44px);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  margin: 0 0 16px;
+  text-wrap: balance;
+}
+.simpage .simpage-tagline {
+  color: var(--sp-muted);
+  font-size: 16.5px;
+  line-height: 1.65;
+  max-width: 58ch;
+  margin: 0 0 26px;
+}
+.simpage .simpage-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 38px;
+}
+.simpage .simpage-facts div { display: flex; flex-direction: column; }
+.simpage .simpage-facts b {
+  font-size: 22px;
+  color: var(--sp-gold);
+  font-variant-numeric: tabular-nums;
+}
+.simpage .simpage-facts span {
+  font-size: 12px;
+  color: var(--sp-muted);
+  letter-spacing: 0.04em;
+}
+
+.simpage .simpage-video {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--sp-line);
+  background: var(--sp-panel);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+}
+.simpage .simpage-video iframe { width: 100%; height: 100%; display: block; border: 0; }
+.simpage .simpage-video-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+  padding: 26px;
+  color: var(--sp-muted);
+  font-size: 13.5px;
+}
+.simpage .simpage-video-icon { font-size: 40px; }
+
+/* ── body ───────────────────────────────────────────────────────────────── */
+.simpage .simpage-body { padding: 8px 0 72px; }
+
+.simpage .simpage-sec {
+  padding: 40px 0 0;          /* overrides the global `section` rule */
+  border-top: 1px solid var(--sp-line);
+  margin-top: 40px;
+}
+.simpage .simpage-sec:first-child { border-top: none; margin-top: 0; }
+
+.simpage .simpage-sec h2 {
+  font-size: 22px;
+  letter-spacing: -0.01em;
+  margin: 0 0 16px;
+}
+.simpage .simpage-prose {
+  color: var(--sp-muted);
+  font-size: 15px;
+  line-height: 1.78;
+  max-width: 76ch;
+  margin: 0 0 14px;
+}
+.simpage .simpage-sub {
+  color: var(--sp-muted);
+  font-size: 14px;
+  margin: -6px 0 14px;
+}
+
+/* core components */
+.simpage .simpage-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(258px, 1fr));
+  gap: 14px;
+}
+.simpage .simpage-card {
+  background: var(--sp-panel);
+  border: 1px solid var(--sp-line);
+  border-radius: 10px;
+  padding: 18px 18px 16px;
+}
+.simpage .simpage-card h4 {
+  margin: 0 0 7px;
+  font-size: 14.5px;
+  color: var(--sp-text);
+}
+.simpage .simpage-card p {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.68;
+  color: var(--sp-muted);
+}
+
+/* objectives */
+.simpage .simpage-objectives {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+  max-width: 80ch;
+}
+.simpage .simpage-objectives li {
+  position: relative;
+  padding-left: 28px;
+  margin-bottom: 12px;
+  color: var(--sp-muted);
+  font-size: 15px;
+  line-height: 1.7;
+}
+.simpage .simpage-objectives li::before {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 10px;
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  background: var(--sp-gold);
+}
+
+/* definition lists — what's included, duration */
+.simpage .simpage-dl { margin: 0; }
+.simpage .simpage-dl > div {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 6px 22px;
+  padding: 13px 0;
+  border-top: 1px solid var(--sp-line);
+}
+.simpage .simpage-dl > div:first-child { border-top: none; padding-top: 0; }
+.simpage .simpage-dl dt { font-size: 14.5px; font-weight: 600; }
+.simpage .simpage-dl dd {
+  margin: 0;
+  color: var(--sp-muted);
+  font-size: 13.8px;
+  line-height: 1.7;
+}
+.simpage .simpage-dl-tight > div { grid-template-columns: 110px minmax(0, 1fr); }
+
+.simpage .simpage-split {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px 46px;
+}
+.simpage .simpage-split h2 { font-size: 19px; }
+
+/* ── access ─────────────────────────────────────────────────────────────── */
+.simpage .simpage-sec-cta { border-top: none; }
+.simpage .simpage-cta-card {
+  background: linear-gradient(135deg, rgba(201, 168, 76, 0.10), rgba(201, 168, 76, 0.02));
+  border: 1px solid rgba(201, 168, 76, 0.26);
+  border-radius: 14px;
+  padding: 34px 32px;
+}
+.simpage .simpage-cta-card h3 {
+  margin: 0 0 10px;
+  font-size: 22px;
+  letter-spacing: -0.01em;
+}
+.simpage .simpage-cta-card p {
+  margin: 0 0 22px;
+  max-width: 62ch;
+  color: var(--sp-muted);
+  font-size: 14.5px;
+  line-height: 1.72;
+}
+.simpage .simpage-cta-row { display: flex; flex-wrap: wrap; gap: 12px; }
+.simpage .simpage-cta-row a { text-decoration: none; display: inline-flex; align-items: center; }
+
+.simpage .simpage-missing {
+  padding: 150px 0 110px;
+  text-align: center;
+}
+.simpage .simpage-missing p { color: var(--sp-muted); margin: 10px 0 26px; }
+.simpage .simpage-missing a { text-decoration: none; display: inline-flex; }
+
+@media (max-width: 900px) {
+  .simpage .simpage-hero-inner { grid-template-columns: 1fr; gap: 30px; }
+  .simpage .simpage-hero { padding-top: 96px; }
+  .simpage .simpage-dl > div,
+  .simpage .simpage-dl-tight > div { grid-template-columns: 1fr; }
+}

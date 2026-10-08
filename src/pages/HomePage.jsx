@@ -1,6 +1,7 @@
 import "./HomePage.css";
 import "./HomePolish.css";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import SiteFooter from "../components/SiteFooter";
 import { useEffect, useRef, useState } from "react";
 import { warmup } from "../config";
 
@@ -30,7 +31,7 @@ const simulators = [
     desc: "A regulated fintech has staked its reputation on a GenAI system embedded in fraud detection and client reporting. When its outputs start drifting in ways no one can fully explain, six executives — each with different information and incentives — must decide what deserves attention, and who has the authority to say an AI's output can't yet be trusted, before failure becomes visible.",
     icon: "🤖",
     active: true,
-    demo: "/demo/sim1",
+    page: "phoenix-ai-judgment",
     duration: "2 hours",
     players: "6 players per team",
     rounds: "4 rounds",
@@ -46,7 +47,7 @@ const simulators = [
     desc: "A fast-growing retailer, days from a Board meeting, with a revenue number Finance and Strategy can't reconcile. Five analytics roles must turn a raw, unchecked data feed into numbers the Board can trust — where an early miss quietly follows the team to the end.",
     icon: "📊",
     active: true,
-    demo: "/demo",
+    page: "meridian-retail-qbr",
     duration: "90 minutes",
     players: "5 players per team",
     rounds: "5 rounds",
@@ -471,8 +472,13 @@ export default function HomePage() {
   </div>
 )}
 
-              {sim.demo && (
-                <a href={sim.demo} className="sim-demo-link">Try a sample round →</a>
+              {/* The sample-round demo link is replaced by the simulation's own product page —
+                  overview, story, objectives, what's included and how to get access. The demo
+                  routes still exist, they are just no longer the entry point from here. */}
+              {sim.page && (
+                <Link to={`/simulations/${sim.page}`} className="sim-demo-link">
+                  Check it out →
+                </Link>
               )}
               </div>
             ))}
@@ -691,37 +697,8 @@ export default function HomePage() {
       </section>
 
       {/* FOOTER */}
-      <footer className="footer">
-        <div className="container footer-inner">
-          <div className="footer-brand">
-            <div className="logo footer-logo">
-              <span className="logo-biz">CASE</span>
-              <span className="logo-sim">RUN</span>
-            </div>
-            <p>The decisions your students make in the next two hours will follow them for the rest of their careers</p>
-          </div>
-          <div className="footer-links">
-            <div className="footer-col">
-              <div className="footer-heading">Product</div>
-              <a href="#simulators">Simulations</a>
-              <a href="#how">How It Works</a>
-              <a href="#about">About</a>
-            </div>
-            
-            <div className="footer-col">
-              <div className="footer-heading">Contact</div>
-              <a href="mailto:hello@caserun.in">hello@caserun.in</a>
-              <a href="#">Book a Demo</a>
-            </div>
-          </div>
-        </div>
-        <div className="footer-bottom">
-          <div className="container">
-            <span>© 2026 CaseRun. All rights reserved.</span>
-            <span>Privacy Policy · Terms of Service</span>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
+
 
     </div>
   );

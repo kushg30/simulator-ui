@@ -26,6 +26,7 @@ import { SimProvider } from "./simConfig";
 // Public sample-round demos (no sign-in, no real backend) — marketing tours
 import DemoPage from "./demo/DemoPage";
 import DemoSim1Page from "./demo/DemoSim1Page";
+import SimulationProductPage from "./pages/SimulationProductPage";
 
 // ─────────────────────────────────────────────────────────────
 // Neural canvas — runs ONCE for the entire app lifetime.
@@ -150,8 +151,13 @@ export default function App() {
 
   return (
     <Routes>
-      {/* Public marketing homepage + sample-round demo — open to everyone. */}
-      <Route path="/"               element={<HomePage />} />
+      {/* Public marketing homepage + per-simulation product pages — open to everyone. */}
+      <Route path="/"                        element={<HomePage />} />
+      <Route path="/simulations/:slug"       element={<SimulationProductPage />} />
+
+      {/* The sample-round demos are no longer linked from the homepage — the product pages took
+          their place — but the routes stay live so an existing link still works and they can be
+          sent to a prospect directly. */}
       <Route path="/demo"           element={<DemoPage />} />
       <Route path="/demo/sim1"      element={<DemoSim1Page />} />
 
