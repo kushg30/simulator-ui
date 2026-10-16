@@ -53,6 +53,33 @@ async function call(path, options = {}) {
 const post = (path, payload) =>
   call(path, { method: "POST", body: JSON.stringify(payload || {}) });
 
+// ── identity & tenancy ──────────────────────────────────────────────────────
+// Who the presented credential belongs to. Called immediately after sign-in so the console can
+// show the caller's name, whether they are platform staff, and which simulations their institution
+// is licensed for — everything needed to show only what this person may actually act on.
+export const whoami = () => call("/admin/whoami");
+
+// ── batches (cohorts) ───────────────────────────────────────────────────────
+export const listCohorts = () => call("/cohorts");
+export const createCohort = (simulationId, name, organizationId) =>
+  post("/cohorts", { simulationId, name, organizationId });
+export const closeCohort = (cohortId) => post("/cohorts/" + cohortId + "/close");
+
+// ── provisioning (platform staff only) ──────────────────────────────────────
+export const listOrganizations = () => call("/admin/organizations");
+export const createOrganization = (name, emailDomain, notes) =>
+  post("/admin/organizations", { name, emailDomain, notes });
+export const listFacultyUsers = (organizationId) =>
+  call("/admin/faculty-users" + (organizationId ? "?organizationId=" + organizationId : ""));
+export const createFacultyUser = (organizationId, name, email, platformAdmin) =>
+  post("/admin/faculty-users", { organizationId, name, email, platformAdmin });
+export const setFacultyEnabled = (facultyUserId, enabled) =>
+  post("/admin/faculty-users/" + facultyUserId + "/" + (enabled ? "enable" : "disable"));
+export const listEntitlements = (organizationId) =>
+  call("/admin/entitlements" + (organizationId ? "?organizationId=" + organizationId : ""));
+export const grantEntitlement = (organizationId, simulationId, seats, validUntil, notes) =>
+  post("/admin/entitlements", { organizationId, simulationId, seats, validUntil, notes });
+
 // ── session ─────────────────────────────────────────────────────────────────
 export const getOverview = () => call("/overview");
 export const getActions = (runId) => call(`/actions${runId ? `?runId=${runId}` : ""}`);

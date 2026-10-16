@@ -3,11 +3,22 @@ import * as api from "./api";
 import Collapsible from "./Collapsible";
 import FacultyDebrief from "./FacultyDebrief";
 import FacultyGuide from "./FacultyGuide";
+import FacultyBatches from "./FacultyBatches";
+import FacultyAdmin from "./FacultyAdmin";
 import FacultySim1SetB from "./FacultySim1SetB";
 import FacultyWiki from "./FacultyWiki";
 import "./faculty.css";
 
 const ACTOR_KEY = "facultyActor";
+
+// The simulations this platform ships. Named here rather than discovered from the overview,
+// because the overview only contains simulations somebody is currently PLAYING — a licence or a
+// batch has to be creatable for one that nobody has started yet.
+const PLATFORM_SIMULATIONS = [
+  { id: api.ANP_PHOENIX_SIMULATION_ID, name: "Phoenix AI Judgment (60 min)" },
+  { id: api.PHOENIX_SIM3_SIMULATION_ID, name: "Phoenix AI Judgment (20 min express)" },
+  { id: api.MERIDIAN_SIMULATION_ID, name: "Meridian Retail QBR" },
+];
 
 /** Human-readable paused time: seconds, then minutes, hours, days as it grows. */
 function formatDuration(totalSeconds) {
@@ -43,6 +54,7 @@ export default function FacultyConsole() {
   const [actor, setActor] = useState(() => localStorage.getItem(ACTOR_KEY) || "");
 
   const [overview, setOverview] = useState([]);
+  const [identity, setIdentity] = useState(null); // who is signed in + what they may act on
   const [selected, setSelected] = useState(null); // {runId, roundNumber, simulationId, teamName}
   const manageRef = useRef(null); // per-team controls, scrolled into view on "Manage"
   const [artifacts, setArtifacts] = useState([]);
@@ -52,7 +64,7 @@ export default function FacultyConsole() {
   const [error, setError] = useState("");
   const [okMsg, setOkMsg] = useState("");
   const [note, setNote] = useState("");
-  const [tab, setTab] = useState("live"); // "live" | "debrief" | "wiki" | "guide"
+  const [tab, setTab] = useState("live"); // live | debrief | wiki | guide | batches | admin
   const [debriefSim, setDebriefSim] = useState("sim2"); // which simulation's results to show
 
   // terminate confirmation
@@ -91,12 +103,23 @@ export default function FacultyConsole() {
       setOverview(rows || []);
       setAuthed(true);
       setLog(await api.getActions(selected?.runId));
+
+      // Who is signed in, and what may they act on. Fetched alongside the overview rather than
+      // only at sign-in, so a licence granted or revoked mid-session is picked up on the next poll
+      // instead of requiring the facilitator to sign out and back in.
+      try {
+        setIdentity(await api.whoami());
+      } catch {
+        // An older backend has no /whoami. The console still works — it just cannot narrow the
+        // view — so this must never block the session controls from loading.
+        setIdentity(null);
+      }
     } catch (e) {
       if (e.status === 401) {
-        // A rejected token must not persist, or it re-401s on every reload of the tab.
+        // A rejected credential must not persist, or it re-401s on every reload of the tab.
         setAuthed(false);
         api.clearToken();
-        setError("That token was rejected. Check the FACULTY_ACCESS_TOKEN value and try again.");
+        setError("That key was rejected. Check it and try again.");
       } else {
         setError(e.message);
       }
@@ -356,13 +379,33 @@ export default function FacultyConsole() {
           <div>
             <h1>Facilitator console</h1>
             <p className="f-sub">
-              Live controls for every simulation. Signed in as <strong>{actor || "facilitator"}</strong>.
+              {identity ? (
+                <>
+                  Signed in as <strong>{identity.name}</strong>
+                  {identity.platformAdmin
+                    ? <span className="f-flag" style={{ marginLeft: 6 }}>CaseRun staff</span>
+                    : null}
+                  {/* A facilitator needs to know at a glance whether they are about to act on a
+                      live classroom, and which one. */}
+                  {!identity.platformAdmin && (
+                    <> · {(identity.entitledSimulationIds || []).length} licensed simulation
+                      {(identity.entitledSimulationIds || []).length === 1 ? "" : "s"}</>
+                  )}
+                  {identity.legacyToken && (
+                    <> · <span className="f-flag">shared token</span></>
+                  )}
+                  {actor ? <> · acting as <strong>{actor}</strong></> : null}
+                </>
+              ) : (
+                <>Live controls for every simulation. Signed in as <strong>{actor || "facilitator"}</strong>.</>
+              )}
             </p>
           </div>
           <button
             className="f-ghost"
             onClick={() => {
               api.clearToken();
+              setIdentity(null);
               setAuthed(false);
             }}
           >
@@ -391,12 +434,40 @@ export default function FacultyConsole() {
             Reference &amp; FAQ
           </button>
           <button
+            className={tab === "batches" ? "" : "f-ghost"}
+            onClick={() => setTab("batches")}
+          >
+            Batches
+          </button>
+          <button
             className={tab === "guide" ? "" : "f-ghost"}
             onClick={() => setTab("guide")}
           >
             Facilitation guide
           </button>
+          {/* Provisioning is only meaningful for platform staff, so it is not shown at all to a
+              customer's facilitator rather than being shown and then refused. */}
+          {identity?.platformAdmin && (
+            <button
+              className={tab === "admin" ? "" : "f-ghost"}
+              onClick={() => setTab("admin")}
+            >
+              Provisioning
+            </button>
+          )}
         </div>
+
+        {tab === "batches" && (
+          <div className="f-card">
+            <FacultyBatches identity={identity} simulations={PLATFORM_SIMULATIONS} />
+          </div>
+        )}
+
+        {tab === "admin" && identity?.platformAdmin && (
+          <div className="f-card">
+            <FacultyAdmin simulations={PLATFORM_SIMULATIONS} />
+          </div>
+        )}
 
         {tab === "guide" && (
           <div className="f-card">

@@ -394,3 +394,38 @@ html.faculty-scroll::-webkit-scrollbar-thumb:hover { background: #64749a; backgr
   color: rgba(255, 255, 255, 0.92);
   min-width: 18px;
 }
+
+/* ── tenancy: batches and provisioning ────────────────────────────────────── */
+
+/* A closed batch or a disabled account stays readable but visibly inactive, so the eye skips it
+   without the row disappearing — a facilitator still needs to find last term's cohort. */
+.fac .f-dim { opacity: 0.55; }
+
+/* The join code is the thing students type, so it is monospaced, large enough to read from a
+   laptop at the front of a room, and click-to-copy. */
+.fac .f-code {
+  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  padding: 4px 10px;
+}
+
+/* An issued access key is shown exactly once and never again, so it gets a deliberately
+   interruptive treatment rather than sitting quietly in a table the operator might scroll past. */
+.fac .f-keycard {
+  border-color: var(--f-warn);
+  background: linear-gradient(180deg, rgba(210, 153, 34, 0.10), rgba(210, 153, 34, 0.02));
+}
+.fac .f-keyvalue {
+  display: block;
+  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85rem;
+  word-break: break-all;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--f-border);
+  border-radius: 6px;
+  padding: 11px 13px;
+  color: var(--f-text);
+  user-select: all;      /* one click selects the whole key, for operators without clipboard access */
+}
