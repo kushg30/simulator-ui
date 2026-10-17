@@ -139,6 +139,24 @@ export default function SimulationProductPage() {
           {sim.story.map((p, i) => <p key={i} className="simpage-prose">{p}</p>)}
         </section>
 
+        {/* ── how a session actually runs ─────────────────────────────────── */}
+        {sim.howItRuns && (
+          <section className="simpage-sec">
+            <h2>How it runs</h2>
+            <ol className="simpage-steps">
+              {sim.howItRuns.map(([name, desc], i) => (
+                <li key={name}>
+                  <span className="simpage-step-no">{String(i + 1).padStart(2, "0")}</span>
+                  <div>
+                    <h4>{name}</h4>
+                    <p>{desc}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </section>
+        )}
+
         {/* ── core components ─────────────────────────────────────────────── */}
         <section className="simpage-sec">
           <h2>Core components</h2>

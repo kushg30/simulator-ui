@@ -3,6 +3,7 @@ import * as api from "./api";
 import Collapsible from "./Collapsible";
 import FacultyDebrief from "./FacultyDebrief";
 import FacultyGuide from "./FacultyGuide";
+import FacultyTeachingNotes from "./FacultyTeachingNotes";
 import FacultyBatches from "./FacultyBatches";
 import FacultyTeamsForming from "./FacultyTeamsForming";
 import FacultyAdmin from "./FacultyAdmin";
@@ -65,7 +66,7 @@ export default function FacultyConsole() {
   const [error, setError] = useState("");
   const [okMsg, setOkMsg] = useState("");
   const [note, setNote] = useState("");
-  const [tab, setTab] = useState("live"); // live | debrief | wiki | guide | batches | admin
+  const [tab, setTab] = useState("live"); // live | debrief | wiki | guide | notes | batches | admin
   const [debriefSim, setDebriefSim] = useState("sim2"); // which simulation's results to show
 
   // terminate confirmation
@@ -441,10 +442,16 @@ export default function FacultyConsole() {
             Batches
           </button>
           <button
+            className={tab === "notes" ? "" : "f-ghost"}
+            onClick={() => setTab("notes")}
+          >
+            Teaching Notes
+          </button>
+          <button
             className={tab === "guide" ? "" : "f-ghost"}
             onClick={() => setTab("guide")}
           >
-            Facilitation guide
+            Quick Start Guide
           </button>
           {/* Provisioning is only meaningful for platform staff, so it is not shown at all to a
               customer's facilitator rather than being shown and then refused. */}
@@ -457,6 +464,12 @@ export default function FacultyConsole() {
             </button>
           )}
         </div>
+
+        {tab === "notes" && (
+          <div className="f-card">
+            <FacultyTeachingNotes />
+          </div>
+        )}
 
         {tab === "batches" && (
           <div className="f-card">

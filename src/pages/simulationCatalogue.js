@@ -13,27 +13,30 @@
 export const SIMULATIONS = [
   {
     slug: "phoenix-ai-judgment",
-    title: "When Can You Trust Your AI? The ANP Phoenix Case",
-    shortTitle: "Phoenix AI Judgment",
+    title: "When Can You Trust What Your AI Just Told You?",
+    shortTitle: "ANP Phoenix",
     status: "LIVE",
     icon: "🤖",
-    tags: ["Responsible AI", "AI Governance", "Leadership Judgment"],
+    // Ethics first, deliberately. The published facilitator material is explicit that the ethical
+    // questions are the heart of the session and the AI is the setting that makes them hard — so the
+    // page a buyer reads should say that too, rather than selling it as an AI-governance exercise.
+    tags: ["Ethics", "Responsible AI", "Leadership Judgment"],
 
     facts: [
-      ["60 min", "of play"],
+      ["2 × 90 min", "sessions"],
       ["6", "roles per team"],
-      ["4", "timed rounds"],
+      ["4", "rounds, 60 min live"],
     ],
 
     video: "https://www.youtube.com/embed/k3IqrQ7j-Ms",
 
     tagline:
-      "An AI system flagged something it cannot explain. No customer complained. No money was lost. Nothing is technically wrong — and that is the problem.",
+      "Six executives of a regulated fintech face two hard questions. What do they owe to the people who rely on them? Who has the authority to say that an AI's output cannot yet be trusted? They must decide before a failure becomes visible.",
 
     overview: [
-      "ANP Phoenix is a regulated fintech whose GenAI system, Sentinel, screens transactions for fraud and money laundering and drafts client reports. It has started producing anomaly flags that do not match its own stated reasoning. The pattern is small, has caused no customer complaint, no financial loss and no regulatory breach, and crosses no internal escalation threshold.",
-      "Six executives hold different pieces of that picture, and different incentives for what to do with it. Over four timed rounds they decide what deserves attention, what gets written down, and who has the authority to say an AI's output cannot yet be trusted — before failure becomes visible.",
-      "The anomaly never worsens. Across all four rounds no new evidence of harm arrives. What changes is who is asking: first engineering, then the organisation, then a regulator and an investor, and finally an anonymous whistle channel. What the simulation measures is what the team does as the audience changes but the facts do not.",
+      "A regulated fintech has staked its reputation on a generative AI system used in fraud detection and client reporting. Its outputs start drifting in ways no one can fully explain. Six executives, each with different information and incentives, must decide what deserves attention — and who has the authority to say that an AI output cannot yet be trusted. They must do this before failure becomes visible.",
+      "The ethical questions are the heart of the session. What does the company owe to customers and regulators? Who is accountable? Are concerns spoken, or left unsaid? The AI is the setting that makes these questions hard.",
+      "Nothing has visibly failed, and no rule has been broken. Each executive holds a different piece of the picture and faces different incentives — which is what makes the decision a judgment rather than a procedure.",
     ],
 
     story: [
@@ -52,30 +55,37 @@ export const SIMULATIONS = [
     ],
 
     objectives: [
-      "Recognise a weak signal that carries real information while sitting below every threshold that would force a response.",
-      "See how incentive structures shape which facts a function finds credible — without anyone acting in bad faith.",
-      "Practise naming an owner for an ambiguous risk, and notice what happens across four rounds when nobody does.",
-      "Distinguish changing a position because the evidence changed from changing it because someone outside started watching.",
-      "Experience how an early framing compounds: the description a team commits to in round one quietly removes options by round four.",
-      "Connect the exercise to how AI governance is actually assessed in practice, including the NIST AI Risk Management Framework and Gartner's AI TRiSM model.",
+      "Recognise the ethical side of a decision that looks operational, when no rule has been broken and nothing has visibly failed.",
+      "Weigh what the company owes to customers, regulators and employees against commercial pressure and personal incentives.",
+      "Judge how far to trust an AI's output, and who has the authority and the duty to say that it cannot yet be trusted.",
+      "See how accountability is shared or spread across a team, and how early decisions shape what is possible later.",
+    ],
+
+    /** The four stages a facilitator runs, in order. Shown on the page so a buyer can picture the day. */
+    howItRuns: [
+      ["Setup", "Open the session on the platform and share the link. Under fifteen minutes. Participants join and each takes a role."],
+      ["Live simulation", "Four rounds in 60 minutes. The platform manages timing and the delivery of information. Early decisions shape what is possible later."],
+      ["Report", "When the simulation ends, every participant and the facilitator can download a report at once."],
+      ["Debrief", "Led in a second session, using the reports and the results across all teams."],
     ],
 
     included: [
-      ["Facilitation guide", "Pre-session setup, a round-by-round run sheet with what to listen for, the full debrief script with discussion prompts, the scoring model, a framework map and troubleshooting."],
+      ["Quick Start Guide", "The facilitator's operating manual: forming teams, a sample class plan for both sessions, the opening briefing, room and technical requirements, and how to lead the debrief."],
+      ["Teaching Notes", "Supporting notes and reading — the ethical traditions applied to AI, judgment under uncertainty, organisational culture and voice, AI governance and regulation, real cases, and a reading list of around eighty sources."],
+      ["Walkthrough video", "Watch before the session, to see what participants will experience."],
       ["Live facilitator console", "Real-time view of every team, with pause/resume, artifact delay and bypass, news interrupts, round restart and session termination."],
-      ["Final results screen", "Released to students only when the simulation ends: four variables with their bands, the round-by-round trajectory, the cohort distribution and the team's framing pattern."],
-      ["Per-team reports", "A downloadable report per team for the facilitator, and the same report for the students themselves."],
-      ["Cohort debrief view", "Faculty-only rankings and distribution across teams, for projecting during the debrief."],
+      ["Results and reports", "Group and individual scores, a cohort ranking and a report for every participant, available as soon as the simulation ends."],
       ["Express 20-minute build", "The same scenario compressed for a guest lecture, demo or short workshop slot."],
     ],
 
     multiplayer:
-      "Team-based and synchronous. One team is exactly six participants, one per role — the asymmetry between those six is the mechanism, so the roles are not optional. Any number of teams run in parallel on independent clocks, and the facilitator controls them individually or all at once from a single console.",
+      "Live, in class, in a browser — one device per participant, and teams discuss throughout. A team is six, one per role, and the asymmetry between those six is the mechanism rather than a detail. Class size is ten or more: a class of sixty runs as ten teams at the same time, each on its own clock, all controlled from one facilitator console.",
 
     durations: [
-      ["Standard", "60 minutes of play across four timed rounds, plus 30 minutes of debrief."],
-      ["Express", "20 minutes of play, same content and scoring, for a demo or a short slot."],
-      ["Setup", "About 10 minutes for teams to form and claim roles."],
+      ["Total", "Two sessions of 90 minutes. Session 1: setup, simulation and a short reflection. Session 2: the debrief. Same day with a break, or on different days."],
+      ["Session 1", "15 minutes to set up and brief, 60 minutes of live simulation across four rounds, then reflection and reports."],
+      ["Session 2", "90 minutes of debrief, using the reports and the results across all teams."],
+      ["Express", "A 20-minute build of the same scenario, for a guest lecture or demo."],
     ],
   },
 
