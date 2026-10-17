@@ -29,6 +29,10 @@ export function createTeam(teamName, participantName) {
       teamName,
       participantName,
       simulationId: MERIDIAN_SIMULATION_ID,
+      // The batch entered at the gate, which ties this team to the institution holding the
+      // licence. Null for a demo run, which belongs to no customer. Read from sessionStorage
+      // rather than imported from SimGate so this module stays free of component imports.
+      cohortId: sessionStorage.getItem("simCohortId") || null,
     }),
   }).then(toJson);
 }

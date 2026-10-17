@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { getCohortId } from "../components/SimGate";
 import { useNavigate } from "react-router-dom";
 import API_BASE, { warmup } from "../config";
 import { useSim } from "../simConfig";
@@ -102,6 +103,10 @@ export default function TeamJoinPage() {
           teamName: teamName.trim(),
           participantName: name.trim(),
           simulationId: sim.id,
+          // The batch this class entered at the gate. This is the link that ties the team — and
+          // everything it records — to the institution holding the licence, so their facilitator
+          // sees it in their console. Null for a demo run, which belongs to no customer.
+          cohortId: getCohortId(),
         }),
       });
       const data = await res.json().catch(() => ({}));

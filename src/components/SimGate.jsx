@@ -1,5 +1,33 @@
 import { useState } from "react";
+import API_BASE from "../config";
 import "./SimGate.css";
+
+/**
+ * Where the resolved batch is remembered for the rest of the browser session, so team creation can
+ * attach the team to it. sessionStorage, not localStorage: a shared classroom machine should not
+ * carry one cohort's identity into the next class.
+ */
+export const COHORT_KEY = "simCohortId";
+export const COHORT_NAME_KEY = "simCohortName";
+
+/** Reads the batch the student entered, if any. Null means a demo/internal run with no cohort. */
+export function getCohortId() {
+  return sessionStorage.getItem(COHORT_KEY) || null;
+}
+
+export function getCohortName() {
+  return sessionStorage.getItem(COHORT_NAME_KEY) || null;
+}
+
+/**
+ * Which simulation each gate guards, so a batch code issued for one cannot open another.
+ * Kept here rather than imported from the faculty console, which students never load.
+ */
+const SIM_IDS = {
+  sim1: "475db739-0708-48d4-b4db-5a23f1da50d9",
+  sim3: "5c3d0000-0000-4000-a003-000000000003",
+  sim2: "5116d200-0000-4000-a000-000000000002",
+};
 
 // Soft access gate for the live simulations. Before a student can reach a
 // simulation, they must enter the access code the facilitator announces. This is
@@ -28,27 +56,76 @@ export default function SimGate({ children, sim = "sim2" }) {
   );
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
+  const [checking, setChecking] = useState(false);
 
   if (granted) return children;
 
-  const submit = (e) => {
+  /**
+   * Two kinds of code open this gate.
+   *
+   * A BATCH code identifies the cohort a facilitator created, and is the one that matters: it ties
+   * every team the class goes on to create to the institution that holds the licence, which is what
+   * makes the facilitator's console show their own students and nobody else's.
+   *
+   * The legacy static code still works, and grants access with no cohort. It is what the platform's
+   * own demo and internal runs use, and removing it would break them for no gain. A team created
+   * that way simply belongs to no customer.
+   *
+   * The batch code is tried first, so a real cohort always wins.
+   */
+  const submit = async (e) => {
     e.preventDefault();
-    if (code.trim().toUpperCase() === ACCESS_CODE.toUpperCase()) {
-      sessionStorage.setItem(FLAG_KEY, "1");
-      setGranted(true);
-    } else {
-      setError("Incorrect access code. Please check with your facilitator.");
+    const entered = code.trim();
+    if (!entered || checking) return;
+
+    setChecking(true);
+    setError("");
+    try {
+      const res = await fetch(
+        `${API_BASE}/api/cohorts/resolve/${encodeURIComponent(entered)}`
+      );
+      if (res.ok) {
+        const cohort = await res.json();
+        // A batch belongs to exactly one simulation. Entering Phoenix's code on the Meridian page
+        // must not open it — the server refuses the mismatch too, but catching it here tells the
+        // student something useful instead of letting them fail later at team creation.
+        if (SIM_IDS[sim] && cohort.simulationId !== SIM_IDS[sim]) {
+          setError("That batch code is for a different simulation.");
+          return;
+        }
+        sessionStorage.setItem(FLAG_KEY, "1");
+        sessionStorage.setItem(COHORT_KEY, cohort.cohortId);
+        sessionStorage.setItem(COHORT_NAME_KEY, cohort.cohortName || "");
+        setGranted(true);
+        return;
+      }
+    } catch {
+      // Network or cold backend. Fall through to the static code so a demo is never blocked by
+      // the cohort lookup being unreachable.
+    } finally {
+      setChecking(false);
     }
+
+    if (entered.toUpperCase() === ACCESS_CODE.toUpperCase()) {
+      sessionStorage.setItem(FLAG_KEY, "1");
+      // No cohort: this is a demo or internal run, and belongs to no institution.
+      sessionStorage.removeItem(COHORT_KEY);
+      sessionStorage.removeItem(COHORT_NAME_KEY);
+      setGranted(true);
+      return;
+    }
+
+    setError("That code was not recognised. Please check with your facilitator.");
   };
 
   return (
     <div className="simgate">
       <form className="simgate-card" onSubmit={submit}>
         <div className="simgate-eyebrow">CaseRun · Access required</div>
-        <h1>Enter the access code</h1>
+        <h1>Enter your batch code</h1>
         <p>
           This simulation is open only during a facilitated session. Enter the
-          access code your facilitator gave you to continue.
+          batch code your facilitator gave you to continue.
         </p>
         <input
           type="text"
@@ -58,15 +135,15 @@ export default function SimGate({ children, sim = "sim2" }) {
             setCode(e.target.value);
             if (error) setError("");
           }}
-          placeholder="Access code"
+          placeholder="Batch code"
           autoFocus
           autoComplete="off"
           spellCheck="false"
-          aria-label="Access code"
+          aria-label="Batch code"
         />
         {error && <div className="simgate-error">{error}</div>}
-        <button type="submit" className="simgate-btn">
-          Continue
+        <button type="submit" className="simgate-btn" disabled={!code.trim() || checking}>
+          {checking ? "Checking…" : "Continue"}
         </button>
       </form>
     </div>
