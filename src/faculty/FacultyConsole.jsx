@@ -4,6 +4,7 @@ import Collapsible from "./Collapsible";
 import FacultyDebrief from "./FacultyDebrief";
 import FacultyGuide from "./FacultyGuide";
 import FacultyBatches from "./FacultyBatches";
+import FacultyTeamsForming from "./FacultyTeamsForming";
 import FacultyAdmin from "./FacultyAdmin";
 import FacultySim1SetB from "./FacultySim1SetB";
 import FacultyWiki from "./FacultyWiki";
@@ -509,6 +510,13 @@ export default function FacultyConsole() {
 
         {tab === "live" && (
         <>
+        {/* ── the assembly phase ───────────────────────────────────────────
+            First, because it is what the facilitator is looking at while the room fills — before
+            there is anything in play to control. Open by default for the same reason. */}
+        <Collapsible title="Teams forming" subtitle="waiting to start — seats and missing roles" defaultOpen>
+          <FacultyTeamsForming onStarted={refresh} />
+        </Collapsible>
+
         {/* ── whole-class controls ─────────────────────────────────────── */}
         <Collapsible title="Whole class" subtitle="pause / resume everyone">
           <p className="f-note">

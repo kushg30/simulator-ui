@@ -59,6 +59,14 @@ const post = (path, payload) =>
 // is licensed for — everything needed to show only what this person may actually act on.
 export const whoami = () => call("/admin/whoami");
 
+// ── the assembly phase ──────────────────────────────────────────────────────
+// Teams that have formed but not started. The main overview is built from runs, so it is blank
+// during the minutes a room spends forming teams — this is what fills that window.
+export const getTeamsForming = () => call("/teams-forming");
+export const startTeam = (teamId, actor) => post("/teams/" + teamId + "/start", { actor });
+export const startAllInCohort = (cohortId, actor) =>
+  post("/cohorts/" + cohortId + "/start-all", { actor });
+
 // ── batches (cohorts) ───────────────────────────────────────────────────────
 export const listCohorts = () => call("/cohorts");
 export const createCohort = (simulationId, name, organizationId) =>

@@ -429,3 +429,18 @@ html.faculty-scroll::-webkit-scrollbar-thumb:hover { background: #64749a; backgr
   color: var(--f-text);
   user-select: all;      /* one click selects the whole key, for operators without clipboard access */
 }
+
+/* ── the assembly phase ───────────────────────────────────────────────────── */
+
+/* A team whose seats are all filled. Green carries the meaning on its own here, but it sits beside
+   an enabled Start button and a "—" in the missing column, so colour is never the only signal. */
+.fac .f-ready { color: var(--f-good); font-weight: 600; }
+
+/* The team's own 4-digit code — shown for identification, not for copying, so it is plain text
+   rather than a button like the batch code is. */
+.fac .f-code-plain {
+  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.86rem;
+  letter-spacing: 0.06em;
+  color: var(--f-muted);
+}
