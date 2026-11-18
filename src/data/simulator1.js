@@ -18,6 +18,10 @@ ANP Phoenix is not facing a crisis.
 However, early signals suggest that Sentinel's outputs may soon require the organization to decide what deserves attention before failure becomes visible, and who has the authority to say an AI system's output can't yet be fully trusted.
 
 The question confronting leadership is not technical. It is interpretive: how much value can be captured from a GenAI capability before responsible AI controls catch up with it — and who decides when that line has been crossed.
+
+What makes this harder than it sounds: leadership bonuses are tied to how fast Sentinel rolls out. Two large clients are about to sign, citing Sentinel by name. A regulatory review of the company's AI governance is six weeks out.
+
+For scale, one industry estimate puts the average cost of poor AI data and model quality at $12.9 million a year for a large company, and a recent CEO survey found most CEOs worry about the quality of the data behind their own decisions. Legal's standing view is that escalating without a clearer trigger creates a paper trail that cannot be undone.
   `,
 
   roles: [

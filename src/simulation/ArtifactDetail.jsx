@@ -78,10 +78,14 @@ function DecisionStrip({ artifact, options, onDecide, loading, error, className 
   }
 
   if (artifact.actionState === "OPEN" && options) {
+    // The round-ending decisions carry a short headline plus a separate explanation. Those stack
+    // vertically and run full width; every other decision in the simulation has a one-line label
+    // and keeps the original side-by-side row.
+    const stacked = options.some((o) => o.detail);
     return (
       <>
         {error && <div className="error-msg">{error}</div>}
-        <div className={className}>
+        <div className={stacked ? `${className} doc-actions-stacked` : className}>
           {options.map((opt) => {
             const isSelected = selected === opt.id;
             return (
@@ -91,9 +95,12 @@ function DecisionStrip({ artifact, options, onDecide, loading, error, className 
                 className={isSelected ? "selected" : selected ? "faded" : ""}
                 onClick={() => { setSelected(opt.id); onDecide(opt.id); }}
               >
-                {isSelected
-                  ? loading ? `Submitting…` : `✓ ${opt.label}`
-                  : opt.label}
+                <span className="opt-label">
+                  {isSelected
+                    ? loading ? `Submitting…` : `✓ ${opt.label}`
+                    : opt.label}
+                </span>
+                {opt.detail && <span className="opt-detail">{opt.detail}</span>}
               </button>
             );
           })}

@@ -257,6 +257,18 @@ body{font-family:"IBM Plex Sans",sans-serif;background:transparent;color:#eceef4
 .doc-actions button.selected{background:rgba(34,197,94,0.1);border-color:rgba(34,197,94,0.3);color:#4ade80}
 .doc-actions button.faded{opacity:0.2}
 
+/* Two-line options (the CEO's round-ending framings). The label is scanned, the detail is read,
+   so the three choices stack full-width instead of competing for room on one row. */
+.doc-actions-stacked{flex-direction:column;align-items:stretch}
+.doc-actions-stacked button{
+  display:flex;flex-direction:column;gap:5px;
+  text-align:left;padding:13px 16px;width:100%;
+}
+.doc-actions-stacked .opt-label{font-size:13px;font-weight:600;letter-spacing:-0.01em;color:#c9d1e3}
+.doc-actions-stacked .opt-detail{font-size:12px;font-weight:400;line-height:1.6;color:#79839b}
+.doc-actions-stacked button:hover:not(:disabled) .opt-label{color:#bfdbfe}
+.doc-actions-stacked button.selected .opt-label{color:#4ade80}
+
 .decision-confirmation{
   padding:18px 28px;border-top:1px solid rgba(34,197,94,0.1);
   background:rgba(34,197,94,0.03);
