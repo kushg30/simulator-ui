@@ -28,6 +28,7 @@ export default function WaitingPage() {
   const role = searchParams.get("role");
 
   const [joinCode, setJoinCode] = useState(searchParams.get("joinCode") || "");
+  const [teamName, setTeamName] = useState("");
   const [participants, setParticipants] = useState([]);
   const [roles, setRoles] = useState({}); // { ROLE_CODE: occupantId | null }
   const [botsBusy, setBotsBusy] = useState(false);
@@ -79,14 +80,19 @@ export default function WaitingPage() {
     return () => clearInterval(id);
   }, [teamId, fetchParticipants, fetchRoles, fetchRun]);
 
-  // Joiners arrive without the code in the URL — fetch the team's short code so everyone sees it.
+  // Joiners arrive with neither the team's name nor its code in the URL, so both are fetched here —
+  // everyone in the room needs to see which team they are actually sitting in, not just its code.
   useEffect(() => {
-    if (joinCode || !teamId) return;
+    if (!teamId) return;
     fetch(`${API_BASE}/api/teams/${teamId}`)
       .then((r) => (r.ok ? r.json() : null))
-      .then((d) => d?.joinCode && setJoinCode(d.joinCode))
+      .then((d) => {
+        if (!d) return;
+        if (d.teamName) setTeamName(d.teamName);
+        if (d.joinCode) setJoinCode((c) => c || d.joinCode);
+      })
       .catch(() => {});
-  }, [teamId, joinCode]);
+  }, [teamId]);
 
   if (!teamId || !participantId) {
     return (
@@ -148,6 +154,12 @@ export default function WaitingPage() {
   return (
     <div className="sim2">
       <div className="s2-shell">
+        <p
+          className="s2-sub"
+          style={{ margin: "0 0 6px", textTransform: "uppercase", letterSpacing: "0.14em", fontSize: 12, fontWeight: 600 }}
+        >
+          {sim.name}
+        </p>
         <h1>Waiting room</h1>
         <p className="s2-sub">
           Share the 4-digit team code so the rest of the leadership team can join. The CEO starts once
@@ -155,7 +167,8 @@ export default function WaitingPage() {
         </p>
 
         <div className="s2-card">
-          <h2>Team code</h2>
+          <h2>{teamName || "Your team"}</h2>
+          <p className="s2-sub" style={{ margin: "2px 0 0" }}>Team code</p>
           <p style={{ fontSize: 40, fontWeight: 700, letterSpacing: "0.18em", margin: "4px 0 0", fontFamily: "monospace" }}>
             {joinCode || "…"}
           </p>
