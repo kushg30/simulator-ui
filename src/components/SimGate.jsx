@@ -34,21 +34,27 @@ const SIM_IDS = {
 // a lightweight barrier to keep the public from wandering into a live sim — it is
 // NOT a security boundary (the check runs in the browser). Real per-session
 // enforcement, if needed later, belongs on the backend.
-// Per-simulation access codes. Both simulations currently use SPARTA. They are still separate
-// entries, each with its own grant flag, so unlocking one does not unlock the other and the two can
-// be given different codes again without touching anything else. Codes are overridable
-// per-environment via env vars; the legacy REACT_APP_SIM_ACCESS_CODE still backs Sim 2.
+// Per-simulation access codes. Each simulation has its own entry and its own grant flag, so
+// unlocking one does not unlock another. Codes are overridable per-environment via env vars; the
+// legacy REACT_APP_SIM_ACCESS_CODE still backs Sim 2.
+//
+// Each entry is a LIST, because a live session needs a forgiving fallback: Sim 1 answers to CASE
+// (what facilitators announce) and still answers to SPARTA, so a student working from older
+// instructions is never locked out mid-class. Matching is case-insensitive.
 const CODES = {
-  sim1: process.env.REACT_APP_SIM1_ACCESS_CODE || "SPARTA",
-  sim3: process.env.REACT_APP_SIM3_ACCESS_CODE || "SPARTA",
-  sim2:
-    process.env.REACT_APP_SIM2_ACCESS_CODE ||
-    process.env.REACT_APP_SIM_ACCESS_CODE ||
+  sim1: [process.env.REACT_APP_SIM1_ACCESS_CODE, "CASE", "SPARTA"],
+  sim3: [process.env.REACT_APP_SIM3_ACCESS_CODE, "SPARTA"],
+  sim2: [
+    process.env.REACT_APP_SIM2_ACCESS_CODE,
+    process.env.REACT_APP_SIM_ACCESS_CODE,
     "SPARTA",
+  ],
 };
 
 export default function SimGate({ children, sim = "sim2" }) {
-  const ACCESS_CODE = CODES[sim] || CODES.sim2;
+  const ACCESS_CODES = (CODES[sim] || CODES.sim2)
+    .filter(Boolean)
+    .map((c) => c.trim().toUpperCase());
   const FLAG_KEY = `simAccessGranted:${sim}`;
 
   const [granted, setGranted] = useState(
@@ -106,7 +112,7 @@ export default function SimGate({ children, sim = "sim2" }) {
       setChecking(false);
     }
 
-    if (entered.toUpperCase() === ACCESS_CODE.toUpperCase()) {
+    if (ACCESS_CODES.includes(entered.toUpperCase())) {
       sessionStorage.setItem(FLAG_KEY, "1");
       // No cohort: this is a demo or internal run, and belongs to no institution.
       sessionStorage.removeItem(COHORT_KEY);
