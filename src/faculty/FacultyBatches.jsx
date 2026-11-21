@@ -8,6 +8,13 @@ import * as api from "./api";
  * enforces that and this screen simply does not offer the others, so a facilitator never picks an
  * option that is going to be refused.
  */
+/** A year out, in the YYYY-MM-DD the licence endpoint expects. A sensible default nobody has to think about. */
+function defaultValidUntil() {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() + 1);
+  return d.toISOString().slice(0, 10);
+}
+
 export default function FacultyBatches({ identity, simulations }) {
   const [cohorts, setCohorts] = useState(null); // null = not loaded yet
   const [error, setError] = useState("");
@@ -18,6 +25,12 @@ export default function FacultyBatches({ identity, simulations }) {
   const [creating, setCreating] = useState(false);
   const [closing, setClosing] = useState(null); // cohortId awaiting confirmation
   const [copied, setCopied] = useState(null);
+
+  // Platform staff only. A facilitator already belongs to one institution and never sees these.
+  const isAdmin = !!identity?.platformAdmin;
+  const [orgName, setOrgName] = useState("");
+  const [validUntil, setValidUntil] = useState(defaultValidUntil);
+  const [orgs, setOrgs] = useState([]);
 
   const refresh = useCallback(async () => {
     try {
@@ -30,6 +43,13 @@ export default function FacultyBatches({ identity, simulations }) {
   }, []);
 
   useEffect(() => { refresh(); }, [refresh]);
+
+  // The existing institutions, offered as suggestions so a second batch for the same college
+  // reuses it instead of creating a near-duplicate ("IMT" vs "IMT ").
+  useEffect(() => {
+    if (!isAdmin) return;
+    api.listOrganizations().then(setOrgs).catch(() => setOrgs([]));
+  }, [isAdmin]);
 
   // Only simulations this institution may actually run. Platform staff are unrestricted, so they
   // see the full list.
@@ -44,12 +64,40 @@ export default function FacultyBatches({ identity, simulations }) {
   async function create(e) {
     e.preventDefault();
     if (!name.trim() || !simulationId || creating) return;
+    if (isAdmin && !orgName.trim()) return;
     setCreating(true);
     setError("");
     setNotice("");
     try {
-      const made = await api.createCohort(simulationId, name.trim(), identity?.organizationId || null);
-      setNotice(`Batch created. Students join with code ${made.joinCode}.`);
+      let organizationId = identity?.organizationId || null;
+
+      // Platform staff name the institution in plain words rather than pasting a UUID. Reuse the
+      // existing one where the name already exists, so running a second batch for the same college
+      // does not quietly create a second institution with its own separate results.
+      if (isAdmin) {
+        const wanted = orgName.trim();
+        const existing = orgs.find(
+          (o) => (o.name || "").trim().toLowerCase() === wanted.toLowerCase()
+        );
+        if (existing) {
+          organizationId = existing.organizationId;
+        } else {
+          const org = await api.createOrganization(wanted, null, null);
+          organizationId = org.organizationId;
+          setOrgs((prev) => [...prev, { organizationId, name: wanted }]);
+        }
+
+        // The licence. Upserted, so re-running this for an institution that already has one simply
+        // moves its end date rather than failing or stacking duplicates.
+        await api.grantEntitlement(organizationId, simulationId, null, validUntil || null, null);
+      }
+
+      const made = await api.createCohort(simulationId, name.trim(), organizationId);
+      setNotice(
+        isAdmin
+          ? `Batch created for ${orgName.trim()}. Students join with code ${made.joinCode}.`
+          : `Batch created. Students join with code ${made.joinCode}.`
+      );
       setName("");
       await refresh();
     } catch (err) {
@@ -92,13 +140,37 @@ export default function FacultyBatches({ identity, simulations }) {
         <span className="f-note">a batch is one cohort of students, with its own join code</span>
       </div>
 
-      {available.length === 0 ? (
+      {available.length === 0 && !isAdmin ? (
         <p className="f-note" style={{ marginTop: 12 }}>
           Your institution has no active simulation licence, so there is nothing to create a batch
           for. If that looks wrong, contact CaseRun — a licence may have lapsed.
         </p>
       ) : (
         <form className="f-card" style={{ marginTop: 12 }} onSubmit={create}>
+          {isAdmin && (
+            <>
+              <label htmlFor="b-org">Institution</label>
+              <input
+                id="b-org"
+                type="text"
+                value={orgName}
+                placeholder="e.g. IMT Ghaziabad"
+                onChange={(e) => setOrgName(e.target.value)}
+                list="b-org-list"
+                maxLength={120}
+                autoComplete="off"
+              />
+              <datalist id="b-org-list">
+                {orgs.map((o) => (
+                  <option key={o.organizationId} value={o.name} />
+                ))}
+              </datalist>
+              <span className="f-note">
+                Type a new institution to set it up, or pick one you have run before.
+              </span>
+            </>
+          )}
+
           <label htmlFor="b-name">Batch name</label>
           <input
             id="b-name"
@@ -114,8 +186,28 @@ export default function FacultyBatches({ identity, simulations }) {
               <option key={s.id} value={s.id}>{s.name}</option>
             ))}
           </select>
+
+          {isAdmin && (
+            <>
+              <label htmlFor="b-until">Licence runs until</label>
+              <input
+                id="b-until"
+                type="date"
+                value={validUntil}
+                onChange={(e) => setValidUntil(e.target.value)}
+              />
+              <span className="f-note">
+                After this date the institution cannot start new batches. Batches already running
+                are unaffected, and the date can be extended later.
+              </span>
+            </>
+          )}
+
           <div className="f-row" style={{ marginTop: 14 }}>
-            <button type="submit" disabled={!name.trim() || creating}>
+            <button
+              type="submit"
+              disabled={!name.trim() || creating || (isAdmin && !orgName.trim())}
+            >
               {creating ? "Creating…" : "Create batch"}
             </button>
           </div>
